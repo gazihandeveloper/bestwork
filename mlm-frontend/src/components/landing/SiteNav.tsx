@@ -1,0 +1,252 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import Badge from "@mui/material/Badge";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import { alpha } from "@mui/material/styles";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
+import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
+import MailRoundedIcon from "@mui/icons-material/MailRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import AuthCTA from "./AuthCTA";
+import { ELEVATION, MOTION } from "./tokens";
+import { cartCount } from "@/lib/cart";
+import { useAuth } from "@/hooks/useAuth";
+
+const navLinks = [
+  { href: "/", label: "Anasayfa", icon: <HomeRoundedIcon /> },
+  { href: "/shop", label: "Ürünler", icon: <ShoppingBagRoundedIcon /> },
+  { href: "/#kurumsal", label: "Kurumsal", icon: <BusinessRoundedIcon /> },
+  { href: "/#iletisim", label: "İletişim", icon: <MailRoundedIcon /> },
+];
+
+function Logo() {
+  return (
+    <Link
+      href="/"
+      aria-label="BestWork ana sayfa"
+      style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1 }}
+    >
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15 }}>
+        <Typography component="span" sx={{ fontWeight: 800, color: "primary.dark", fontSize: 22, display: "inline-flex", alignItems: "flex-start" }}>
+          BestWork
+          <Box component="span" aria-label="Registered" sx={{ fontSize: 14, lineHeight: 1, mt: -0.4, color: "primary.main", fontWeight: 700 }}>
+            <sup>®</sup>
+          </Box>
+        </Typography>
+
+      </Box>
+    </Link>
+  );
+}
+
+// Ortak yüzen üst menü (M3 pill). Anasayfa ve shop dahil tüm public sayfalarda kullanılır.
+// Sepet ikonu shop sayfasında sağ paneli açar, diğer sayfalarda /shop'a gider.
+export default function SiteNav() {
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => setCount(cartCount());
+    refresh();
+    window.addEventListener("cart-updated", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("cart-updated", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  const handleCart = () => {
+    window.dispatchEvent(new CustomEvent("open-cart"));
+  };
+
+  return (
+    <>
+      <Box
+        component="nav"
+        aria-label="Ana menü"
+        sx={{
+          position: "fixed",
+          top: 16,
+          left: "50%",
+          transform: "translate(-50%, 0)",
+          width: "min(92%, 1140px)",
+          height: 64,
+          borderRadius: "32px",
+          bgcolor: scrolled ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.86)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: scrolled ? ELEVATION.l2 : ELEVATION.l1,
+          animation: `navIn 500ms ${MOTION.emphasizedDecelerate} both`,
+          "@media (prefers-reduced-motion: reduce)": { animation: "none" },
+          zIndex: 1200,
+          display: "flex",
+          alignItems: "center",
+          px: 2.5,
+          transition: (theme) =>
+            `box-shadow ${theme.transitions.duration.short}ms, background-color ${theme.transitions.duration.short}ms`,
+        }}
+      >
+        <Logo />
+
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mx: "auto" }}>
+          {navLinks.map((l) => {
+            const active = l.href === pathname;
+            return (
+              <Button
+                key={l.href}
+                component={Link}
+                href={l.href}
+                startIcon={l.icon}
+                sx={{
+                  color: active ? "primary.dark" : "text.primary",
+                  fontWeight: active ? 700 : 400,
+                  bgcolor: active
+                    ? (theme) => alpha(theme.palette.secondary.main, 0.5)
+                    : "transparent",
+                  whiteSpace: "nowrap",
+                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+                }}
+              >
+                {l.label}
+              </Button>
+            );
+          })}
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 0 } }}>
+          <IconButton
+            aria-label={`Sepet (${count} ürün)`}
+            size="large"
+            onClick={handleCart}
+            sx={{
+              color: "primary.dark",
+              borderRadius: "16px",
+              "&:hover": { bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.4) },
+            }}
+          >
+            <Badge badgeContent={count} color="primary" max={99}>
+              <ShoppingCartRoundedIcon />
+            </Badge>
+          </IconButton>
+
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+            <AuthCTA variant="nav" />
+            {user && (
+              <IconButton
+                aria-label="Çıkış yap"
+                size="large"
+                onClick={logout}
+                sx={{
+                  color: "error.main",
+                  borderRadius: "16px",
+                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.error.main, 0.08) },
+                }}
+              >
+                <LogoutRoundedIcon />
+              </IconButton>
+            )}
+          </Box>
+
+          <IconButton
+            aria-label={drawerOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-expanded={drawerOpen}
+            aria-controls="site-menu-drawer"
+            onClick={() => setDrawerOpen(true)}
+            size="large"
+            sx={{ display: { xs: "inline-flex", md: "none" } }}
+          >
+            <MenuRoundedIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
+      <Drawer
+        id="site-menu-drawer"
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              width: "min(84%, 320px)",
+              borderTopLeftRadius: "28px",
+              borderBottomLeftRadius: "28px",
+              p: 2.5,
+            },
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Logo />
+            <IconButton
+              aria-label={`Sepet (${count} ürün)`}
+              onClick={handleCart}
+              sx={{ color: "primary.dark" }}
+            >
+              <Badge badgeContent={count} color="primary" max={99}>
+                <ShoppingCartRoundedIcon />
+              </Badge>
+            </IconButton>
+          </Box>
+
+          <List sx={{ mt: 2 }}>
+            {navLinks.map((l) => (
+              <ListItemButton
+                key={l.href}
+                component={Link}
+                href={l.href}
+                onClick={() => setDrawerOpen(false)}
+                sx={{ borderRadius: "16px" }}
+              >
+                <ListItemIcon sx={{ color: "text.primary", minWidth: 40 }}>{l.icon}</ListItemIcon>
+                <ListItemText primary={l.label} />
+              </ListItemButton>
+            ))}
+          </List>
+
+          <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1, pb: 2 }}>
+            <AuthCTA variant="nav" fullWidth />
+            {user && (
+              <Button
+                fullWidth
+                variant="outlined"
+                color="error"
+                startIcon={<LogoutRoundedIcon />}
+                onClick={logout}
+              >
+                Çıkış Yap
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Drawer>
+    </>
+  );
+}

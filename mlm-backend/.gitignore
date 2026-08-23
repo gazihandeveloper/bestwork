@@ -1,0 +1,8 @@
+.env
+*.exe
+mlm-backend
+mlm-backend.exe
+bin/
+vendor/
+*.log
+.DS_Store

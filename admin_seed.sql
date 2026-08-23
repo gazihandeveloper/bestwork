@@ -1,0 +1,3 @@
+-- Güvenlik nedeniyle varsayılan admin hesabı oluşturulmaz.
+-- Şema kurulduktan sonra mlm-backend altında şu komutu çalıştırın:
+-- ADMIN_NAME='...' ADMIN_EMAIL='...' ADMIN_PASSWORD='...' go run ./cmd/createadmin
