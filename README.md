@@ -136,3 +136,4 @@ Yeni bir veritabanında `schema.sql` ve `admin_seed.sql` otomatik import edilir
 - Dosya yükleme: 5MB limit + uzantı beyaz listesi (jpg/png/pdf); uploads/ klasörüne yazılır.
 - CORS: yalnızca `CORS_ORIGINS`'te izin verilen origin'ler.
 - `JWT_SECRET` üretimde mutlaka değiştirilmeli.
+# BestWork

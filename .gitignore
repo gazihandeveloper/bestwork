@@ -6,3 +6,4 @@ uploads/
 *.log
 bin/
 .DS_Store
+.aider*
