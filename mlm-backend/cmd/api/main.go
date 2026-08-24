@@ -100,7 +100,9 @@ func main() {
 
 	// Gin router ve endpoint kayıtları
 	router := gin.Default()
-	if err := router.SetTrustedProxies(nil); err != nil {
+	// Reverse proxy arkasında (LiteSpeed) gerçek istemci IP'si X-Forwarded-For'dan
+	// okunur; böylece rate limit (Redis) her kullanıcı IP'si için ayrı çalışır.
+	if err := router.SetTrustedProxies(cfg.TrustedProxies); err != nil {
 		log.Fatalf("Güvenilir proxy ayarı yapılamadı: %v", err)
 	}
 

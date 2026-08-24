@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +24,7 @@ type Config struct {
 	CookieSecure     bool
 	GinMode          string
 	CORSOrigins      string
+	TrustedProxies   []string
 }
 
 // LoadConfig .env dosyasını yükler ve ortam değişkenlerinden Config üretir.
@@ -45,7 +47,22 @@ func LoadConfig() *Config {
 		CookieSecure:     getEnv("COOKIE_SECURE", "false") == "true",
 		GinMode:          getEnv("GIN_MODE", "debug"),
 		CORSOrigins:      getEnv("CORS_ORIGINS", "http://localhost:3000"),
+		// Reverse proxy arkasında (LiteSpeed vb.) ClientIP'nin X-Forwarded-For'dan
+		// okunabilmesi için proxy adresi güvenilir kabul edilir (virgülle ayrılır).
+		TrustedProxies: parseProxyList(getEnv("TRUSTED_PROXIES", "127.0.0.1")),
 	}
+}
+
+// parseProxyList virgülle ayrılmış proxy adreslerini listeye çevirir.
+func parseProxyList(v string) []string {
+	parts := strings.Split(v, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 // PostgresURI pgx'in beklediği formatta bağlantı URI'sini üretir.
