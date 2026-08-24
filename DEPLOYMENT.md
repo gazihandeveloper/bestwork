@@ -94,6 +94,21 @@ DB şifresi ve `JWT_SECRET`, systemd unit dosyalarında `Environment=` satırlar
 - `/etc/systemd/system/bestwork-cron.service`
 - `/etc/systemd/system/bestwork-frontend.service` (yalnızca `NEXT_PUBLIC_*`)
 
+## Cloudflare (SSL + Performans)
+
+Alan adı Cloudflare üzerinden (turuncu bulut) çözülür; tarayıcıya SSL'i Cloudflare verir.
+
+- **SSL modu:** Panel → SSL/TLS → "Full" (origin'de artık doğru Let's Encrypt sertifikası var:
+  `/etc/letsencrypt/live/mahmutgazihanarslan.com.tr/`, otomatik yenilenir) → "Full (strict)" de kullanılabilir.
+- **Önbellekleme (performans):** Panel → Caching → Cache Rules:
+  - `/bestwork/_next/static/*` → 30 gün (statik JS/CSS)
+  - `/uploads/*` → 7 gün (görseller)
+  - `/bestwork` HTML → 60 sn (TTC=1, public sayfa)
+- **İsteğe bağlı:** CDN/WAF gerekmiyorsa DNS "DNS only" (gri bulut) yapılabilir → doğrudan origin'e gider
+  (TTFB ~0.2 sn, Cloudflare katmanı kalkar).
+- **Rate limit:** API, LiteSpeed'den gelen `X-Forwarded-For`'u okur (`TRUSTED_PROXIES=127.0.0.1`);
+  Redis hız limitleri her kullanıcı IP'si için ayrı çalışır.
+
 ## Yayın URL'leri
 
 - Site: https://mahmutgazihanarslan.com.tr/bestwork
