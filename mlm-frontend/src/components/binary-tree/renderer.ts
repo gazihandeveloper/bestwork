@@ -100,7 +100,7 @@ export class BinaryTreeRenderer {
       .attr("dx", 0)
       .attr("dy", 2)
       .attr("stdDeviation", 4)
-      .attr("flood-opacity", 0.14)
+      .attr("flood-opacity", 0.08)
       .attr("flood-color", this.colors.root);
 
     this.zoomLayer = this.svg.append("g").attr("class", "bt-zoom");
@@ -255,16 +255,15 @@ export class BinaryTreeRenderer {
       .attr("y", -CARD_H / 2)
       .attr("width", CARD_W)
       .attr("height", CARD_H)
-      .attr("rx", 11)
+      .attr("rx", 9)
       .attr("fill", this.colors.card)
       .attr("stroke", (d) => this.accent(d))
-      .attr("stroke-width", (d) => (d.depth === 0 ? 2.2 : 1.3))
+      .attr("stroke-width", (d) => (d.depth === 0 ? 1.4 : 1.1))
       .attr("filter", "url(#bt-card-shadow)");
 
     this.buildAvatar(sel);
     this.buildCardHeader(sel);
     this.buildPositionBadge(sel);
-    this.buildBadgeRow(sel);
     this.buildMetrics(sel);
     this.buildLegMeter(sel);
 
@@ -273,35 +272,35 @@ export class BinaryTreeRenderer {
 
   /** buildCardHeader isim + üye kodu; avatar sağına hizalanır. */
   private buildCardHeader(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const x = -CARD_W / 2 + 10 + AVATAR_R * 2 + 6;
+    const x = -CARD_W / 2 + 8 + AVATAR_R * 2 + 5;
     sel
       .append("text")
       .attr("x", x)
-      .attr("y", -CARD_H / 2 + 17)
-      .attr("font-size", 10.5)
+      .attr("y", -CARD_H / 2 + 13)
+      .attr("font-size", 9)
       .attr("font-weight", 800)
       .attr("fill", this.colors.text)
-      .text((d) => truncate(d.data.name, 12));
+      .text((d) => truncate(d.data.name, 11));
 
-    // Üye numarası — beyaz, kalın, belirgin (bacak rengi rozet içinde)
+    // Üye numarası — beyaz, kalın ama kompakt (bacak rengi rozet içinde)
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const code = `#${d.data.memberCode}`;
-      const w = Math.max(70, code.length * 5.9 + 14);
+      const w = Math.max(46, code.length * 4.6 + 11);
       g.append("rect")
         .attr("x", x)
-        .attr("y", -CARD_H / 2 + 22)
+        .attr("y", -CARD_H / 2 + 16)
         .attr("width", w)
-        .attr("height", 19)
-        .attr("rx", 9.5)
+        .attr("height", 13)
+        .attr("rx", 6.5)
         .attr("fill", this.accent(d))
         .attr("stroke", "#ffffff")
-        .attr("stroke-width", 1.5);
+        .attr("stroke-width", 1);
       g.append("text")
         .attr("x", x + w / 2)
-        .attr("y", -CARD_H / 2 + 35)
+        .attr("y", -CARD_H / 2 + 25)
         .attr("text-anchor", "middle")
-        .attr("font-size", 11)
+        .attr("font-size", 8.5)
         .attr("font-weight", 800)
         .attr("fill", "#ffffff")
         .text(code);
@@ -313,21 +312,21 @@ export class BinaryTreeRenderer {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const label = d.data.position === "R" ? "SAĞ" : d.data.position === "L" ? "SOL" : "KÖK";
-      const cx = CARD_W / 2 - 13;
-      const cy = -CARD_H / 2 + 13;
-      const w = Math.max(22, label.length * 5.2 + 10);
+      const cx = CARD_W / 2 - 9;
+      const cy = -CARD_H / 2 + 9;
+      const w = Math.max(16, label.length * 4.3 + 7);
       g.append("rect")
         .attr("x", cx - w / 2)
-        .attr("y", cy - 6.5)
+        .attr("y", cy - 5)
         .attr("width", w)
-        .attr("height", 13)
-        .attr("rx", 6.5)
+        .attr("height", 10)
+        .attr("rx", 5)
         .attr("fill", this.accent(d));
       g.append("text")
         .attr("x", cx)
-        .attr("y", cy + 2.3)
+        .attr("y", cy + 2)
         .attr("text-anchor", "middle")
-        .attr("font-size", 7)
+        .attr("font-size", 6.5)
         .attr("font-weight", 800)
         .attr("fill", "#fff")
         .text(label);
@@ -376,18 +375,18 @@ export class BinaryTreeRenderer {
   private buildMetrics(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
-      const leftX = -CARD_W / 2 + 10;
-      const rightX = CARD_W / 2 - 10;
-      g.append("line").attr("x1", leftX).attr("x2", rightX).attr("y1", 2).attr("y2", 2).attr("stroke", this.colors.divider);
+      const leftX = -CARD_W / 2 + 8;
+      const rightX = CARD_W / 2 - 8;
+      g.append("line").attr("x1", leftX).attr("x2", rightX).attr("y1", -4).attr("y2", -4).attr("stroke", this.colors.divider);
 
       const metric = (y: number, l: string, r: string, lv: number, rv: number) => {
-        g.append("circle").attr("cx", leftX).attr("cy", y - 2.5).attr("r", 2.5).attr("fill", this.colors.legLeft);
-        g.append("text").attr("x", leftX + 5).attr("y", y).attr("font-size", 7.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${l} ${compactNum(lv)}`);
-        g.append("circle").attr("cx", rightX).attr("cy", y - 2.5).attr("r", 2.5).attr("fill", this.colors.legRight);
-        g.append("text").attr("x", rightX - 5).attr("y", y).attr("text-anchor", "end").attr("font-size", 7.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${r} ${compactNum(rv)}`);
+        g.append("circle").attr("cx", leftX).attr("cy", y - 2).attr("r", 2).attr("fill", this.colors.legLeft);
+        g.append("text").attr("x", leftX + 4).attr("y", y).attr("font-size", 7).attr("font-weight", 700).attr("fill", this.colors.text).text(`${l} ${compactNum(lv)}`);
+        g.append("circle").attr("cx", rightX).attr("cy", y - 2).attr("r", 2).attr("fill", this.colors.legRight);
+        g.append("text").attr("x", rightX - 4).attr("y", y).attr("text-anchor", "end").attr("font-size", 7).attr("font-weight", 700).attr("fill", this.colors.text).text(`${r} ${compactNum(rv)}`);
       };
-      metric(16, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
-      metric(31, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
+      metric(3, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
+      metric(16, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
     });
   }
 
@@ -399,26 +398,26 @@ export class BinaryTreeRenderer {
       const pctL = total > 0 ? Math.round((d.data.pvLeft / total) * 100) : 100;
       const pctR = 100 - pctL;
       const strongL = d.data.pvLeft >= d.data.pvRight;
-      const bx = -CARD_W / 2 + 10;
-      const bw = CARD_W - 20;
-      const by = 50;
+      const bx = -CARD_W / 2 + 8;
+      const bw = CARD_W - 16;
+      const by = 30;
 
       g.append("text")
         .attr("x", 0)
-        .attr("y", 48)
+        .attr("y", 28)
         .attr("text-anchor", "middle")
-        .attr("font-size", 7)
+        .attr("font-size", 6.5)
         .attr("font-weight", 800)
         .attr("fill", strongL ? this.colors.left : this.colors.right)
         .text(strongL ? `GÜÇ: SOL %${pctL}` : `GÜÇ: SAĞ %${pctR}`);
-      g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 4).attr("rx", 2).attr("fill", "#EDF1EC");
-      g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 4).attr("rx", 2).attr("fill", this.colors.legLeft);
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 3).attr("rx", 1.5).attr("fill", "#EDF1EC");
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 3).attr("rx", 1.5).attr("fill", this.colors.legLeft);
     });
   }
 
   private buildAvatar(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const cx = -CARD_W / 2 + 10 + AVATAR_R;
-    const cy = -CARD_H / 2 + 10 + AVATAR_R;
+    const cx = -CARD_W / 2 + 8 + AVATAR_R;
+    const cy = -CARD_H / 2 + 8 + AVATAR_R;
 
     sel
       .append("circle")
@@ -427,15 +426,15 @@ export class BinaryTreeRenderer {
       .attr("r", AVATAR_R)
       .attr("fill", (d) => (d.data.imagePath ? "#F0F5EE" : this.accent(d)))
       .attr("stroke", (d) => this.accent(d))
-      .attr("stroke-width", 1.4);
+      .attr("stroke-width", 1.1);
 
     sel
       .filter((d) => !d.data.imagePath)
       .append("text")
       .attr("x", cx)
-      .attr("y", cy + 4.5)
+      .attr("y", cy + 3.5)
       .attr("text-anchor", "middle")
-      .attr("font-size", 11)
+      .attr("font-size", 9)
       .attr("font-weight", 800)
       .attr("fill", "#fff")
       .text((d) => (d.data.name.charAt(0) || "?").toLocaleUpperCase("tr-TR"));
@@ -465,12 +464,12 @@ export class BinaryTreeRenderer {
     // Aktif/pasif durum noktası (avatarın sağ-altı)
     sel
       .append("circle")
-      .attr("cx", cx + AVATAR_R - 4)
-      .attr("cy", cy + AVATAR_R - 4)
-      .attr("r", 4)
+      .attr("cx", cx + AVATAR_R - 3.5)
+      .attr("cy", cy + AVATAR_R - 3.5)
+      .attr("r", 3.5)
       .attr("fill", (d) => (d.data.isActive ? this.colors.statusActive : this.colors.statusPassive))
       .attr("stroke", "#fff")
-      .attr("stroke-width", 1.6);
+      .attr("stroke-width", 1.3);
   }
 
   private buildPlaceholder(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
@@ -564,7 +563,7 @@ export class BinaryTreeRenderer {
     const b = el.getBBox();
     if (b.width === 0 || b.height === 0) return;
     const { w, h } = this.measure();
-    const k = Math.min((w - 60) / b.width, (h - 60) / b.height, 2.2);
+    const k = Math.min((w - 60) / b.width, (h - 60) / b.height, 1.6);
     const tx = w / 2 - (b.x + b.width / 2) * k;
     const ty = h / 2 - (b.y + b.height / 2) * k;
     const transform = d3.zoomIdentity.translate(tx, ty).scale(k);
