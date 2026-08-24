@@ -28,7 +28,7 @@ import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
 import { useTheme } from "@mui/material/styles";
-import { fileUrl, getTree, getErrorMessage, placePendingByCode, listPendingUsers } from "@/services/api";
+import { getTree, getErrorMessage, placePendingByCode, listPendingUsers } from "@/services/api";
 import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
 import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
@@ -36,15 +36,6 @@ import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, ty
 interface BinaryTreeProps {
   data: TreeNode;
   depth: number;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 /**
@@ -55,7 +46,6 @@ function escapeHtml(value: string): string {
 export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
   const rootRef = useRef<BTNode | null>(null);
   const loadingRef = useRef(false);
@@ -74,37 +64,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const [showMoreLoading, setShowMoreLoading] = useState(false);
   const [noMore, setNoMore] = useState(false);
   const showMoreRef = useRef(false);
-
-  const showTooltip = useCallback((event: MouseEvent, node: BTNode) => {
-    const el = tooltipRef.current;
-    if (!el || node.placeholder) return;
-    const img = fileUrl(node.imagePath);
-    el.innerHTML = `
-      ${img ? `<img src="${escapeHtml(img)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 6px;">` : ""}
-      <div style="font-weight:800">${escapeHtml(node.name)}</div>
-      <div style="color:#A5D6A7;font-size:11px">#${escapeHtml(node.memberCode)}</div>
-      <div style="margin-top:6px;font-size:11px">Hat: ${node.position === "L" ? "Sol" : node.position === "R" ? "Sağ" : "Kök"}</div>
-      <div style="font-size:11px">Ünvan: ${escapeHtml(node.rank || "GİRİŞİMCİ")}</div>
-      <div style="font-size:11px">Paket: ${escapeHtml(node.packageName || "-")}</div>
-      <div style="font-size:11px">${node.pv.toLocaleString("tr-TR")} PV · ${node.cv.toLocaleString("tr-TR")} CV</div>
-      ${node.boundary ? '<div style="margin-top:4px;font-size:10.5px;color:#FFCC80">Alt ekibi görmek için tıklayın</div>' : ""}`;
-    el.style.display = "block";
-    el.style.left = `${event.clientX + 14}px`;
-    el.style.top = `${event.clientY + 14}px`;
-  }, []);
-
-  const moveTooltip = useCallback((event: MouseEvent) => {
-    const el = tooltipRef.current;
-    if (el && el.style.display === "block") {
-      el.style.left = `${event.clientX + 14}px`;
-      el.style.top = `${event.clientY + 14}px`;
-    }
-  }, []);
-
-  const hideTooltip = useCallback(() => {
-    const el = tooltipRef.current;
-    if (el) el.style.display = "none";
-  }, []);
 
   const handleNodeClick = useCallback(
     (node: BTNode) => {
@@ -244,9 +203,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       svgEl,
       {
         onNodeClick: handleNodeClick,
-        onHover: showTooltip,
-        onHoverMove: moveTooltip,
-        onHoverEnd: hideTooltip,
+        onHover: () => {},
+        onHoverMove: () => {},
+        onHoverEnd: () => {},
         onPlaceholderClick: openPlaceDialog,
         // Kademeli ilerleme yalnızca "Daha Fazla Göster" butonuyla yapılır
         onReachBottom: () => {},
@@ -263,7 +222,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [handleNodeClick, showTooltip, moveTooltip, hideTooltip, loadNextGeneration, openPlaceDialog, dark]);
+  }, [handleNodeClick, loadNextGeneration, openPlaceDialog, dark]);
 
   // Veri değişince ağacı kur ve sığdır
   useEffect(() => {
@@ -429,24 +388,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           )}
         </Button>
       </Box>
-
-      <div
-        ref={tooltipRef}
-        style={{
-          display: "none",
-          position: "fixed",
-          zIndex: 1300,
-          pointerEvents: "none",
-          background: "#1B3A1E",
-          color: "#fff",
-          borderRadius: 12,
-          padding: "8px 12px",
-          fontSize: 12,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-          maxWidth: 230,
-          textAlign: "center",
-        }}
-      />
 
       {/* Boş bacağa kodla yerleştirme */}
       <Dialog open={!!placeTarget} onClose={() => setPlaceTarget(null)} maxWidth="xs" fullWidth>
