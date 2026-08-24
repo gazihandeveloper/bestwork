@@ -282,29 +282,15 @@ export class BinaryTreeRenderer {
       .attr("fill", this.colors.text)
       .text((d) => truncate(d.data.name, 11));
 
-    // Üye numarası — beyaz, kalın ama kompakt (bacak rengi rozet içinde)
-    sel.each((d, i, groups) => {
-      const g = d3.select(groups[i]);
-      const code = `#${d.data.memberCode}`;
-      const w = Math.max(46, code.length * 4.6 + 11);
-      g.append("rect")
-        .attr("x", x)
-        .attr("y", -CARD_H / 2 + 16)
-        .attr("width", w)
-        .attr("height", 13)
-        .attr("rx", 6.5)
-        .attr("fill", this.accent(d))
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", 1);
-      g.append("text")
-        .attr("x", x + w / 2)
-        .attr("y", -CARD_H / 2 + 25)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 8.5)
-        .attr("font-weight", 800)
-        .attr("fill", "#ffffff")
-        .text(code);
-    });
+    // Üye numarası — rozetsiz, küçük düz yazı
+    sel
+      .append("text")
+      .attr("x", x)
+      .attr("y", -CARD_H / 2 + 25)
+      .attr("font-size", 8)
+      .attr("font-weight", 700)
+      .attr("fill", this.colors.subtext)
+      .text((d) => truncate(`#${d.data.memberCode}`, 13));
   }
 
   /** buildPositionBadge bacak etiketini (KÖK/SOL/SAĞ) kartın sağ üst köşesine çizer. */
@@ -312,7 +298,7 @@ export class BinaryTreeRenderer {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const label = d.data.position === "R" ? "SAĞ" : d.data.position === "L" ? "SOL" : "KÖK";
-      const cx = CARD_W / 2 - 9;
+      const cx = CARD_W / 2 - 15;
       const cy = -CARD_H / 2 + 9;
       const w = Math.max(16, label.length * 4.3 + 7);
       g.append("rect")
