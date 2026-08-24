@@ -79,7 +79,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       ${img ? `<img src="${escapeHtml(img)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 6px;">` : ""}
       <div style="font-weight:800">${escapeHtml(node.name)}</div>
       <div style="color:#A5D6A7;font-size:11px">#${escapeHtml(node.memberCode)}</div>
-      <div style="margin-top:6px;font-size:11px">Bacak: ${node.position === "L" ? "Sol" : node.position === "R" ? "Sağ" : "Kök"}</div>
+      <div style="margin-top:6px;font-size:11px">Hat: ${node.position === "L" ? "Sol" : node.position === "R" ? "Sağ" : "Kök"}</div>
       <div style="font-size:11px">Ünvan: ${escapeHtml(node.rank || "GİRİŞİMCİ")}</div>
       <div style="font-size:11px">Paket: ${escapeHtml(node.packageName || "-")}</div>
       <div style="font-size:11px">${node.pv.toLocaleString("tr-TR")} PV · ${node.cv.toLocaleString("tr-TR")} CV</div>
@@ -248,7 +248,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     setPlaceError("");
     try {
       const placed = await placePendingByCode(user.member_code, placeTarget.parentId, placeTarget.position);
-      setSuccessMsg(`${placed.name} (${placed.member_code}) ${placeTarget.position === "L" ? "sol" : "sağ"} bacağa yerleştirildi.`);
+      setSuccessMsg(`${placed.name} (${placed.member_code}) ${placeTarget.position === "L" ? "sol" : "sağ"} hatta yerleştirildi.`);
       setPlaceTarget(null);
       // Ağacı yenile
       const fetched = await getTree(data.user_id, depth);
@@ -333,8 +333,8 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
 
         <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
           <Chip size="small" label="Kök" sx={{ bgcolor: "#274D24", color: "#fff", fontWeight: 700 }} />
-          <Chip size="small" label="Sol Bacak" sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }} />
-          <Chip size="small" label="Sağ Bacak" sx={{ bgcolor: "#B4552D", color: "#fff", fontWeight: 700 }} />
+          <Chip size="small" label="Sol Hat" sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }} />
+          <Chip size="small" label="Sağ Hat" sx={{ bgcolor: "#B4552D", color: "#fff", fontWeight: 700 }} />
           <Typography variant="caption" color="text.secondary">
             Karta tıklayın: aç/kapat · turuncu &quot;+&quot; rozet: alt ekibi yükle · sürükle &amp; tekerlekle yaklaş
           </Typography>
@@ -372,7 +372,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       <Dialog open={!!placeTarget} onClose={() => setPlaceTarget(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 800 }}>
           <PersonAddAltRoundedIcon sx={{ color: "primary.main" }} />
-          {placeTarget?.position === "L" ? "Sol" : "Sağ"} Bacağa Üye Yerleştir
+          {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
           <Box sx={{ flexGrow: 1 }} />
           <IconButton size="small" aria-label="Kapat" onClick={() => setPlaceTarget(null)}>
             <CloseRoundedIcon />

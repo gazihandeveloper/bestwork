@@ -103,7 +103,7 @@ func (h *PendingPoolHandler) PlaceByCode(c *gin.Context) {
 		case errors.Is(err, services.ErrPoolEntryNotFound):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Bu üye sizin bekleyen listenizde değil"})
 		case errors.Is(err, services.ErrPositionOccupied):
-			c.JSON(http.StatusConflict, gin.H{"error": "Seçilen bacak dolu"})
+			c.JSON(http.StatusConflict, gin.H{"error": "Seçilen hat dolu"})
 		case errors.Is(err, services.ErrInvalidPlacement):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz yerleştirme hedefi"})
 		case errors.Is(err, services.ErrUserAlreadyPlaced):

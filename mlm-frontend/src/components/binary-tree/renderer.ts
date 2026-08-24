@@ -282,13 +282,28 @@ export class BinaryTreeRenderer {
       .attr("font-weight", 800)
       .attr("fill", this.colors.text)
       .text((d) => truncate(d.data.name, 13));
-    sel
-      .append("text")
-      .attr("x", x)
-      .attr("y", -CARD_H / 2 + 34)
-      .attr("font-size", 8.5)
-      .attr("fill", this.colors.subtext)
-      .text((d) => truncate(`#${d.data.memberCode}`, 14));
+
+    // Üye ID — büyük, iri, beyaz, belirgin (bacak rengi rozet içinde)
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const code = `#${d.data.memberCode}`;
+      const w = Math.max(64, code.length * 6 + 16);
+      g.append("rect")
+        .attr("x", x)
+        .attr("y", -CARD_H / 2 + 26)
+        .attr("width", w)
+        .attr("height", 18)
+        .attr("rx", 9)
+        .attr("fill", this.accent(d));
+      g.append("text")
+        .attr("x", x + w / 2)
+        .attr("y", -CARD_H / 2 + 38)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 11)
+        .attr("font-weight", 800)
+        .attr("fill", "#ffffff")
+        .text(code);
+    });
   }
 
   /** buildPositionBadge bacak etiketini (KÖK/SOL/SAĞ) kartın sağ üst köşesine çizer. */
@@ -496,7 +511,7 @@ export class BinaryTreeRenderer {
       .attr("font-size", 9.5)
       .attr("font-weight", 800)
       .attr("fill", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
-      .text((d) => (d.data.position === "R" ? "SAĞ BACAK" : "SOL BACAK"));
+      .text((d) => (d.data.position === "R" ? "SAĞ HAT" : "SOL HAT"));
   }
 
   /**

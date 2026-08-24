@@ -624,13 +624,13 @@ function DashboardContent() {
                 )}
               </Box>
 
-              {/* Referans linki — alt */}
+              {/* Üye kayıt linki — alt */}
               <Box sx={{ px: 3, pb: 3, mt: "auto" }}>
                 <Typography
                   variant="overline"
                   sx={{ display: "block", textAlign: "center", color: "rgba(255,255,255,0.75)", fontWeight: 700, letterSpacing: 1.5, mb: 0.75, fontSize: 10.5 }}
                 >
-                  Referans Linkiniz
+                  Üye Kayıt Linkiniz
                 </Typography>
                 <Box
                   sx={{

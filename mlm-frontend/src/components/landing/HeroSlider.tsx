@@ -75,7 +75,7 @@ const fallbackSlides: Slide[] = [
     key: "fallback-binary",
     icon: <AccountTreeRoundedIcon sx={{ fontSize: 44 }} />,
     title: "Binary Komisyon Sistemi",
-    description: "Sol-sağ bacak eşleşmesiyle her ay prim kazan.",
+    description: "Sol-sağ hat eşleşmesiyle her ay prim kazan.",
     ctaLabel: "Keşfet",
   },
   {

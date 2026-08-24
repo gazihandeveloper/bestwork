@@ -263,6 +263,12 @@ func ProcessOrderEffects(ctx context.Context, q DBTX, orderID int64) error {
 		if err := ProcessNewOrderForBinary(ctx, q, orderUserID, totalPV, totalCV, &orderID); err != nil {
 			return fmt.Errorf("binary ağaç güncellenemedi: %w", err)
 		}
+
+		// Alışveriş yaptı (ödenmiş sipariş): henüz ağaca yerleşmediyse
+		// yerleşim bekleyenler havuzuna ekle (kayıtta havuza düşmez).
+		if err := addToPendingPoolIfEligible(ctx, q, orderUserID, sponsorID); err != nil {
+			return err
+		}
 	}
 
 	if _, err := q.Exec(ctx, `UPDATE orders SET effects_applied = true WHERE id = $1`, orderID); err != nil {
@@ -270,6 +276,42 @@ func ProcessOrderEffects(ctx context.Context, q DBTX, orderID int64) error {
 	}
 
 	log.WithField("order_id", orderID).Info("Sipariş etkileri uygulandı")
+	return nil
+}
+
+// addToPendingPoolIfEligible üye alışveriş yaptığında (ödenmiş sipariş) henüz
+// ağaca yerleşmemişse yerleşim bekleyenler havuzuna ekler (idempotent).
+func addToPendingPoolIfEligible(ctx context.Context, q DBTX, userID int64, sponsorID *int64) error {
+	// Zaten havuzdaysa veya ağaca yerleştirilmişse dokunma
+	var inPending bool
+	if err := q.QueryRow(ctx, `SELECT is_in_pending_pool FROM users WHERE id = $1`, userID).Scan(&inPending); err != nil {
+		return fmt.Errorf("kullanıcı sorgulanamadı: %w", err)
+	}
+	if inPending {
+		return nil
+	}
+
+	var parentID *int64
+	if err := q.QueryRow(ctx, `SELECT parent_id FROM users WHERE id = $1`, userID).Scan(&parentID); err != nil {
+		return fmt.Errorf("kullanıcı sorgulanamadı: %w", err)
+	}
+	if parentID != nil {
+		return nil // zaten ağaçta
+	}
+
+	if _, err := q.Exec(ctx,
+		`UPDATE users SET is_in_pending_pool = true, pending_since = NOW(), updated_at = NOW() WHERE id = $1`, userID); err != nil {
+		return fmt.Errorf("bekleyen durumu güncellenemedi: %w", err)
+	}
+	if _, err := q.Exec(ctx,
+		`INSERT INTO pending_pool (user_id, sponsor_id)
+		 SELECT $1, $2
+		 WHERE NOT EXISTS (SELECT 1 FROM pending_pool WHERE user_id = $1 AND is_placed = false)`,
+		userID, sponsorID); err != nil {
+		return fmt.Errorf("bekleyen havuz kaydı eklenemedi: %w", err)
+	}
+
+	log.WithField("user_id", userID).Info("Üye alışveriş yaptı, yerleşim bekleyenlere eklendi")
 	return nil
 }
 

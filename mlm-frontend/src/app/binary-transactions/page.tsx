@@ -75,7 +75,7 @@ function BinaryTransactionsContent() {
         Binary Hareketleri
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Sol ve sağ bacaklarınızdaki PV/CV ekleme ve eşleşme düşümlerinin geçmişi.
+        Sol ve sağ hatlarınızdaki PV/CV ekleme ve eşleşme düşümlerinin geçmişi.
       </Typography>
 
       {/* Özet kartları */}
@@ -128,7 +128,7 @@ function BinaryTransactionsContent() {
             setPage(0);
           }}
         >
-          <ToggleButton value="">Tüm Bacaklar</ToggleButton>
+          <ToggleButton value="">Tüm Hatlar</ToggleButton>
           <ToggleButton value="L">Sol</ToggleButton>
           <ToggleButton value="R">Sağ</ToggleButton>
         </ToggleButtonGroup>
@@ -172,7 +172,7 @@ function BinaryTransactionsContent() {
                   }}
                 >
                   <TableCell>Tarih</TableCell>
-                  <TableCell>Bacak</TableCell>
+                  <TableCell>Hat</TableCell>
                   <TableCell>İşlem</TableCell>
                   <TableCell align="right">PV</TableCell>
                   <TableCell align="right">CV</TableCell>
@@ -207,7 +207,7 @@ function BinaryTransactionsContent() {
                       <TableCell>
                         <Chip
                           size="small"
-                          label={t.position === "L" ? "Sol Bacak" : "Sağ Bacak"}
+                          label={t.position === "L" ? "Sol Hat" : "Sağ Hat"}
                           color="primary"
                           variant="outlined"
                           sx={{ fontWeight: 600 }}

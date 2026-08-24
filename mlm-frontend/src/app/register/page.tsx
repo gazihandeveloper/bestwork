@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/api";
 import { checkReferral } from "@/services/api";
 import { PASTELS, ELEVATION } from "@/components/landing/tokens";
+import { ILLER } from "@/data/iller";
 
 const PROVINCES = [
   "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
@@ -137,6 +138,8 @@ function RegisterContent() {
   const {
     register: registerField,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
     resolver: yupResolver(schema),
@@ -148,6 +151,12 @@ function RegisterContent() {
       agreeKVKK: false,
     },
   });
+
+  // İl seçilince ilçeler otomatik dolar; il değişince ilçe sıfırlanır.
+  const selectedCity = watch("city");
+  useEffect(() => {
+    setValue("district", "");
+  }, [selectedCity, setValue]);
 
   // Referans kodunu 500ms debounce ile sistemde ara.
   useEffect(() => {
@@ -574,13 +583,21 @@ function RegisterContent() {
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <TextField
+                        select
                         label="İlçe *"
-                        placeholder="Önce il seçin"
                         fullWidth
                         {...registerField("district")}
                         error={!!errors.district}
                         helperText={errors.district?.message}
-                      />
+                        disabled={!selectedCity || !ILLER[selectedCity]?.length}
+                      >
+                        <MenuItem value="">
+                          {ILLER[selectedCity]?.length ? "İlçe seçiniz" : "Önce il seçin"}
+                        </MenuItem>
+                        {(ILLER[selectedCity] ?? []).map((d) => (
+                          <MenuItem key={d} value={d}>{d}</MenuItem>
+                        ))}
+                      </TextField>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <TextField

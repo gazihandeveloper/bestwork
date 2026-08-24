@@ -94,8 +94,8 @@ function OpportunitiesContent() {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Rütbe</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Sol Bacak PV</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Sağ Bacak PV</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Sol Hat PV</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Sağ Hat PV</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 700 }}>Aylık Binary Limiti</TableCell>
               </TableRow>
             </TableHead>

@@ -69,7 +69,7 @@ function CareerContent() {
         Kariyer Takibi
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Rütbeler bacak PV toplamlarına göre kazanılır ve kalıcıdır — adım adım ilerleyin.
+        Rütbeler hat PV toplamlarına göre kazanılır ve kalıcıdır — adım adım ilerleyin.
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}

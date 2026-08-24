@@ -160,11 +160,10 @@ func (s *UserService) CreateUser(ctx context.Context, name, email, password, pho
 
 	now := time.Now()
 
-	isInPendingPool := role == "user"
+	// İş kuralı: Alışveriş yapılmadan kişi yerleşim bekleyenlere düşmez.
+	// Kayıtta havuzda değildir; ilk ödenen siparişte (ProcessOrderEffects) havuza eklenir.
+	isInPendingPool := false
 	var pendingSince *time.Time
-	if isInPendingPool {
-		pendingSince = &now
-	}
 
 	var userID int64
 	err = tx.QueryRow(ctx, `
@@ -176,15 +175,6 @@ func (s *UserService) CreateUser(ctx context.Context, name, email, password, pho
 	).Scan(&userID)
 	if err != nil {
 		return nil, fmt.Errorf("kullanıcı eklenemedi: %w", err)
-	}
-
-	// Müşteriler bekleyenler havuzuna girmez
-	if isInPendingPool {
-		if _, err = tx.Exec(ctx, `
-			INSERT INTO pending_pool (user_id, sponsor_id)
-			VALUES ($1, $2)`, userID, sponsorID); err != nil {
-			return nil, fmt.Errorf("pending_pool kaydı eklenemedi: %w", err)
-		}
 	}
 
 	if _, err = tx.Exec(ctx, `
