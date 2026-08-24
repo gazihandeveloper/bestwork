@@ -438,7 +438,7 @@ function DashboardContent() {
   const currentRankId = me?.current_rank_id;
   const rankIndex = currentRankId != null ? ranks.findIndex((r) => r.id === currentRankId) : -1;
 
-  const currentRankName = (d.user.rank || "GİRİŞİMCİ").toLocaleUpperCase("tr-TR");
+  const currentRankName = (d.user.rank || "GİRİŞİMCİ").toLocaleUpperCase("en-US");
 
   const handleImageUpload = async (file: File | undefined) => {
     if (!file) return;
