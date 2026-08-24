@@ -62,18 +62,27 @@ func (s *SponsorTreeService) buildSponsorTreeNode(ctx context.Context, userID in
 		return node, nil
 	}
 
+	// Alt üye id'lerini topla, satırları kapat; recursive çağrı tek bağlantı kullanır.
 	rows, err := s.db.Query(ctx, `SELECT id FROM users WHERE sponsor_id = $1 ORDER BY id`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("alt üyeler listelenemedi: %w", err)
 	}
-	defer rows.Close()
-
+	childIDs := make([]int64, 0, 8)
 	for rows.Next() {
 		var childID int64
 		if err := rows.Scan(&childID); err != nil {
+			rows.Close()
 			return nil, fmt.Errorf("alt üye okunamadı: %w", err)
 		}
+		childIDs = append(childIDs, childID)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return nil, fmt.Errorf("alt üyeler listelenemedi: %w", err)
+	}
+	rows.Close()
 
+	for _, childID := range childIDs {
 		child, err := s.buildSponsorTreeNode(ctx, childID, depth-1)
 		if err != nil {
 			return nil, err
@@ -81,5 +90,5 @@ func (s *SponsorTreeService) buildSponsorTreeNode(ctx context.Context, userID in
 		node.Children = append(node.Children, child)
 	}
 
-	return node, rows.Err()
+	return node, nil
 }

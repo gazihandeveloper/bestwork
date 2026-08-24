@@ -433,31 +433,44 @@ func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, dept
 		return node, nil
 	}
 
+	// Alt düğüm id'lerini önce topla ve satırları KAPAT; ardından recursive çağrı
+	// yap. Böylece her istek aynı anda yalnızca 1 bağlantı kullanır (havuz tükenmez).
 	children, err := s.db.Query(ctx,
 		`SELECT id, position FROM users WHERE parent_id = $1 ORDER BY position`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("alt düğümler okunamadı: %w", err)
 	}
-	defer children.Close()
-
+	type childRef struct {
+		id int64
+		pos *string
+	}
+	refs := make([]childRef, 0, 2)
 	for children.Next() {
 		var childID int64
 		var pos *string
 		if err := children.Scan(&childID, &pos); err != nil {
+			children.Close()
 			return nil, fmt.Errorf("alt düğüm okunamadı: %w", err)
 		}
+		refs = append(refs, childRef{id: childID, pos: pos})
+	}
+	if err := children.Err(); err != nil {
+		children.Close()
+		return nil, fmt.Errorf("alt düğümler okunamadı: %w", err)
+	}
+	children.Close()
 
-		child, err := s.buildTreeNode(ctx, childID, depth-1)
+	for _, ref := range refs {
+		child, err := s.buildTreeNode(ctx, ref.id, depth-1)
 		if err != nil {
 			return nil, err
 		}
-
-		if pos != nil && *pos == "L" {
+		if ref.pos != nil && *ref.pos == "L" {
 			node.LeftChild = child
 		} else {
 			node.RightChild = child
 		}
 	}
 
-	return node, children.Err()
+	return node, nil
 }
