@@ -43,6 +43,10 @@ mkdir -p /tmp/bw-deploy
 for b in api cron migrate createadmin; do
   CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o "/tmp/bw-deploy/bestwork-$b" "./cmd/$b"
 done
+# Çalışan binary üzerine yazılamaz: önce servisi durdur (yükleme başarısız olursa
+# betik çıkar; servis sonda yeniden başlatılır, bu adım başarısız olursa manuel başlat)
+echo "▸ bestwork-api durduruluyor (binary yükleme için)"
+ssh "${SSH_OPTS[@]}" "$SERVER" "systemctl stop bestwork-api || true"
 for b in api cron migrate createadmin; do
   scp "${SSH_OPTS[@]}" "/tmp/bw-deploy/bestwork-$b" "$SERVER:$DIR/backend/"
 done
