@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +36,32 @@ func (h *UserHandler) Me(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+// LookupByCode üye kodundan kullanıcının temel bilgilerini döndürür (ağaçta arama/navigasyon için).
+func (h *UserHandler) LookupByCode(c *gin.Context) {
+	code := strings.ToUpper(strings.TrimSpace(c.Query("code")))
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Üye kodu zorunludur"})
+		return
+	}
+
+	user, err := h.users.GetUserByMemberCode(c.Request.Context(), code)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Üye bulunamadı"})
+			return
+		}
+		log.WithError(err).Error("Üye araması başarısız")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Üye araması yapılamadı"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": map[string]any{
+		"id":          user.ID,
+		"name":        user.Name,
+		"member_code": user.MemberCode,
+	}})
 }
 
 // Sponsored kullanıcının sponsor olduğu üyeleri döndürür (JWT korumalı).

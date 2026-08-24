@@ -208,6 +208,14 @@ export async function getMe(): Promise<User> {
   return data.user;
 }
 
+// Üye kodundan kullanıcının temel bilgilerini getirir (ağaçta arama/navigasyon için).
+export async function lookupUserByCode(code: string): Promise<{ id: number; name: string; member_code: string }> {
+  const { data } = await api.get<{ user: { id: number; name: string; member_code: string } }>("/user/lookup", {
+    params: { code },
+  });
+  return data.user;
+}
+
 // Profil (JSONB) ve profil görseli
 export async function getProfile(): Promise<Record<string, unknown>> {
   const { data } = await api.get<{ profile: Record<string, unknown> }>("/user/profile");

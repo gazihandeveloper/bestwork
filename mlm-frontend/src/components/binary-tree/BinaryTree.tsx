@@ -28,7 +28,7 @@ import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
 import { useTheme } from "@mui/material/styles";
-import { getTree, getErrorMessage, placePendingByCode, listPendingUsers } from "@/services/api";
+import { getTree, getErrorMessage, placePendingByCode, listPendingUsers, lookupUserByCode } from "@/services/api";
 import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
 import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
@@ -260,8 +260,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       const placed = await placePendingByCode(user.member_code, placeTarget.parentId, placeTarget.position);
       setSuccessMsg(`${placed.name} (${placed.member_code}) ${placeTarget.position === "L" ? "sol" : "sağ"} hatta yerleştirildi.`);
       setPlaceTarget(null);
-      // Ağacı yenile
-      const fetched = await getTree(data.user_id, depth);
+      // Ağacı yenile (gezinilen kökse onu tazele)
+      const currentRootId = rootRef.current?.userId ?? data.user_id;
+      const fetched = await getTree(currentRootId, depth);
       rootRef.current = toBTNode(fetched, depth);
       rendererRef.current?.render(rootRef.current);
       requestAnimationFrame(() => rendererRef.current?.fit());
@@ -280,6 +281,33 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     setCollapsedBelowRoot(root, collapsed, 1);
     renderer.render(root);
     requestAnimationFrame(() => renderer.fit());
+  };
+
+  // Arama kutusunda Enter: üye kodu (TR90xxxxxx) yazıldıysa o üyeye git ve
+  // altındaki 7 kişiyi (2 seviye) getir. Yüklü ağaçta varsa sadece odaklan.
+  const handleSearchKeyDown = async (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    const q = search.trim();
+    if (!q) return;
+    if (/^TR90[0-9]{6}$/i.test(q)) {
+      const renderer = rendererRef.current;
+      if (!renderer) return;
+      const firstId = renderer.highlight(q.toUpperCase());
+      if (firstId) {
+        renderer.focusOn(firstId);
+        return;
+      }
+      try {
+        const u = await lookupUserByCode(q.toUpperCase());
+        const fetched = await getTree(u.id, 2);
+        rootRef.current = toBTNode(fetched, 2);
+        setNoMore(false);
+        renderer.render(rootRef.current);
+        requestAnimationFrame(() => renderer.fit());
+      } catch (err) {
+        setLoadError(getErrorMessage(err));
+      }
+    }
   };
 
   return (
@@ -308,9 +336,10 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <TextField
               size="small"
-              placeholder="İsim veya üye kodu ara..."
+              placeholder="İsim veya üye kodu ara... (TR90 kod girip Enter'a basın)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               sx={{ width: { xs: "100%", sm: 320 } }}
               slotProps={{
                 input: {

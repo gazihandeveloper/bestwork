@@ -149,6 +149,7 @@ func main() {
 		protected.Use(middleware.AuthRequired(userService))
 		protected.GET("/me", userHandler.Me)
 		protected.GET("/profile", userHandler.Profile)
+		protected.GET("/lookup", userHandler.LookupByCode)
 		protected.PUT("/profile-image", userHandler.UpdateProfileImage)
 		protected.PUT("/theme", userHandler.UpdateTheme)
 		protected.GET("/sponsored", userHandler.Sponsored)
