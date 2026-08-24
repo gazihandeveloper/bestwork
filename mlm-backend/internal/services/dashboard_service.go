@@ -138,6 +138,54 @@ func (s *DashboardService) GetTeamSummary(ctx context.Context, userID int64) (*m
 	return team, nil
 }
 
+// GetUserInfoCard ağaç kartındaki "i" modalı için kullanıcı detayını döndürür.
+// Kullanıcı temel bilgileri, cüzdan bakiyesi, bacak PV/CV ve recursive ekip sayıları.
+func (s *DashboardService) GetUserInfoCard(ctx context.Context, userID int64) (*models.UserInfoCard, error) {
+	card := &models.UserInfoCard{}
+
+	// Temel bilgiler + sponsor adı
+	err := s.db.QueryRow(ctx, `
+		SELECT u.id, u.name, u.member_code, r.name, p.name, u.is_active, u.position,
+			sp.name, u.total_pv_left, u.total_pv_right, u.total_cv_left, u.total_cv_right
+		FROM users u
+		LEFT JOIN ranks r ON r.id = u.current_rank_id
+		LEFT JOIN packages p ON p.id = u.package_id
+		LEFT JOIN users sp ON sp.id = u.sponsor_id
+		WHERE u.id = $1`, userID).
+		Scan(&card.UserID, &card.Name, &card.MemberCode, &card.Rank, &card.Package, &card.IsActive, &card.Position,
+			&card.SponsorName, &card.TotalPVLeft, &card.TotalPVRight, &card.TotalCVLeft, &card.TotalCVRight)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("kart kullanıcısı okunamadı: %w", err)
+	}
+
+	// Cüzdan bakiyeleri
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(balance, 0), COALESCE(chip_balance, 0) FROM wallets WHERE user_id = $1`, userID).
+		Scan(&card.WalletBalance, &card.ChipBalance); err != nil {
+		return nil, fmt.Errorf("kart cüzdanı okunamadı: %w", err)
+	}
+
+	// Recursive ekip sayıları (pozisyona göre sol/sağ bacak)
+	if err := s.db.QueryRow(ctx, `
+		WITH RECURSIVE tree AS (
+			SELECT id, position FROM users WHERE parent_id = $1
+			UNION ALL
+			SELECT u.id, u.position FROM users u JOIN tree t ON u.parent_id = t.id
+		)
+		SELECT COUNT(*),
+			COUNT(*) FILTER (WHERE position = 'L'),
+			COUNT(*) FILTER (WHERE position = 'R')
+		FROM tree`, userID).
+		Scan(&card.TotalTeamCount, &card.LeftTeamCount, &card.RightTeamCount); err != nil {
+		return nil, fmt.Errorf("kart ekip sayıları okunamadı: %w", err)
+	}
+
+	return card, nil
+}
+
 // ListCommissions kullanıcının komisyon geçmişini döndürür (opsiyonel tip filtresi).
 func (s *DashboardService) ListCommissions(ctx context.Context, userID int64, commissionType string, limit int) ([]models.Commission, error) {
 	if limit <= 0 || limit > 100 {

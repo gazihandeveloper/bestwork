@@ -9,7 +9,11 @@ import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import Avatar from "@mui/material/Avatar";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -28,7 +32,16 @@ import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
 import { useTheme } from "@mui/material/styles";
-import { getTree, getErrorMessage, placePendingByCode, listPendingUsers, lookupUserByCode } from "@/services/api";
+import {
+  fileUrl,
+  getTree,
+  getUserCard,
+  getErrorMessage,
+  placePendingByCode,
+  listPendingUsers,
+  lookupUserByCode,
+  type UserInfoCard,
+} from "@/services/api";
 import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
 import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
@@ -48,7 +61,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
   const rootRef = useRef<BTNode | null>(null);
-  const loadingRef = useRef(false);
   const theme = useTheme();
   const dark = theme.palette.mode === "dark";
 
@@ -61,9 +73,11 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState("");
-  const [showMoreLoading, setShowMoreLoading] = useState(false);
-  const [noMore, setNoMore] = useState(false);
-  const showMoreRef = useRef(false);
+  // "i" bilgi modalı
+  const [infoNode, setInfoNode] = useState<BTNode | null>(null);
+  const [infoCard, setInfoCard] = useState<UserInfoCard | null>(null);
+  const [infoLoading, setInfoLoading] = useState(false);
+  const [infoError, setInfoError] = useState("");
 
   const handleNodeClick = useCallback(
     (node: BTNode) => {
@@ -95,46 +109,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     [],
   );
 
-  // Aşağı doğru kaydırınca en derin yüklü seviyeye ulaşıldığında sonraki nesli
-  // tembel yükler (infinite scroll). Bir seferde en fazla 12 sınır düğümü açılır.
-  const loadNextGeneration = useCallback(() => {
-    const renderer = rendererRef.current;
-    const root = rootRef.current;
-    if (!renderer || !root || loadingRef.current) return;
-
-    const boundary: BTNode[] = [];
-    const walk = (n: BTNode) => {
-      if (n.placeholder) return;
-      if (n.boundary) {
-        boundary.push(n);
-        return;
-      }
-      n.children.forEach(walk);
-    };
-    walk(root);
-    if (boundary.length === 0) return;
-
-    const batch = boundary.slice(0, 12);
-    loadingRef.current = true;
-    batch.forEach((node) => {
-      node.loading = true;
-    });
-    renderer.render(root);
-
-    Promise.all(
-      batch.map((node) =>
-        getTree(node.userId, LAZY_DEPTH)
-          .then((fetched) => graftChildren(node, fetched, LAZY_DEPTH))
-          .catch(() => undefined),
-      ),
-    ).finally(() => {
-      loadingRef.current = false;
-      rendererRef.current?.render(rootRef.current ?? root);
-      // Yeni nesil geldi: ağacı otomatik sığdır (dibe ulaşan kullanıcı yeni seviyeyi görür)
-      requestAnimationFrame(() => rendererRef.current?.fit());
-    });
-  }, []);
-
   // Boş bacağa tıklanınca yerleşim bekleyenler listesini çeker ve diyaloğu açar.
   const openPlaceDialog = useCallback((parentId: number, position: "L" | "R") => {
     setPlaceError("");
@@ -148,49 +122,16 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       .finally(() => setPendingLoading(false));
   }, []);
 
-  // "Daha Fazla Göster" butonu: sınır düğümlerini bir seviye daha derinleştirir
-  // (her basışta yeni kişiler eklenir, kademeli).
-  const loadMoreLevels = useCallback(() => {
-    const renderer = rendererRef.current;
-    const root = rootRef.current;
-    if (!renderer || !root || showMoreRef.current) return;
-
-    const boundary: BTNode[] = [];
-    const walk = (n: BTNode) => {
-      if (n.placeholder) return;
-      if (n.boundary) {
-        boundary.push(n);
-        return;
-      }
-      n.children.forEach(walk);
-    };
-    walk(root);
-
-    if (boundary.length === 0) {
-      setNoMore(true);
-      return;
-    }
-
-    const batch = boundary.slice(0, 24);
-    showMoreRef.current = true;
-    setShowMoreLoading(true);
-    batch.forEach((n) => {
-      n.loading = true;
-    });
-    renderer.render(root);
-
-    Promise.all(
-      batch.map((n) =>
-        getTree(n.userId, 1)
-          .then((f) => graftChildren(n, f, 1))
-          .catch(() => undefined),
-      ),
-    ).finally(() => {
-      showMoreRef.current = false;
-      setShowMoreLoading(false);
-      rendererRef.current?.render(rootRef.current ?? root);
-      requestAnimationFrame(() => rendererRef.current?.fit());
-    });
+  // "i" bilgi düğmesi: üye detay kartını çeker ve modalı açar.
+  const handleInfoClick = useCallback((node: BTNode) => {
+    setInfoNode(node);
+    setInfoCard(null);
+    setInfoError("");
+    setInfoLoading(true);
+    getUserCard(node.userId)
+      .then(setInfoCard)
+      .catch((err) => setInfoError(getErrorMessage(err)))
+      .finally(() => setInfoLoading(false));
   }, []);
 
   // Sahne kurulumu — yalnızca bir kez
@@ -207,7 +148,8 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         onHoverMove: () => {},
         onHoverEnd: () => {},
         onPlaceholderClick: openPlaceDialog,
-        // Kademeli ilerleme yalnızca "Daha Fazla Göster" butonuyla yapılır
+        onInfoClick: handleInfoClick,
+        // Otomatik sonsuz kaydırma kapatıldı; derinlik yalnızca "+" rozetiyle açılır
         onReachBottom: () => {},
       },
       () => {
@@ -222,14 +164,13 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [handleNodeClick, loadNextGeneration, openPlaceDialog, dark]);
+  }, [handleNodeClick, openPlaceDialog, handleInfoClick, dark]);
 
   // Veri değişince ağacı kur ve sığdır
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer) return;
     rootRef.current = toBTNode(data, depth);
-    setNoMore(false);
     renderer.render(rootRef.current);
     // Kart animasyonu bittikten sonra sığdır; böylece ilk açılışta tam dolar
     const t = setTimeout(() => renderer.fit(false), ANIM_MS + 80);
@@ -301,7 +242,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         const u = await lookupUserByCode(q.toUpperCase());
         const fetched = await getTree(u.id, 2);
         rootRef.current = toBTNode(fetched, 2);
-        setNoMore(false);
         renderer.render(rootRef.current);
         requestAnimationFrame(() => renderer.fit());
       } catch (err) {
@@ -376,7 +316,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           <Chip size="small" label="Sol Hat" sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }} />
           <Chip size="small" label="Sağ Hat" sx={{ bgcolor: "#B4552D", color: "#fff", fontWeight: 700 }} />
           <Typography variant="caption" color="text.secondary">
-            Karta tıklayın: aç/kapat · turuncu &quot;+&quot; rozet: alt ekibi yükle · sürükle &amp; tekerlekle yaklaş
+            Karta tıklayın: aç/kapat · &quot;+&quot; rozeti: alt ekibi yükle · &quot;i&quot; simgesi: üye bilgisi · sürükle &amp; tekerlekle yaklaş
           </Typography>
         </Box>
         </Stack>
@@ -388,34 +328,6 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           ref={svgRef}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
         />
-      </Box>
-
-      {/* Daha Fazla Göster — her basışta bir seviye yeni kişi eklenir */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          p: 1.5,
-          borderTop: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={showMoreLoading ? undefined : <AddRoundedIcon />}
-          onClick={loadMoreLevels}
-          disabled={showMoreLoading || noMore}
-          sx={{ minWidth: 220 }}
-        >
-          {showMoreLoading ? (
-            <CircularProgress size={20} color="inherit" />
-          ) : noMore ? (
-            "Tümü Yüklendi"
-          ) : (
-            "Daha Fazla Göster"
-          )}
-        </Button>
       </Box>
 
       {/* Boş bacağa kodla yerleştirme */}
@@ -481,6 +393,45 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         </DialogContent>
       </Dialog>
 
+      {/* "i" — üye bilgi modalı */}
+      <Dialog open={!!infoNode} onClose={() => setInfoNode(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}>
+          {infoNode && (
+            <>
+              <Avatar
+                src={infoNode.imagePath ? fileUrl(infoNode.imagePath) ?? undefined : undefined}
+                sx={{ bgcolor: "primary.main", width: 46, height: 46, fontSize: 19, fontWeight: 800 }}
+              >
+                {(infoNode.name.charAt(0) || "?").toLocaleUpperCase("tr-TR")}
+              </Avatar>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                  {infoNode.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                  {infoNode.memberCode}
+                </Typography>
+              </Box>
+            </>
+          )}
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton size="small" aria-label="Kapat" onClick={() => setInfoNode(null)}>
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {infoLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : infoError ? (
+            <Alert severity="error">{infoError}</Alert>
+          ) : infoCard ? (
+            <MemberInfoTable card={infoCard} />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       <Snackbar open={!!successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg("")}>
         <Alert severity="success" onClose={() => setSuccessMsg("")}>
           {successMsg}
@@ -492,6 +443,122 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           {loadError}
         </Alert>
       </Snackbar>
+    </Box>
+  );
+}
+
+const nfInt = new Intl.NumberFormat("tr-TR");
+const nfMoney = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
+
+/** Üye bilgi modalının "güzel tablo" içeriği. */
+function MemberInfoTable({ card }: { card: UserInfoCard }) {
+  const fmt = (v: number) => nfInt.format(v);
+  const tl = (v: number) => `₺${nfMoney.format(v)}`;
+
+  const pvTotal = card.total_pv_left + card.total_pv_right;
+  const pctL = pvTotal > 0 ? Math.round((card.total_pv_left / pvTotal) * 100) : 100;
+  const pctR = 100 - pctL;
+  const weak =
+    card.total_pv_left < card.total_pv_right
+      ? "SOL"
+      : card.total_pv_right < card.total_pv_left
+        ? "SAĞ"
+        : "EŞİT";
+  const rank = (card.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("en-US");
+
+  const pair = (k1: string, v1: string, k2: string, v2: string) => (
+    <TableRow>
+      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+        {k1}
+      </TableCell>
+      <TableCell align="right" sx={{ fontWeight: 800, width: "35%" }}>
+        {v1}
+      </TableCell>
+      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+        {k2}
+      </TableCell>
+      <TableCell align="right" sx={{ fontWeight: 800, width: "35%" }}>
+        {v2}
+      </TableCell>
+    </TableRow>
+  );
+
+  const full = (k: string, v: string) => (
+    <TableRow>
+      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+        {k}
+      </TableCell>
+      <TableCell colSpan={3} align="right" sx={{ fontWeight: 800 }}>
+        {v}
+      </TableCell>
+    </TableRow>
+  );
+
+  return (
+    <Box>
+      {/* Rozetler: rütbe · durum · paket */}
+      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1, mb: 1.5 }}>
+        <Chip size="small" label={rank} sx={{ bgcolor: "primary.main", color: "#fff", fontWeight: 800 }} />
+        <Chip
+          size="small"
+          label={card.is_active ? "AKTİF" : "PASİF"}
+          sx={
+            card.is_active
+              ? { bgcolor: "#E3F3E8", color: "#1B7A3D", fontWeight: 800 }
+              : { bgcolor: "#FBE7E7", color: "#C62828", fontWeight: 800 }
+          }
+        />
+        {card.package ? (
+          <Chip size="small" variant="outlined" label={card.package.toLocaleUpperCase("tr-TR")} sx={{ fontWeight: 700 }} />
+        ) : null}
+      </Stack>
+
+      {/* Bacak dağılımı */}
+      <Stack
+        direction="row"
+        spacing={1.5}
+        sx={{ alignItems: "center", justifyContent: "center", py: 1.25, mb: 2, borderRadius: 2, bgcolor: "action.hover" }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: "#2E7D32" }} />
+          <Typography variant="body2" sx={{ fontWeight: 800 }}>
+            SOL %{pctL}
+          </Typography>
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          |
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Zayıf bacak:{" "}
+          <Box component="span" sx={{ fontWeight: 800, color: "text.primary" }}>
+            {weak}
+          </Box>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          |
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: "#B4552D" }} />
+          <Typography variant="body2" sx={{ fontWeight: 800 }}>
+            SAĞ %{pctR}
+          </Typography>
+        </Box>
+      </Stack>
+
+      <Table
+        size="small"
+        sx={{ "& .MuiTableCell-root": { borderBottom: "1px solid", borderColor: "divider", py: 1.1 } }}
+      >
+        <TableBody>
+          {pair("SOL.CV", fmt(card.total_cv_left), "SAĞ.CV", fmt(card.total_cv_right))}
+          {pair("KİŞ.", tl(card.wallet_balance), "EK.C.", tl(card.chip_balance))}
+          {pair("SOL.EK", fmt(card.left_team_count), "SAĞ.EK", fmt(card.right_team_count))}
+          {pair("SOL.PV", fmt(card.total_pv_left), "SAĞ.PV", fmt(card.total_pv_right))}
+          {full("ALT EKİP", fmt(card.total_team_count))}
+          {full("KARİYER", rank)}
+          {full("SPONSOR", card.sponsor_name ?? "—")}
+        </TableBody>
+      </Table>
     </Box>
   );
 }

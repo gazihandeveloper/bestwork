@@ -252,6 +252,7 @@ func main() {
 
 		api.GET("/commissions", middleware.AuthRequired(userService), commissionHandler.List)
 		api.GET("/tree", middleware.AuthRequired(userService), treeHandler.Get)
+		api.GET("/user/card", middleware.AuthRequired(userService), dashboardHandler.UserCard)
 		api.GET("/sponsor-tree", middleware.AuthRequired(userService), sponsorTreeHandler.Get)
 		api.GET("/retail-earnings", middleware.AuthRequired(userService), retailHandler.Earnings)
 		api.GET("/binary-transactions", middleware.AuthRequired(userService), binaryTransactionHandler.List)

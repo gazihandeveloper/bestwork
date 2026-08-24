@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -72,6 +73,33 @@ func (h *DashboardHandler) Team(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"team": team})
+}
+
+// UserCard ağaç kartındaki "i" modalı için kullanıcı detayını döndürür (JWT korumalı).
+// Sorgu parametresi: ?id=<user_id> (yoksa oturumdaki kullanıcı)
+func (h *DashboardHandler) UserCard(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	if q := c.Query("id"); q != "" {
+		id, err := strconv.ParseInt(q, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz kullanıcı kimliği"})
+			return
+		}
+		userID = id
+	}
+
+	card, err := h.dash.GetUserInfoCard(c.Request.Context(), userID)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Kullanıcı bulunamadı"})
+			return
+		}
+		log.WithError(err).Error("Kart bilgisi getirilemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kart bilgisi getirilemedi"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"card": card})
 }
 
 // Commissions kullanıcının komisyon geçmişini döndürür (JWT korumalı).

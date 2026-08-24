@@ -30,6 +30,8 @@ export interface RendererCallbacks {
   onHoverEnd: () => void;
   /** Boş pozisyon "+" tıklandığında: o bacağa üye yerleştirilmek istenir. */
   onPlaceholderClick: (parentId: number, position: "L" | "R") => void;
+  /** Kartın altındaki "i" bilgi düğmesi: üye detay modalı açılır. */
+  onInfoClick: (node: BTNode) => void;
   /** Kullanıcı aşağı doğru kaydırınca en derin yüklü seviyeye ulaşıldı: sonraki nesli tembel yükle. */
   onReachBottom: () => void;
 }
@@ -266,6 +268,7 @@ export class BinaryTreeRenderer {
     this.buildPositionBadge(sel);
     this.buildMetrics(sel);
     this.buildLegMeter(sel);
+    this.buildInfoButton(sel);
 
     sel.append("g").attr("class", "bt-badge").attr("transform", `translate(0,${CARD_H / 2 + 3})`);
   }
@@ -398,6 +401,41 @@ export class BinaryTreeRenderer {
         .text(strongL ? `GÜÇ: SOL %${pctL}` : `GÜÇ: SAĞ %${pctR}`);
       g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 3).attr("rx", 1.5).attr("fill", "#EDF1EC");
       g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 3).attr("rx", 1.5).attr("fill", this.colors.legLeft);
+    });
+  }
+
+  /**
+   * buildInfoButton kartın alt-sağına "i" bilgi düğmesini çizer.
+   * Tıklanınca üye detay modalı açılır; kartın aç/kapat davranışını tetiklemez.
+   */
+  private buildInfoButton(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const accent = this.accent(d);
+      const btn = g
+        .append("g")
+        .attr("class", "bt-info")
+        .attr("transform", `translate(${CARD_W / 2 - 18},${CARD_H / 2 + 14})`)
+        .style("cursor", "pointer")
+        .on("click", (event: MouseEvent) => {
+          event.stopPropagation();
+          this.cb.onInfoClick(d.data);
+        });
+      btn
+        .append("circle")
+        .attr("r", 7)
+        .attr("fill", accent)
+        .attr("fill-opacity", 0.14)
+        .attr("stroke", accent)
+        .attr("stroke-width", 1.2);
+      btn
+        .append("text")
+        .attr("y", 2.6)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 9.5)
+        .attr("font-weight", 800)
+        .attr("fill", accent)
+        .text("i");
     });
   }
 

@@ -159,6 +159,27 @@ export interface TreeNode {
   right_child: TreeNode | null;
 }
 
+/** UserInfoCard ağaç kartındaki "i" bilgi modalı için kullanıcı detayıdır. */
+export interface UserInfoCard {
+  user_id: number;
+  name: string;
+  member_code: string;
+  rank: string | null;
+  package: string | null;
+  is_active: boolean;
+  position: string | null;
+  sponsor_name: string | null;
+  wallet_balance: number;
+  chip_balance: number;
+  total_pv_left: number;
+  total_pv_right: number;
+  total_cv_left: number;
+  total_cv_right: number;
+  left_team_count: number;
+  right_team_count: number;
+  total_team_count: number;
+}
+
 // Auth
 export async function loginUser(login: string, password: string): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>("/auth/login", { login, password });
@@ -214,6 +235,12 @@ export async function lookupUserByCode(code: string): Promise<{ id: number; name
     params: { code },
   });
   return data.user;
+}
+
+// Ağaç kartındaki "i" modalı için kullanıcı detayını getirir.
+export async function getUserCard(userId: number): Promise<UserInfoCard> {
+  const { data } = await api.get<{ card: UserInfoCard }>("/user/card", { params: { id: userId } });
+  return data.card;
 }
 
 // Profil (JSONB) ve profil görseli

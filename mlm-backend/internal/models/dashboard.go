@@ -91,6 +91,27 @@ type AdminDashboard struct {
 	RecentWithdrawRequests []WithdrawRequest `json:"recent_withdraw_requests"`
 }
 
+// UserInfoCard ağaç kartlarındaki "i" bilgi modalı için kullanıcı detayıdır.
+type UserInfoCard struct {
+	UserID         int64    `json:"user_id"`
+	Name           string   `json:"name"`
+	MemberCode     string   `json:"member_code"`
+	Rank           *string  `json:"rank"`
+	Package        *string  `json:"package"`
+	IsActive       bool     `json:"is_active"`
+	Position       *string  `json:"position"`
+	SponsorName    *string  `json:"sponsor_name"`
+	WalletBalance  float64  `json:"wallet_balance"`
+	ChipBalance    float64  `json:"chip_balance"`
+	TotalPVLeft    int64    `json:"total_pv_left"`
+	TotalPVRight   int64    `json:"total_pv_right"`
+	TotalCVLeft    int64    `json:"total_cv_left"`
+	TotalCVRight   int64    `json:"total_cv_right"`
+	LeftTeamCount  int64    `json:"left_team_count"`
+	RightTeamCount int64    `json:"right_team_count"`
+	TotalTeamCount int64    `json:"total_team_count"`
+}
+
 // TreeNode binary ağaç görünümü için recursive düğümdür.
 type TreeNode struct {
 	UserID            int64     `json:"user_id"`
