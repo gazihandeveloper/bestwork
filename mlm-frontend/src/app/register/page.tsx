@@ -303,7 +303,7 @@ function RegisterContent() {
               Kayıt Ol
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
-              Üye ol, ağını kur, kazanmaya başla. Üye ID&apos;niz otomatik oluşturulur.
+              Üye ol, ağını kur, kazanmaya başla. Üye Numaranız otomatik oluşturulur.
             </Typography>
           </Box>
 
@@ -414,7 +414,7 @@ function RegisterContent() {
                         </Button>
                       }
                     >
-                      Sponsorsuz kayıt oluyorsunuz. Üye ID&apos;niz otomatik oluşturulacak.
+                      Sponsorsuz kayıt oluyorsunuz. Üye Numaranız otomatik oluşturulacak.
                     </Alert>
                   ) : (
                     <Alert

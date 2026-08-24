@@ -599,7 +599,7 @@ function DashboardContent() {
                 </Box>
 
                 <Chip
-                  label={`Üye ID: ${me?.member_code}`}
+                  label={`Üye Numaranız: ${me?.member_code}`}
                   sx={{
                     bgcolor: "rgba(255,255,255,0.15)",
                     color: "common.white",

@@ -19,7 +19,7 @@ import { getRanks, getErrorMessage } from "@/services/api";
 import type { Rank } from "@/services/api";
 
 const steps = [
-  { title: "1. Kayıt Ol", desc: "Ücretsiz üye olun; TR90 ile başlayan üye ID'niz otomatik oluşturulur." },
+  { title: "1. Kayıt Ol", desc: "Ücretsiz üye olun; TR90 ile başlayan üye numaranız otomatik oluşturulur." },
   { title: "2. Alışveriş Yap", desc: "PV/CV kazandıran ürünlerden sipariş verin, paket seviyeniz otomatik yükselsin." },
   { title: "3. Kazan", desc: "Referans, binary, matching ve perakende kazançlarıyla ekibinizi büyütüp kazanın." },
 ];

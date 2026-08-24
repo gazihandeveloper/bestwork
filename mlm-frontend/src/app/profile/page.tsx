@@ -68,7 +68,7 @@ function ProfileContent() {
               </Typography>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <Chip label={`Üye ID: ${user?.member_code}`} color="primary" variant="outlined" />
+                <Chip label={`Üye Numaranız: ${user?.member_code}`} color="primary" variant="outlined" />
                 <IconButton size="small" onClick={copyMemberCode} aria-label="üye kodunu kopyala">
                   <ContentCopyRoundedIcon fontSize="small" />
                 </IconButton>

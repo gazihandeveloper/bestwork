@@ -55,14 +55,14 @@ function LoginContent() {
             Giriş Yap
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            E-posta adresiniz veya üye ID&apos;niz (TR90XXXXXX) ile giriş yapın.
+            E-posta adresiniz veya üye numaranız (TR90XXXXXX) ile giriş yapın.
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={2}>
               {error && <Alert severity="error">{error}</Alert>}
               <TextField
-                label="E-posta veya Üye ID"
+                label="E-posta veya Üye Numarası"
                 value={loginValue}
                 onChange={(e) => setLoginValue(e.target.value)}
                 fullWidth

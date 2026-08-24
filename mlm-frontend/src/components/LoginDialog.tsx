@@ -159,7 +159,7 @@ export default function LoginDialog() {
           Giriş Yap
         </Typography>
         <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
-          E-posta adresiniz, üye ID&apos;niz veya telefon numaranızla devam edin.
+          E-posta adresiniz, üye numaranız veya telefon numaranızla devam edin.
         </Typography>
       </Box>
 
@@ -168,7 +168,7 @@ export default function LoginDialog() {
           <Stack spacing={2}>
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
-              label="E-posta, Üye ID veya Telefon"
+              label="E-posta, Üye Numarası veya Telefon"
               placeholder="ornek@mail.com · TR90123456 · 05xx xxx xx xx"
               value={loginValue}
               onChange={(e) => setLoginValue(e.target.value)}

@@ -283,23 +283,25 @@ export class BinaryTreeRenderer {
       .attr("fill", this.colors.text)
       .text((d) => truncate(d.data.name, 13));
 
-    // Üye ID — büyük, iri, beyaz, belirgin (bacak rengi rozet içinde)
+    // Üye numarası — büyük, iri, beyaz, çok belirgin (bacak rengi rozet içinde)
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const code = `#${d.data.memberCode}`;
-      const w = Math.max(64, code.length * 6 + 16);
+      const w = Math.max(82, code.length * 7.6 + 20);
       g.append("rect")
         .attr("x", x)
-        .attr("y", -CARD_H / 2 + 26)
+        .attr("y", -CARD_H / 2 + 22)
         .attr("width", w)
-        .attr("height", 18)
-        .attr("rx", 9)
-        .attr("fill", this.accent(d));
+        .attr("height", 26)
+        .attr("rx", 13)
+        .attr("fill", this.accent(d))
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 1.6);
       g.append("text")
         .attr("x", x + w / 2)
-        .attr("y", -CARD_H / 2 + 38)
+        .attr("y", -CARD_H / 2 + 39)
         .attr("text-anchor", "middle")
-        .attr("font-size", 11)
+        .attr("font-size", 13.5)
         .attr("font-weight", 800)
         .attr("fill", "#ffffff")
         .text(code);
