@@ -12,6 +12,9 @@ COPY . .
 # Tarayıcı backend'e bu adresten ulaşır (localhost'ta çalışan kurulum için)
 ARG NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Uygulamanın yayınlandığı alt yol (üretimde /mlm)
+ARG NEXT_PUBLIC_BASE_PATH=/mlm
+ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

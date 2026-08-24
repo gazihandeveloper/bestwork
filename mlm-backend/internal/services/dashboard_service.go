@@ -413,13 +413,15 @@ func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, dept
 
 	err := s.db.QueryRow(ctx, `
 		SELECT u.id, u.name, u.member_code, u.position, p.name, r.name, u.profile->>'profile_image',
-			u.total_pv_accumulated, u.total_cv_accumulated
+			u.total_pv_accumulated, u.total_cv_accumulated,
+			u.total_pv_left, u.total_pv_right, u.total_cv_left, u.total_cv_right, u.is_active, u.role
 		FROM users u
 		LEFT JOIN packages p ON p.id = u.package_id
 		LEFT JOIN ranks r ON r.id = u.current_rank_id
 		WHERE u.id = $1`, userID).
 		Scan(&node.UserID, &node.Name, &node.MemberCode, &node.Position, &node.Package, &node.Rank, &node.ImagePath,
-			&node.TotalPVAccumulated, &node.TotalCVAccumulated)
+			&node.TotalPVAccumulated, &node.TotalCVAccumulated,
+			&node.TotalPVLeft, &node.TotalPVRight, &node.TotalCVLeft, &node.TotalCVRight, &node.IsActive, &node.Role)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrUserNotFound

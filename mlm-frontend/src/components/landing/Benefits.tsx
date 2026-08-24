@@ -26,7 +26,7 @@ const ICONS: Record<string, React.ReactNode> = {
 
 const fallbackBenefits: Benefit[] = [
   { id: -1, title: "Kargo Bedava", description: "500 TL ve üzeri siparişlerde", icon: "shipping", sort_order: 1, is_active: true, created_at: "" },
-  { id: -2, title: "Güvenli Ödeme", description: "Kredi kartı ve EFT/HAVALE", icon: "payment", sort_order: 2, is_active: true, created_at: "" },
+  { id: -2, title: "Güvenli Ödeme", description: "EFT/HAVALE ile güvenli ödeme", icon: "payment", sort_order: 2, is_active: true, created_at: "" },
   { id: -3, title: "PV/CV Puan", description: "Her ürün seviye atlatır", icon: "pv", sort_order: 3, is_active: true, created_at: "" },
   { id: -4, title: "7/24 Destek", description: "Her zaman yanınızdayız", icon: "support", sort_order: 4, is_active: true, created_at: "" },
 ];

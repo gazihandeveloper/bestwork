@@ -6,6 +6,7 @@ import {
   CARD_H,
   CARD_W,
   COLORS,
+  DARK_COLORS,
   LEVEL_GAP,
   PLACEHOLDER_H,
   PLACEHOLDER_W,
@@ -13,6 +14,7 @@ import {
   countDescendants,
   visibleChildren,
   type BTNode,
+  type TreeColors,
 } from "./types";
 
 type SvgSel = d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -28,15 +30,21 @@ export interface RendererCallbacks {
   onHoverEnd: () => void;
   /** Boş pozisyon "+" tıklandığında: o bacağa üye yerleştirilmek istenir. */
   onPlaceholderClick: (parentId: number, position: "L" | "R") => void;
-}
-
-function accent(d: HNode): string {
-  if (d.depth === 0) return COLORS.root;
-  return d.data.position === "R" ? COLORS.right : COLORS.left;
+  /** Kullanıcı aşağı doğru kaydırınca en derin yüklü seviyeye ulaşıldı: sonraki nesli tembel yükle. */
+  onReachBottom: () => void;
 }
 
 function truncate(v: string, max: number): string {
   return v.length > max ? `${v.slice(0, max - 1)}…` : v;
+}
+
+/** compactNum büyük sayıları okunaklı biçimde kısaltır (8,3B · 10,6Mn · 1,2Mr). */
+function compactNum(v: number): string {
+  const trim = (x: number) => (x >= 100 ? Math.round(x).toString() : x.toFixed(1).replace(".", ","));
+  if (v >= 1_000_000_000) return `${trim(v / 1_000_000_000)} Mr`;
+  if (v >= 1_000_000) return `${trim(v / 1_000_000)} Mn`;
+  if (v >= 1_000) return `${trim(v / 1_000)} B`;
+  return String(v);
 }
 
 function linkPath(sx: number, sy: number, tx: number, ty: number, targetPlaceholder: boolean): string {
@@ -67,10 +75,15 @@ export class BinaryTreeRenderer {
   private clipIds = new Set<string>();
   private cb: RendererCallbacks;
   private measure: () => { w: number; h: number };
+  /** Aktif renk paleti (karanlık modda DARK_COLORS kullanılır). */
+  private colors: TreeColors;
+  /** Sonraki nesil yüklenirken yeni tetiklemeyi engeller (basamaklama önlenir). */
+  private awaitingLoad = false;
 
-  constructor(svgEl: SVGSVGElement, cb: RendererCallbacks, measure: () => { w: number; h: number }) {
+  constructor(svgEl: SVGSVGElement, cb: RendererCallbacks, measure: () => { w: number; h: number }, dark = false) {
     this.cb = cb;
     this.measure = measure;
+    this.colors = dark ? DARK_COLORS : COLORS;
     this.svg = d3.select(svgEl);
     this.svg.selectAll("*").remove();
 
@@ -88,7 +101,7 @@ export class BinaryTreeRenderer {
       .attr("dy", 2)
       .attr("stdDeviation", 4)
       .attr("flood-opacity", 0.14)
-      .attr("flood-color", COLORS.root);
+      .attr("flood-color", this.colors.root);
 
     this.zoomLayer = this.svg.append("g").attr("class", "bt-zoom");
     this.linkLayer = this.zoomLayer.append("g").attr("class", "bt-links");
@@ -99,8 +112,35 @@ export class BinaryTreeRenderer {
       .scaleExtent([0.1, 2.5])
       .on("zoom", (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
         this.zoomLayer.attr("transform", event.transform.toString());
+        // Yalnızca kullanıcı etkileşiminde (sürükle/tekerlek) dibe ulaşma kontrolü yap;
+        // programatik transform'lar (fit vb.) tetiklemez.
+        if (event.sourceEvent) this.checkReachBottom(event.transform);
       });
     this.svg.call(this.zoom).on("dblclick.zoom", null);
+  }
+
+  /** accent düğümün bacak rengini döndürür (kök daha koyu). */
+  private accent(d: HNode): string {
+    if (d.depth === 0) return this.colors.root;
+    return d.data.position === "R" ? this.colors.right : this.colors.left;
+  }
+
+  /**
+   * checkReachBottom görünür alanın alt kenarı en derin yüklü düğüme yaklaştığında
+   * onReachBottom çağırır (aşağı kaydırdıkça bir sonraki nesil tembel yüklenir).
+   */
+  private checkReachBottom(t: d3.ZoomTransform): void {
+    if (this.awaitingLoad || this.currentNodes.length === 0) return;
+    const { h } = this.measure();
+    const visibleBottom = (h - t.y) / t.k;
+    let maxY = -Infinity;
+    for (const n of this.currentNodes) maxY = Math.max(maxY, n.y + CARD_H / 2);
+    if (!Number.isFinite(maxY)) return;
+    // Görünür alt kenar, en derin kartın altına 80px yaklaştıysa yükle
+    if (visibleBottom + 80 >= maxY) {
+      this.awaitingLoad = true;
+      this.cb.onReachBottom();
+    }
   }
 
   destroy(): void {
@@ -195,6 +235,8 @@ export class BinaryTreeRenderer {
 
     // Bir sonraki animasyon için güncel konumları sakla
     this.prevPos = new Map(nodes.map((d) => [d.data.id, { x: d.x, y: d.y }]));
+    // Yeni nesil yüklendikten sonra tekrar dibe ulaşma tetiklemesi serbest kalır
+    this.awaitingLoad = false;
   }
 
   /** buildCard üye kartının statik kısımlarını bir kez oluşturur. */
@@ -213,101 +255,171 @@ export class BinaryTreeRenderer {
       .attr("y", -CARD_H / 2)
       .attr("width", CARD_W)
       .attr("height", CARD_H)
-      .attr("rx", 14)
-      .attr("fill", COLORS.card)
-      .attr("stroke", accent)
-      .attr("stroke-width", (d) => (d.depth === 0 ? 2.5 : 1.5))
+      .attr("rx", 13)
+      .attr("fill", this.colors.card)
+      .attr("stroke", (d) => this.accent(d))
+      .attr("stroke-width", (d) => (d.depth === 0 ? 2.4 : 1.4))
       .attr("filter", "url(#bt-card-shadow)");
 
-    // Sol kenar renk şeridi: bacağı bir bakışta ayırt ettirir
-    sel
-      .append("path")
-      .attr("d", () => {
-        const x = -CARD_W / 2;
-        const y = -CARD_H / 2;
-        return `M ${x + 14},${y} A 14 14 0 0 0 ${x},${y + 14} L ${x},${y + CARD_H - 14} A 14 14 0 0 0 ${x + 14},${y + CARD_H} L ${x + 5},${y + CARD_H} L ${x + 5},${y} Z`;
-      })
-      .attr("fill", accent);
-
     this.buildAvatar(sel);
+    this.buildCardHeader(sel);
+    this.buildPositionBadge(sel);
+    this.buildBadgeRow(sel);
+    this.buildMetrics(sel);
+    this.buildLegMeter(sel);
 
+    sel.append("g").attr("class", "bt-badge").attr("transform", `translate(0,${CARD_H / 2 + 3})`);
+  }
+
+  /** buildCardHeader isim + üye kodu; avatar sağına hizalanır. */
+  private buildCardHeader(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    const x = -CARD_W / 2 + 11 + AVATAR_R * 2 + 8;
     sel
       .append("text")
-      .attr("x", -CARD_W / 2 + 16 + AVATAR_R * 2 + 10)
-      .attr("y", -CARD_H / 2 + 26)
-      .attr("font-size", 12.5)
+      .attr("x", x)
+      .attr("y", -CARD_H / 2 + 21)
+      .attr("font-size", 11.5)
       .attr("font-weight", 800)
-      .attr("fill", COLORS.text)
-      .text((d) => truncate(d.data.name, 16));
-
+      .attr("fill", this.colors.text)
+      .text((d) => truncate(d.data.name, 13));
     sel
       .append("text")
-      .attr("x", -CARD_W / 2 + 16 + AVATAR_R * 2 + 10)
-      .attr("y", -CARD_H / 2 + 41)
-      .attr("font-size", 10)
-      .attr("fill", COLORS.subtext)
-      .text((d) => `#${d.data.memberCode}`);
+      .attr("x", x)
+      .attr("y", -CARD_H / 2 + 34)
+      .attr("font-size", 8.5)
+      .attr("fill", this.colors.subtext)
+      .text((d) => truncate(`#${d.data.memberCode}`, 14));
+  }
 
-    sel
-      .append("line")
-      .attr("x1", -CARD_W / 2 + 12)
-      .attr("x2", CARD_W / 2 - 12)
-      .attr("y1", 4)
-      .attr("y2", 4)
-      .attr("stroke", COLORS.divider);
+  /** buildPositionBadge bacak etiketini (KÖK/SOL/SAĞ) kartın sağ üst köşesine çizer. */
+  private buildPositionBadge(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const label = d.data.position === "R" ? "SAĞ" : d.data.position === "L" ? "SOL" : "KÖK";
+      const cx = CARD_W / 2 - 18;
+      const cy = -CARD_H / 2 + 18;
+      const w = Math.max(26, label.length * 6 + 12);
+      g.append("rect")
+        .attr("x", cx - w / 2)
+        .attr("y", cy - 7.5)
+        .attr("width", w)
+        .attr("height", 15)
+        .attr("rx", 7.5)
+        .attr("fill", this.accent(d));
+      g.append("text")
+        .attr("x", cx)
+        .attr("y", cy + 2.8)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 7.5)
+        .attr("font-weight", 800)
+        .attr("fill", "#fff")
+        .text(label);
+    });
+  }
 
-    sel
-      .append("text")
-      .attr("x", -CARD_W / 2 + 12)
-      .attr("y", 21)
-      .attr("font-size", 10)
-      .attr("font-weight", 800)
-      .attr("fill", COLORS.left)
-      .text((d) => truncate((d.data.rank || "GİRİŞİMCİ").toLocaleUpperCase("tr-TR"), 14));
+  /** buildBadgeRow paket / durum rozetlerini eski yerine (üst orta) sağa yaslı çizer. */
+  private buildBadgeRow(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const chips: { text: string; fill: string; color: string; stroke?: string }[] = [];
+      if (d.data.packageName)
+        chips.push({ text: d.data.packageName.toLocaleUpperCase("tr-TR"), fill: "#EDF3EA", color: this.colors.text });
+      if (d.data.isActive) chips.push({ text: "AKTİF", fill: "#E3F3E8", color: this.colors.statusActive });
+      else chips.push({ text: "PASİF", fill: "#FBE7E7", color: this.colors.statusPassive, stroke: this.colors.statusPassive });
 
-    sel
-      .append("text")
-      .attr("x", CARD_W / 2 - 12)
-      .attr("y", 21)
-      .attr("text-anchor", "end")
-      .attr("font-size", 10)
-      .attr("font-weight", 700)
-      .attr("fill", COLORS.right)
-      .text((d) => truncate((d.data.packageName || "—").toLocaleUpperCase("tr-TR"), 10));
+      // Toplam genişliği hesapla ve ortala
+      const widths = chips.map((c) => Math.max(26, c.text.length * 6 + 12));
+      const total = widths.reduce((a, b) => a + b, 0) + (chips.length - 1) * 5;
+      let x = -total / 2;
+      const y = -CARD_H / 2 + 54;
+      chips.forEach((c, idx) => {
+        const w = widths[idx];
+        g.append("rect")
+          .attr("x", x)
+          .attr("y", y - 7.5)
+          .attr("width", w)
+          .attr("height", 15)
+          .attr("rx", 7.5)
+          .attr("fill", c.fill)
+          .attr("stroke", c.stroke ?? "none")
+          .attr("stroke-width", 1);
+        g.append("text")
+          .attr("x", x + w / 2)
+          .attr("y", y + 2.8)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 7.5)
+          .attr("font-weight", 800)
+          .attr("fill", c.color)
+          .text(c.text);
+        x += w + 5;
+      });
+    });
+  }
 
-    sel
-      .append("text")
-      .attr("x", 0)
-      .attr("y", 40)
-      .attr("text-anchor", "middle")
-      .attr("font-size", 9.5)
-      .attr("font-weight", 700)
-      .attr("fill", COLORS.subtext)
-      .text((d) => `${d.data.pv.toLocaleString("tr-TR")} PV · ${d.data.cv.toLocaleString("tr-TR")} CV`);
+  /** buildMetrics sol/sağ bacak PV ve CV değerlerini kompakt biçimde alt kısma dizer. */
+  private buildMetrics(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const leftX = -CARD_W / 2 + 12;
+      const rightX = CARD_W / 2 - 12;
+      g.append("line").attr("x1", leftX).attr("x2", rightX).attr("y1", 5).attr("y2", 5).attr("stroke", this.colors.divider);
 
-    sel.append("g").attr("class", "bt-badge").attr("transform", `translate(0,${CARD_H / 2})`);
+      const metric = (y: number, l: string, r: string, lv: number, rv: number) => {
+        g.append("circle").attr("cx", leftX).attr("cy", y - 3).attr("r", 3).attr("fill", this.colors.legLeft);
+        g.append("text").attr("x", leftX + 6).attr("y", y).attr("font-size", 8.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${l} ${compactNum(lv)}`);
+        g.append("circle").attr("cx", rightX).attr("cy", y - 3).attr("r", 3).attr("fill", this.colors.legRight);
+        g.append("text").attr("x", rightX - 6).attr("y", y).attr("text-anchor", "end").attr("font-size", 8.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${r} ${compactNum(rv)}`);
+      };
+      metric(21, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
+      metric(37, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
+    });
+  }
+
+  /** buildLegMeter bacak dağılımını (güçlü bacak + ilerleme çubuğu) çizer. */
+  private buildLegMeter(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const total = d.data.pvLeft + d.data.pvRight;
+      const pctL = total > 0 ? Math.round((d.data.pvLeft / total) * 100) : 100;
+      const pctR = 100 - pctL;
+      const strongL = d.data.pvLeft >= d.data.pvRight;
+      const bx = -CARD_W / 2 + 12;
+      const bw = CARD_W - 24;
+      const by = 52;
+
+      g.append("text")
+        .attr("x", 0)
+        .attr("y", 50)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 8)
+        .attr("font-weight", 800)
+        .attr("fill", strongL ? this.colors.left : this.colors.right)
+        .text(strongL ? `GÜÇ: SOL %${pctL}` : `GÜÇ: SAĞ %${pctR}`);
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 5).attr("rx", 2.5).attr("fill", "#EDF1EC");
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 5).attr("rx", 2.5).attr("fill", this.colors.legLeft);
+    });
   }
 
   private buildAvatar(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const cx = -CARD_W / 2 + 16 + AVATAR_R;
-    const cy = -CARD_H / 2 + 14 + AVATAR_R;
+    const cx = -CARD_W / 2 + 11 + AVATAR_R;
+    const cy = -CARD_H / 2 + 11 + AVATAR_R;
 
     sel
       .append("circle")
       .attr("cx", cx)
       .attr("cy", cy)
       .attr("r", AVATAR_R)
-      .attr("fill", (d) => (d.data.imagePath ? "#F0F5EE" : accent(d)))
-      .attr("stroke", accent)
+      .attr("fill", (d) => (d.data.imagePath ? "#F0F5EE" : this.accent(d)))
+      .attr("stroke", (d) => this.accent(d))
       .attr("stroke-width", 1.5);
 
     sel
       .filter((d) => !d.data.imagePath)
       .append("text")
       .attr("x", cx)
-      .attr("y", cy + 6)
+      .attr("y", cy + 5)
       .attr("text-anchor", "middle")
-      .attr("font-size", 16)
+      .attr("font-size", 13)
       .attr("font-weight", 800)
       .attr("fill", "#fff")
       .text((d) => (d.data.name.charAt(0) || "?").toLocaleUpperCase("tr-TR"));
@@ -333,6 +445,16 @@ export class BinaryTreeRenderer {
       .attr("height", AVATAR_R * 2)
       .attr("preserveAspectRatio", "xMidYMid slice")
       .attr("clip-path", (d) => `url(#bt-clip-${d.data.id})`);
+
+    // Aktif/pasif durum noktası (avatarın sağ-altı)
+    sel
+      .append("circle")
+      .attr("cx", cx + AVATAR_R - 5)
+      .attr("cy", cy + AVATAR_R - 5)
+      .attr("r", 5)
+      .attr("fill", (d) => (d.data.isActive ? this.colors.statusActive : this.colors.statusPassive))
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 2);
   }
 
   private buildPlaceholder(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
@@ -353,7 +475,7 @@ export class BinaryTreeRenderer {
       .attr("height", PLACEHOLDER_H)
       .attr("rx", 12)
       .attr("fill", "#F6F9F5")
-      .attr("stroke", (d) => (d.data.position === "R" ? COLORS.right : COLORS.left))
+      .attr("stroke", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .attr("stroke-width", 1.6)
       .attr("stroke-dasharray", "6 5");
 
@@ -364,7 +486,7 @@ export class BinaryTreeRenderer {
       .attr("text-anchor", "middle")
       .attr("font-size", 26)
       .attr("font-weight", 400)
-      .attr("fill", (d) => (d.data.position === "R" ? COLORS.right : COLORS.left))
+      .attr("fill", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .text("+");
 
     sel
@@ -373,7 +495,7 @@ export class BinaryTreeRenderer {
       .attr("text-anchor", "middle")
       .attr("font-size", 9.5)
       .attr("font-weight", 800)
-      .attr("fill", (d) => (d.data.position === "R" ? COLORS.right : COLORS.left))
+      .attr("fill", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .text((d) => (d.data.position === "R" ? "SAĞ BACAK" : "SOL BACAK"));
   }
 
@@ -402,7 +524,7 @@ export class BinaryTreeRenderer {
         .attr("width", w)
         .attr("height", 22)
         .attr("rx", 11)
-        .attr("fill", n.boundary || n.collapsed ? COLORS.right : COLORS.left)
+        .attr("fill", n.boundary || n.collapsed ? this.colors.right : this.colors.left)
         .attr("stroke", "#fff")
         .attr("stroke-width", 2);
       g.append("text")
@@ -426,7 +548,7 @@ export class BinaryTreeRenderer {
     const b = el.getBBox();
     if (b.width === 0 || b.height === 0) return;
     const { w, h } = this.measure();
-    const k = Math.min((w - 60) / b.width, (h - 60) / b.height, 1.4);
+    const k = Math.min((w - 60) / b.width, (h - 60) / b.height, 2.2);
     const tx = w / 2 - (b.x + b.width / 2) * k;
     const ty = h / 2 - (b.y + b.height / 2) * k;
     const transform = d3.zoomIdentity.translate(tx, ty).scale(k);

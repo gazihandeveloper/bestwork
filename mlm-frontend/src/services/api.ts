@@ -149,6 +149,12 @@ export interface TreeNode {
   image_path: string | null;
   total_pv_accumulated: number;
   total_cv_accumulated: number;
+  total_pv_left: number;
+  total_pv_right: number;
+  total_cv_left: number;
+  total_cv_right: number;
+  is_active: boolean;
+  role: string;
   left_child: TreeNode | null;
   right_child: TreeNode | null;
 }

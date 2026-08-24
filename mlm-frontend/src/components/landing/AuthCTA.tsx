@@ -31,7 +31,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
           startIcon={<AccountCircleRoundedIcon />}
           fullWidth={fullWidth}
           sx={{
-            color: "primary.dark",
+            color: "primary.main",
             bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.45),
             whiteSpace: "nowrap",
             fontWeight: 700,
@@ -47,13 +47,13 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
         <Button component={Link} href="/register" variant="contained" fullWidth>
           Kayıt Ol
         </Button>
-        <Button onClick={openLogin} variant="text" fullWidth sx={{ color: "primary.dark" }}>
+        <Button onClick={openLogin} variant="text" fullWidth sx={{ color: "primary.main" }}>
           Giriş
         </Button>
       </>
     ) : (
       <>
-        <Button onClick={openLogin} variant="text" sx={{ color: "primary.dark" }}>
+        <Button onClick={openLogin} variant="text" sx={{ color: "primary.main" }}>
           Giriş
         </Button>
         <Button component={Link} href="/register" variant="contained" sx={{ boxShadow: ELEVATION.l1 }}>
@@ -102,7 +102,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
           size="large"
           sx={{
             borderColor: "primary.main",
-            color: "primary.dark",
+            color: "primary.main",
             "&:hover": {
               borderColor: "primary.dark",
               bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
@@ -139,7 +139,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
             size="large"
             sx={{
               borderColor: "primary.main",
-              color: "primary.dark",
+              color: "primary.main",
               "&:hover": {
                 bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
                 borderColor: "primary.dark",
@@ -173,7 +173,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
           size="large"
           sx={{
             borderColor: "primary.main",
-            color: "primary.dark",
+            color: "primary.main",
             "&:hover": {
               bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
               borderColor: "primary.dark",
@@ -210,7 +210,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
           size="large"
           sx={{
             borderColor: "primary.main",
-            color: "primary.dark",
+            color: "primary.main",
             "&:hover": {
               bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
               borderColor: "primary.dark",
@@ -243,7 +243,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
         size="large"
         sx={{
           borderColor: "primary.main",
-          color: "primary.dark",
+          color: "primary.main",
           "&:hover": {
             bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
             borderColor: "primary.dark",

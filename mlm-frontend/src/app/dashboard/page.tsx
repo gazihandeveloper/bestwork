@@ -41,6 +41,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
+import { BASE_PATH } from "@/lib/api";
 import type { UserDashboard, Rank, User } from "@/services/api";
 
 const fmt2 = (v: number) =>
@@ -473,7 +474,7 @@ function DashboardContent() {
 
   const referralLink =
     typeof window !== "undefined" && me
-      ? `${window.location.origin}/register?ref=${me.member_code}`
+      ? `${window.location.origin}${BASE_PATH}/register?ref=${me.member_code}`
       : "";
 
   return (

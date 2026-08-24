@@ -33,7 +33,7 @@ export default function FloatingNavbar() {
         transform: "translateX(-50%)",
         width: "min(92%, 460px)",
         borderRadius: 28,
-        bgcolor: "primary.dark",
+        bgcolor: "#16331B", // her iki modda da koyu bar (primary.dark'a bağımlı değil)
         zIndex: 1100,
         display: { xs: "block", md: "none" },
         overflow: "hidden",

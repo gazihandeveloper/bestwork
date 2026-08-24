@@ -1,17 +1,32 @@
 import type { TreeNode } from "@/services/api";
 
 // Kart ve yerleşim sabitleri — tüm çizim bu değerlerden türetilir
-export const CARD_W = 190;
-export const CARD_H = 110;
-export const AVATAR_R = 22;
-export const PLACEHOLDER_W = 140;
-export const PLACEHOLDER_H = 56;
-export const LEVEL_GAP = 215; // seviyeler arası dikey mesafe
-export const SIBLING_GAP = CARD_W + 40; // kardeşler arası yatay mesafe
+export const CARD_W = 166;
+export const CARD_H = 132;
+export const AVATAR_R = 17;
+export const PLACEHOLDER_W = 130;
+export const PLACEHOLDER_H = 46;
+export const LEVEL_GAP = 152; // seviyeler arası dikey mesafe (ilk 4 seviye ekrana sığar)
+export const SIBLING_GAP = CARD_W + 26; // kardeşler arası yatay mesafe
 export const ANIM_MS = 320;
 export const LAZY_DEPTH = 2; // "+" rozetine tıklanınca sunucudan yüklenecek derinlik
 
-export const COLORS = {
+export interface TreeColors {
+  root: string;
+  left: string;
+  right: string;
+  text: string;
+  subtext: string;
+  card: string;
+  divider: string;
+  placeholder: string;
+  statusActive: string;
+  statusPassive: string;
+  legLeft: string;
+  legRight: string;
+}
+
+export const COLORS: TreeColors = {
   root: "#274D24",
   left: "#2E7D32",
   right: "#B4552D",
@@ -20,7 +35,27 @@ export const COLORS = {
   card: "#FFFFFF",
   divider: "#E3EAE2",
   placeholder: "#8FA891",
-} as const;
+  statusActive: "#2E9E57",
+  statusPassive: "#C62828",
+  legLeft: "#3A7BD5",
+  legRight: "#E8A33D",
+};
+
+/** DARK_COLORS karanlık modda kart ve metinlerin okunabilir kalması için kullanılır. */
+export const DARK_COLORS: TreeColors = {
+  root: "#6FA26A",
+  left: "#52A85C",
+  right: "#DE7F4E",
+  text: "#E6EDE3",
+  subtext: "#A4B5A1",
+  card: "#1D2A1E",
+  divider: "#33463A",
+  placeholder: "#7FA085",
+  statusActive: "#3EC26E",
+  statusPassive: "#E05A5A",
+  legLeft: "#63A0E8",
+  legRight: "#E8B054",
+};
 
 /** BTNode ağacın iç temsilidir; API TreeNode'dan bir kez dönüştürülür ve yerinde mutasyona uğrar. */
 export interface BTNode {
@@ -34,6 +69,12 @@ export interface BTNode {
   imagePath: string | null;
   pv: number;
   cv: number;
+  pvLeft: number;
+  pvRight: number;
+  cvLeft: number;
+  cvRight: number;
+  isActive: boolean;
+  role: string;
   /** Boş bacak göstergesi — gerçek kullanıcı değildir. */
   placeholder: boolean;
   /** Derinlik sınırında kaldı: alt ağacı sunucudan tembel yüklenebilir. */
@@ -60,6 +101,12 @@ export function toBTNode(src: TreeNode, remainingDepth: number, position: "L" | 
     imagePath: src.image_path,
     pv: src.total_pv_accumulated ?? 0,
     cv: src.total_cv_accumulated ?? 0,
+    pvLeft: src.total_pv_left ?? 0,
+    pvRight: src.total_pv_right ?? 0,
+    cvLeft: src.total_cv_left ?? 0,
+    cvRight: src.total_cv_right ?? 0,
+    isActive: src.is_active,
+    role: src.role,
     placeholder: false,
     // Derinlik sınırında çocuklar API'den null gelir; gerçekte var olabilirler
     boundary: remainingDepth <= 0 && children.length === 0,
@@ -89,6 +136,12 @@ function makePlaceholder(parent: BTNode, position: "L" | "R"): BTNode {
     imagePath: null,
     pv: 0,
     cv: 0,
+    pvLeft: 0,
+    pvRight: 0,
+    cvLeft: 0,
+    cvRight: 0,
+    isActive: false,
+    role: "",
     placeholder: true,
     boundary: false,
     loading: false,

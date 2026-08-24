@@ -9,6 +9,8 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import BrushRoundedIcon from "@mui/icons-material/BrushRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -26,17 +28,12 @@ function hslToHex(h: number, s: number, l: number): string {
   return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
 }
 
-// Alt köşede fırça — renk skalasından tema rengi seçilir (localStorage'da saklanır).
+// Sağ alt köşe: fırça (tema rengi, giriş yapınca) + güneş/ay (tüm sistem için karanlık/aydınlık mod).
 export default function ThemeCustomizer() {
-  const { color, setColor } = useThemeContext();
+  const { color, setColor, mode, toggleMode } = useThemeContext();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const stripRef = useRef<HTMLDivElement | null>(null);
-
-  // Giriş yapılmamışsa (anasayfa, shop vb.) fırça gösterilmez.
-  if (!user) {
-    return null;
-  }
 
   const pickFromStrip = (clientX: number) => {
     const el = stripRef.current;
@@ -59,7 +56,7 @@ export default function ThemeCustomizer() {
         gap: 1,
       }}
     >
-      {open && (
+      {user && open && (
         <Paper
           elevation={6}
           sx={{
@@ -150,15 +147,33 @@ export default function ThemeCustomizer() {
         </Paper>
       )}
 
-      <Tooltip title={open ? "Kapat" : "Tema rengi"}>
+      {user && (
+        <Tooltip title={open ? "Kapat" : "Tema rengi"}>
+          <Fab
+            color="primary"
+            size="medium"
+            aria-label="Tema rengini değiştir"
+            onClick={() => setOpen((v) => !v)}
+            sx={{ boxShadow: 4 }}
+          >
+            <BrushRoundedIcon />
+          </Fab>
+        </Tooltip>
+      )}
+
+      <Tooltip title={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}>
         <Fab
-          color="primary"
           size="medium"
-          aria-label="Tema rengini değiştir"
-          onClick={() => setOpen((v) => !v)}
-          sx={{ boxShadow: 4 }}
+          aria-label="Karanlık / Aydınlık mod"
+          onClick={toggleMode}
+          sx={{
+            boxShadow: 4,
+            bgcolor: "background.paper",
+            color: "text.primary",
+            "&:hover": { bgcolor: "background.paper" },
+          }}
         >
-          <BrushRoundedIcon />
+          {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
         </Fab>
       </Tooltip>
     </Box>

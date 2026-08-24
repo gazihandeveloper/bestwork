@@ -23,10 +23,11 @@ import ZoomOutRoundedIcon from "@mui/icons-material/ZoomOutRounded";
 import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
+import { useTheme } from "@mui/material/styles";
 import { fileUrl, getTree, getErrorMessage, placePendingByCode } from "@/services/api";
 import type { TreeNode } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
-import { LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
+import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
 
 interface BinaryTreeProps {
   data: TreeNode;
@@ -53,6 +54,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
   const rootRef = useRef<BTNode | null>(null);
+  const loadingRef = useRef(false);
+  const theme = useTheme();
+  const dark = theme.palette.mode === "dark";
 
   const [search, setSearch] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -123,6 +127,46 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     [],
   );
 
+  // Aşağı doğru kaydırınca en derin yüklü seviyeye ulaşıldığında sonraki nesli
+  // tembel yükler (infinite scroll). Bir seferde en fazla 12 sınır düğümü açılır.
+  const loadNextGeneration = useCallback(() => {
+    const renderer = rendererRef.current;
+    const root = rootRef.current;
+    if (!renderer || !root || loadingRef.current) return;
+
+    const boundary: BTNode[] = [];
+    const walk = (n: BTNode) => {
+      if (n.placeholder) return;
+      if (n.boundary) {
+        boundary.push(n);
+        return;
+      }
+      n.children.forEach(walk);
+    };
+    walk(root);
+    if (boundary.length === 0) return;
+
+    const batch = boundary.slice(0, 12);
+    loadingRef.current = true;
+    batch.forEach((node) => {
+      node.loading = true;
+    });
+    renderer.render(root);
+
+    Promise.all(
+      batch.map((node) =>
+        getTree(node.userId, LAZY_DEPTH)
+          .then((fetched) => graftChildren(node, fetched, LAZY_DEPTH))
+          .catch(() => undefined),
+      ),
+    ).finally(() => {
+      loadingRef.current = false;
+      rendererRef.current?.render(rootRef.current ?? root);
+      // Yeni nesil geldi: ağacı otomatik sığdır (dibe ulaşan kullanıcı yeni seviyeyi görür)
+      requestAnimationFrame(() => rendererRef.current?.fit());
+    });
+  }, []);
+
   // Sahne kurulumu — yalnızca bir kez
   useEffect(() => {
     const svgEl = svgRef.current;
@@ -141,11 +185,13 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           setPlaceError("");
           setPlaceTarget({ parentId, position });
         },
+        onReachBottom: loadNextGeneration,
       },
       () => {
         const area = svgEl.parentElement ?? wrapEl;
         return { w: area.clientWidth, h: area.clientHeight };
       },
+      dark,
     );
     rendererRef.current = renderer;
 
@@ -153,7 +199,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [handleNodeClick, showTooltip, moveTooltip, hideTooltip]);
+  }, [handleNodeClick, showTooltip, moveTooltip, hideTooltip, loadNextGeneration, dark]);
 
   // Veri değişince ağacı kur ve sığdır
   useEffect(() => {
@@ -161,8 +207,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     if (!renderer) return;
     rootRef.current = toBTNode(data, depth);
     renderer.render(rootRef.current);
-    // İlk yerleşim tamamlandıktan sonra sığdır
-    requestAnimationFrame(() => renderer.fit(false));
+    // Kart animasyonu bittikten sonra sığdır; böylece ilk açılışta tam dolar
+    const t = setTimeout(() => renderer.fit(false), ANIM_MS + 80);
+    return () => clearTimeout(t);
   }, [data, depth]);
 
   // Arama: vurgula ve ilk eşleşmeye odaklan
@@ -218,36 +265,44 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         borderColor: "divider",
         borderRadius: 3,
         overflow: "hidden",
-        bgcolor: "#FDFEFD",
+        bgcolor: dark ? "#0F1510" : "#FDFEFD",
+        backgroundImage: dark
+          ? "radial-gradient(circle, rgba(255,255,255,0.06) 1.2px, transparent 1.2px)"
+          : "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
+        backgroundSize: "15px 15px",
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        height: { xs: 620, md: 700 },
+        height: { xs: 640, md: 740 },
       }}
     >
       {/* Kart içi kontrol çubuğu */}
       <Box sx={{ p: 1.5, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", alignItems: "center", rowGap: 1 }}>
-          <TextField
-            size="small"
-            placeholder="İsim veya üye kodu ara..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ width: { xs: "100%", sm: 260 } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ fontSize: 18 }} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <Button size="small" variant="outlined" startIcon={<UnfoldMoreRoundedIcon />} onClick={() => toggleAll(false)}>
-            Tümünü Aç
-          </Button>
-          <Button size="small" variant="outlined" startIcon={<UnfoldLessRoundedIcon />} onClick={() => toggleAll(true)}>
+        <Stack direction="column" spacing={1.5}>
+          {/* Arama — ortalanmış */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <TextField
+              size="small"
+              placeholder="İsim veya üye kodu ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ width: { xs: "100%", sm: 320 } }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchRoundedIcon sx={{ fontSize: 18 }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          </Box>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", alignItems: "center", rowGap: 1, justifyContent: "center" }}>
+            <Button size="small" variant="outlined" startIcon={<UnfoldMoreRoundedIcon />} onClick={() => toggleAll(false)}>
+              Tümünü Aç
+            </Button>
+            <Button size="small" variant="outlined" startIcon={<UnfoldLessRoundedIcon />} onClick={() => toggleAll(true)}>
             Tümünü Kapat
           </Button>
           <Box sx={{ flexGrow: 1 }} />
@@ -262,7 +317,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           </Button>
         </Stack>
 
-        <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+        <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
           <Chip size="small" label="Kök" sx={{ bgcolor: "#274D24", color: "#fff", fontWeight: 700 }} />
           <Chip size="small" label="Sol Bacak" sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }} />
           <Chip size="small" label="Sağ Bacak" sx={{ bgcolor: "#B4552D", color: "#fff", fontWeight: 700 }} />
@@ -270,6 +325,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
             Karta tıklayın: aç/kapat · turuncu &quot;+&quot; rozet: alt ekibi yükle · sürükle &amp; tekerlekle yaklaş
           </Typography>
         </Box>
+        </Stack>
       </Box>
 
       {/* Ağaç alanı */}

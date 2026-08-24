@@ -3,6 +3,7 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import * as apiService from "@/services/api";
+import { BASE_PATH } from "@/lib/api";
 import type { AuthResponse, User } from "@/services/api";
 
 interface AuthContextValue {
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     void apiService.logoutUser().finally(() => {
       setUser(null);
-      window.location.replace("/");
+      window.location.replace(BASE_PATH + "/");
     });
   }, []);
 

@@ -41,7 +41,7 @@ function Logo() {
       style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1 }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15 }}>
-        <Typography component="span" sx={{ fontWeight: 800, color: "primary.dark", fontSize: 22, display: "inline-flex", alignItems: "flex-start" }}>
+        <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 22, display: "inline-flex", alignItems: "flex-start" }}>
           BestWork
           <Box component="span" aria-label="Registered" sx={{ fontSize: 14, lineHeight: 1, mt: -0.4, color: "primary.main", fontWeight: 700 }}>
             <sup>®</sup>
@@ -97,7 +97,7 @@ export default function SiteNav() {
           width: "min(92%, 1140px)",
           height: 64,
           borderRadius: "32px",
-          bgcolor: scrolled ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.86)",
+          bgcolor: (theme) => alpha(theme.palette.background.paper, scrolled ? 0.95 : 0.86),
           backdropFilter: "blur(12px)",
           border: "1px solid",
           borderColor: "divider",
@@ -124,7 +124,7 @@ export default function SiteNav() {
                 href={l.href}
                 startIcon={l.icon}
                 sx={{
-                  color: active ? "primary.dark" : "text.primary",
+                  color: active ? "primary.main" : "text.primary",
                   fontWeight: active ? 700 : 400,
                   bgcolor: active
                     ? (theme) => alpha(theme.palette.secondary.main, 0.5)
@@ -145,7 +145,7 @@ export default function SiteNav() {
             size="large"
             onClick={handleCart}
             sx={{
-              color: "primary.dark",
+              color: "primary.main",
               borderRadius: "16px",
               "&:hover": { bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.4) },
             }}
@@ -208,7 +208,7 @@ export default function SiteNav() {
             <IconButton
               aria-label={`Sepet (${count} ürün)`}
               onClick={handleCart}
-              sx={{ color: "primary.dark" }}
+              sx={{ color: "primary.main" }}
             >
               <Badge badgeContent={count} color="primary" max={99}>
                 <ShoppingCartRoundedIcon />

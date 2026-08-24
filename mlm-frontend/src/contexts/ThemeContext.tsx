@@ -8,6 +8,7 @@ import { getProfile, updateThemeColor } from "@/services/api";
 
 const COLOR_KEY = "bestwork_color";
 const HIDDEN_KEY = "bestwork_theme_hidden";
+const MODE_KEY = "bestwork_mode";
 
 function mix(hex: string, target: number, ratio: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -15,6 +16,17 @@ function mix(hex: string, target: number, ratio: number): string {
   const b = parseInt(hex.slice(5, 7), 16);
   const mixC = (c: number) => Math.round(c + (target - c) * ratio);
   return `#${[mixC(r), mixC(g), mixC(b)].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function initialMode(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  try {
+    const saved = window.localStorage.getItem(MODE_KEY);
+    if (saved === "dark" || saved === "light") return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  } catch {
+    return "light";
+  }
 }
 
 export function derivePalette(hex: string) {
@@ -37,6 +49,8 @@ interface ThemeContextValue {
   setPreviewColor: (hex: string | null) => void;
   hidden: boolean;
   setHidden: (v: boolean) => void;
+  mode: "light" | "dark";
+  toggleMode: () => void;
   theme: ReturnType<typeof createTheme>;
 }
 
@@ -68,6 +82,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       return false;
     }
   });
+  const [mode, setMode] = useState<"light" | "dark">(initialMode);
 
   useEffect(() => {
     if (user) {
@@ -115,67 +130,73 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const palette = useMemo(() => derivePalette(effectiveColor), [effectiveColor]);
 
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          primary: {
-            main: palette.primary,
-            light: palette.primaryLight,
-            dark: palette.primaryDark,
-            contrastText: "#ffffff",
-          },
-          secondary: {
-            main: palette.secondary,
-            light: palette.secondaryLight,
-            dark: palette.secondaryDark,
-            contrastText: "#1A3A16",
-          },
-          background: {
-            default: "#F6FAF2",
-            paper: "#FFFFFF",
-          },
-          text: {
-            primary: "#1F1F1F",
-            secondary: "#625D63",
-          },
-          divider: "#C6CCC6",
-          success: { main: "#2E7D32" },
+  const theme = useMemo(() => {
+    const isDark = mode === "dark";
+    return createTheme({
+      palette: {
+        mode,
+        primary: {
+          main: palette.primary,
+          light: palette.primaryLight,
+          // Karanlık modda "dark" açık ton olur; böylece başlık/metin olarak
+          // kullanılan primary.dark koyu zeminde de okunur.
+          dark: isDark ? mix(palette.primary, 255, 0.55) : palette.primaryDark,
+          contrastText: "#ffffff",
         },
-        shape: { borderRadius: 16 },
-        typography: {
-          fontFamily:
-            "var(--font-roboto), Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
-          h4: { fontWeight: 700 },
-          h5: { fontWeight: 700 },
-          h6: { fontWeight: 600 },
+        secondary: {
+          // Karanlık modda doygun koyu yeşil — ikon halkaları vb. zeminde görünür
+          main: isDark ? mix(palette.primary, 0, 0.28) : palette.secondary,
+          light: isDark ? mix(palette.primary, 255, 0.72) : palette.secondaryLight,
+          dark: isDark ? mix(palette.primary, 0, 0.5) : palette.secondaryDark,
+          contrastText: isDark ? "#E4F0E0" : "#1A3A16",
         },
-        components: {
-          MuiButton: {
-            defaultProps: { disableElevation: true },
-            styleOverrides: {
-              root: {
-                textTransform: "none",
-                borderRadius: 28,
-                paddingInline: 20,
-              },
+        background:
+          isDark
+            ? { default: "#121A10", paper: "#1B2519" }
+            : { default: "#F6FAF2", paper: "#FFFFFF" },
+        text:
+          isDark
+            ? { primary: "#EEF4EC", secondary: "#AABBA7" }
+            : { primary: "#1F1F1F", secondary: "#625D63" },
+        divider: isDark ? "#33463A" : "#C6CCC6",
+        success: { main: isDark ? "#4CAF7D" : "#2E7D32" },
+      },
+      shape: { borderRadius: 16 },
+      typography: {
+        fontFamily:
+          "var(--font-roboto), Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+        h4: { fontWeight: 700 },
+        h5: { fontWeight: 700 },
+        h6: { fontWeight: 600 },
+      },
+      components: {
+        MuiButton: {
+          defaultProps: { disableElevation: true },
+          styleOverrides: {
+            root: {
+              textTransform: "none",
+              borderRadius: 28,
+              paddingInline: 20,
             },
           },
-          MuiCard: {
-            styleOverrides: {
-              root: {
-                borderRadius: 16,
-                boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-              },
+        },
+        MuiCard: {
+          styleOverrides: {
+            root: {
+              borderRadius: 16,
+              boxShadow:
+                isDark
+                  ? "0 2px 10px rgba(0,0,0,0.45)"
+                  : "0 2px 10px rgba(0,0,0,0.08)",
             },
           },
-          MuiTextField: {
-            defaultProps: { size: "small" },
-          },
         },
-      }),
-    [palette],
-  );
+        MuiTextField: {
+          defaultProps: { size: "small" },
+        },
+      },
+    });
+  }, [palette, mode]);
 
   const value = useMemo(
     () => ({
@@ -202,10 +223,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           /* yoksay */
         }
       },
+      mode,
+      toggleMode: () => {
+        setMode((m) => {
+          const next = m === "dark" ? "light" : "dark";
+          try {
+            window.localStorage.setItem(MODE_KEY, next);
+          } catch {
+            /* yoksay */
+          }
+          return next;
+        });
+      },
       theme,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [color, theme, hidden, previewColor],
+    [color, theme, hidden, previewColor, mode],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

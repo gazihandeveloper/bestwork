@@ -8,7 +8,7 @@ func TestValidatePassword(t *testing.T) {
 		password string
 		wantErr  bool
 	}{
-		{name: "too short", password: "short123", wantErr: true},
+		{name: "too short", password: "short12", wantErr: true},
 		{name: "minimum length", password: "longpassword", wantErr: false},
 		{name: "bcrypt byte limit", password: string(make([]byte, 73)), wantErr: true},
 	}

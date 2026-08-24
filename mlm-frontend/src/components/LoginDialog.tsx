@@ -17,6 +17,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { BASE_PATH } from "@/lib/api";
 import { getThemeByLogin } from "@/services/api";
 import { getErrorMessage } from "@/lib/api";
 import { PASTELS, ELEVATION } from "@/components/landing/tokens";
@@ -75,7 +76,7 @@ export default function LoginDialog() {
       window.localStorage.removeItem(NEXT_KEY);
       if (next && next.startsWith("/")) {
         router.push(next);
-      } else if (window.location.pathname === "/login") {
+      } else if (window.location.pathname === BASE_PATH + "/login") {
         router.push("/dashboard");
       }
     } catch (err) {

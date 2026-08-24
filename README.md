@@ -18,13 +18,16 @@ birleştiren tam yığın platform.
 ```
 Bestwork/
 ├── schema.sql              # Veritabanı şeması + paket/rütbe seed'leri
-├── admin_seed.sql          # Varsayılan admin kullanıcısı
-├── package_seed.sql        # Paket oranları seed scripti
+├── admin_seed.sql          # Not: varsayılan admin oluşturulmaz (createadmin aracı kullanılır)
+├── package_seed.sql        # Paket oranları yeniden yükleme scripti
 ├── docker-compose.yml      # Geliştirme: PostgreSQL + Redis
-├── docker-compose.prod.yml # Üretim: PostgreSQL + Redis + API + Cron + Frontend
+├── docker-compose.prod.yml # Üretim: PostgreSQL + Redis + Migrate + API + Cron + Frontend
 ├── mlm-backend/            # Go REST API
 │   ├── cmd/api             # Ana sunucu
 │   ├── cmd/cron            # Aylık kapanış scheduler'ı
+│   ├── cmd/migrate         # SQL migration çalıştırıcı (migrations/ klasörü)
+│   ├── cmd/createadmin     # Admin hesabı oluşturma aracı
+│   ├── migrations/         # Sıralı SQL migration dosyaları
 │   └── internal/           # config, database, models, services, handlers, middleware, auth
 └── mlm-frontend/           # Next.js frontend
     └── src/
@@ -39,9 +42,16 @@ Bestwork/
 
 ```bash
 docker compose up -d          # PostgreSQL :5432, Redis :6379
+
+# Seçenek A — migration çalıştırıcı (önerilen):
+cd mlm-backend && go run ./cmd/migrate
+
+# Seçenek B — şemayı doğrudan yükle:
 docker compose exec -T postgres psql -U mlm_user -d mlm_db < schema.sql
-docker compose exec -T postgres psql -U mlm_user -d mlm_db < admin_seed.sql
 ```
+
+> `migrate` aracı `migrations/*.sql` dosyalarını sırayla uygular ve `schema_migrations`
+> tablosuyla hangi sürümlerin uygulandığını takip eder (idempotent).
 
 ### 2. Backend (Go)
 
@@ -62,6 +72,8 @@ npm install
 # .env.local: NEXT_PUBLIC_API_URL=http://localhost:8080/api
 npm run dev                   # http://localhost:3000
 ```
+
+> Uygulama kök yol (`/`) altında yayınlanır; `http://localhost:3000` doğrudan açılır.
 
 ### Yönetici Hesabı
 
@@ -90,26 +102,30 @@ cd mlm-frontend && npm run build && npm run start   # http://localhost:3000
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
-# API :8080 · Frontend :3000 · Cron (otomatik); PostgreSQL ve Redis hosta açılmaz.
+# API :8090 (host) · Frontend :3000 · Migrate (tek seferlik, şemayı kurar) · Cron (otomatik);
+# PostgreSQL ve Redis hosta açılmaz.
 docker compose -f docker-compose.prod.yml down
 ```
 
-Yeni bir veritabanında `schema.sql` ve `admin_seed.sql` otomatik import edilir
-(initdb mount). Önemli env değişkenleri: `JWT_SECRET`, `GIN_MODE=release`,
-`CORS_ORIGINS`, `CRON_SCHEDULE`, `NEXT_PUBLIC_API_URL`.
+Yeni bir veritabanında şema, bağımlılık sırasıyla `migrate` servisi tarafından otomatik
+uygulanır (api ve cron, migrate tamamlanmadan başlamaz). Önemli env değişkenleri:
+`JWT_SECRET`, `GIN_MODE=release`, `CORS_ORIGINS`, `CRON_SCHEDULE`, `NEXT_PUBLIC_API_URL`.
 
 ## Özellikler ve İş Kuralları Özeti
 
 - **Üyelik:** TR90 + 6 hane otomatik üye kodu (giriş + referans kodu). `customer` rolü
   müşteri kaydıdır (binary'ye girmez, sponsor zorunlu).
 - **Paketler:** Starter → Platin (PV birikimiyle otomatik seviye atlama; Platin %25 indirim).
-- **Komisyonlar:** Referans (anlık), Binary (aylık kapanışta toplu eşleşme, flashout limiti),
-  Matching (5 nesil: %20/%10/%10/%10/%5), Retail (müşteri siparişlerinden).
+- **Komisyonlar:** Referans (anlık), Binary (her siparişte canlı eşleşme + aylık kapanışta
+  toplu eşleşme, flashout limiti), Matching (5 nesil: %20/%10/%10/%10/%5),
+  Retail (müşteri siparişlerinden).
 - **Rütbeler:** Jade → Ambassador (bacak PV eşikleri), kalıcı; `rank_progress` ile izlenir.
 - **Aylık kapanış:** `monthly_jobs` tablosu ile idempotent; chip kesintisi (%5) ve binary
   sayaç sıfırlama aynı guard mekanizmasıyla korunur.
-- **Ödemeler:** Kredi kartı (anında işlem) ve EFT/HAVALE (bildirim → admin onayı → işlemler;
-  red → sipariş iptali + stok iadesi).
+- **Ödemeler:** Şu an yalnızca EFT/HAVALE akışı aktiftir (bildirim → admin onayı → işlemler;
+  red → sipariş iptali + stok iadesi). Kredi kartı ödeme sağlayıcısı yapılandırılmamıştır —
+  backend bilinçli olarak kredi kartı siparişlerini reddeder, frontend de yalnızca
+  EFT/HAVALE sunar.
 - **Para çekme:** Minimum 750 TL, admin onayı/reddi.
 - **Şeffaflık:** Binary hareketleri, komisyon geçmişi, sponsorluk ağacı (d3 interaktif),
   perakende kazanç raporu, kariyer takibi.
@@ -130,7 +146,8 @@ Yeni bir veritabanında `schema.sql` ve `admin_seed.sql` otomatik import edilir
 
 ## Güvenlik Notları
 
-- Tüm korumalı route'lar JWT (Bearer, 24 saat); admin route'ları `role=admin` kontrolüne tabidir.
+- Tüm korumalı route'lar JWT (Bearer veya HttpOnly `mlm_session` cookie, 1 saat); admin
+  route'ları `role=admin` kontrolüne tabidir.
 - Sahiplik kontrolleri: sipariş, banka, varis, sponsorluk ağacı (admin hariç yalnızca kendi kayıtları).
 - Tüm SQL sorguları parametreli (pgx); SQL injection riski yok.
 - Dosya yükleme: 5MB limit + uzantı beyaz listesi (jpg/png/pdf); uploads/ klasörüne yazılır.

@@ -3,6 +3,17 @@ import axios from "axios";
 // Ortak axios istemcisi: HttpOnly oturum cookie'sini gönderir, 401'de oturumu düşürür.
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
+// Uygulamanın yayınlandığı alt yol (üretimde "/mlm", yerelde "").
+export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+// pathUnderBase basePath'li yolu basePath'siz hale getirir ("/mlm/login" -> "/login").
+function pathUnderBase(pathname: string): string {
+  if (!BASE_PATH) return pathname;
+  if (pathname === BASE_PATH) return "/";
+  if (pathname.startsWith(BASE_PATH + "/")) return pathname.slice(BASE_PATH.length);
+  return pathname;
+}
+
 export const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -13,13 +24,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401 && typeof window !== "undefined") {
+      const path = pathUnderBase(window.location.pathname);
       // Herkese açık sayfalar: oturum yokluğunda yönlendirme yapma.
       const publicPaths = ["/", "/login", "/register", "/shop"];
       const isPublicPage = publicPaths.some(
-        (p) => window.location.pathname === p || window.location.pathname.startsWith(p + "/")
+        (p) => path === p || path.startsWith(p + "/")
       );
-      if (!isPublicPage && window.location.pathname !== "/login") {
-        window.location.replace("/login");
+      if (!isPublicPage && path !== "/login") {
+        window.location.replace(BASE_PATH + "/login");
       }
     }
     return Promise.reject(error);

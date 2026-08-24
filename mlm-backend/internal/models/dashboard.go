@@ -93,15 +93,21 @@ type AdminDashboard struct {
 
 // TreeNode binary ağaç görünümü için recursive düğümdür.
 type TreeNode struct {
-	UserID     int64     `json:"user_id"`
-	Name       string    `json:"name"`
-	MemberCode string    `json:"member_code"`
-	Position   *string   `json:"position"`
-	Package    *string   `json:"package"`
-	Rank                  *string   `json:"rank"`
-	ImagePath             *string   `json:"image_path"`
-	TotalPVAccumulated    int64     `json:"total_pv_accumulated"`
-	TotalCVAccumulated    int64     `json:"total_cv_accumulated"`
-	LeftChild             *TreeNode `json:"left_child"`
-	RightChild            *TreeNode `json:"right_child"`
+	UserID            int64     `json:"user_id"`
+	Name              string    `json:"name"`
+	MemberCode        string    `json:"member_code"`
+	Position          *string   `json:"position"`
+	Package           *string   `json:"package"`
+	Rank              *string   `json:"rank"`
+	ImagePath         *string   `json:"image_path"`
+	TotalPVAccumulated int64    `json:"total_pv_accumulated"`
+	TotalCVAccumulated int64    `json:"total_cv_accumulated"`
+	TotalPVLeft        int64    `json:"total_pv_left"`
+	TotalPVRight       int64    `json:"total_pv_right"`
+	TotalCVLeft        int64    `json:"total_cv_left"`
+	TotalCVRight       int64    `json:"total_cv_right"`
+	IsActive           bool     `json:"is_active"`
+	Role               string   `json:"role"`
+	LeftChild          *TreeNode `json:"left_child"`
+	RightChild         *TreeNode `json:"right_child"`
 }
