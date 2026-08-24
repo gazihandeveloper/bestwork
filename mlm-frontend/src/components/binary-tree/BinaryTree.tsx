@@ -12,6 +12,9 @@ import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import InputAdornment from "@mui/material/InputAdornment";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
@@ -24,8 +27,8 @@ import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
 import { useTheme } from "@mui/material/styles";
-import { fileUrl, getTree, getErrorMessage, placePendingByCode } from "@/services/api";
-import type { TreeNode } from "@/services/api";
+import { fileUrl, getTree, getErrorMessage, placePendingByCode, listPendingUsers } from "@/services/api";
+import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
 import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
 
@@ -62,7 +65,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const [loadError, setLoadError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [placeTarget, setPlaceTarget] = useState<{ parentId: number; position: "L" | "R" } | null>(null);
-  const [placeCode, setPlaceCode] = useState("");
+  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState("");
 
@@ -167,6 +172,19 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     });
   }, []);
 
+  // Boş bacağa tıklanınca yerleşim bekleyenler listesini çeker ve diyaloğu açar.
+  const openPlaceDialog = useCallback((parentId: number, position: "L" | "R") => {
+    setPlaceError("");
+    setSelectedUserId(null);
+    setPendingUsers([]);
+    setPendingLoading(true);
+    setPlaceTarget({ parentId, position });
+    listPendingUsers()
+      .then((users) => setPendingUsers(users))
+      .catch((err) => setPlaceError(getErrorMessage(err)))
+      .finally(() => setPendingLoading(false));
+  }, []);
+
   // Sahne kurulumu — yalnızca bir kez
   useEffect(() => {
     const svgEl = svgRef.current;
@@ -180,11 +198,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         onHover: showTooltip,
         onHoverMove: moveTooltip,
         onHoverEnd: hideTooltip,
-        onPlaceholderClick: (parentId, position) => {
-          setPlaceCode("");
-          setPlaceError("");
-          setPlaceTarget({ parentId, position });
-        },
+        onPlaceholderClick: openPlaceDialog,
         onReachBottom: loadNextGeneration,
       },
       () => {
@@ -199,7 +213,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [handleNodeClick, showTooltip, moveTooltip, hideTooltip, loadNextGeneration, dark]);
+  }, [handleNodeClick, showTooltip, moveTooltip, hideTooltip, loadNextGeneration, openPlaceDialog, dark]);
 
   // Veri değişince ağacı kur ve sığdır
   useEffect(() => {
@@ -225,15 +239,15 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
 
   const handlePlaceSubmit = async () => {
     if (!placeTarget) return;
-    const code = placeCode.trim();
-    if (!code) {
-      setPlaceError("Üye kodu girin (TR90XXXXXX).");
+    const user = pendingUsers.find((u) => u.id === selectedUserId);
+    if (!user) {
+      setPlaceError("Yerleştirilecek üyeyi seçin.");
       return;
     }
     setPlacing(true);
     setPlaceError("");
     try {
-      const placed = await placePendingByCode(code, placeTarget.parentId, placeTarget.position);
+      const placed = await placePendingByCode(user.member_code, placeTarget.parentId, placeTarget.position);
       setSuccessMsg(`${placed.name} (${placed.member_code}) ${placeTarget.position === "L" ? "sol" : "sağ"} bacağa yerleştirildi.`);
       setPlaceTarget(null);
       // Ağacı yenile
@@ -366,28 +380,53 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            Boş pozisyona yerleştirmek istediğiniz üyenin referans kodunu girin.
+            Bu boş bacağa yerleştirilecek üyeyi listeden seçin.
+            (Alışveriş yapmamış üyeler yerleştirilemez.)
           </Typography>
-          <TextField
-            fullWidth
-            label="Üye Kodu"
-            placeholder="TR90XXXXXX"
-            value={placeCode}
-            onChange={(e) => setPlaceCode(e.target.value.toUpperCase())}
-            error={!!placeError}
-            helperText={placeError}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handlePlaceSubmit();
-            }}
-          />
+
+          {placeError && !pendingLoading && (
+            <Alert severity="error" sx={{ mb: 1.5 }}>
+              {placeError}
+            </Alert>
+          )}
+
+          {pendingLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress size={28} />
+            </Box>
+          ) : pendingUsers.length === 0 && !placeError ? (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
+              Yerleşim bekleyen üyeniz yok.
+            </Typography>
+          ) : (
+            <List dense sx={{ maxHeight: 260, overflow: "auto" }}>
+              {pendingUsers.map((u) => (
+                <ListItemButton
+                  key={u.id}
+                  selected={selectedUserId === u.id}
+                  onClick={() => {
+                    setSelectedUserId(u.id);
+                    setPlaceError("");
+                  }}
+                  sx={{ borderRadius: 2 }}
+                >
+                  <ListItemText
+                    primary={u.name}
+                    secondary={`${u.member_code} · ${u.is_active ? "Aktif" : "Pasif"}`}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+
           <Button
             fullWidth
             variant="contained"
             sx={{ mt: 2 }}
-            disabled={placing}
+            disabled={placing || pendingLoading || selectedUserId === null}
             onClick={handlePlaceSubmit}
           >
-            {placing ? <CircularProgress size={22} color="inherit" /> : "Ağaca Yerleştir"}
+            {placing ? <CircularProgress size={22} color="inherit" /> : "Yerleştir"}
           </Button>
         </DialogContent>
       </Dialog>
