@@ -9,6 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -70,6 +71,9 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState("");
+  const [showMoreLoading, setShowMoreLoading] = useState(false);
+  const [noMore, setNoMore] = useState(false);
+  const showMoreRef = useRef(false);
 
   const showTooltip = useCallback((event: MouseEvent, node: BTNode) => {
     const el = tooltipRef.current;
@@ -185,6 +189,51 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       .finally(() => setPendingLoading(false));
   }, []);
 
+  // "Daha Fazla Göster" butonu: sınır düğümlerini bir seviye daha derinleştirir
+  // (her basışta yeni kişiler eklenir, kademeli).
+  const loadMoreLevels = useCallback(() => {
+    const renderer = rendererRef.current;
+    const root = rootRef.current;
+    if (!renderer || !root || showMoreRef.current) return;
+
+    const boundary: BTNode[] = [];
+    const walk = (n: BTNode) => {
+      if (n.placeholder) return;
+      if (n.boundary) {
+        boundary.push(n);
+        return;
+      }
+      n.children.forEach(walk);
+    };
+    walk(root);
+
+    if (boundary.length === 0) {
+      setNoMore(true);
+      return;
+    }
+
+    const batch = boundary.slice(0, 24);
+    showMoreRef.current = true;
+    setShowMoreLoading(true);
+    batch.forEach((n) => {
+      n.loading = true;
+    });
+    renderer.render(root);
+
+    Promise.all(
+      batch.map((n) =>
+        getTree(n.userId, 1)
+          .then((f) => graftChildren(n, f, 1))
+          .catch(() => undefined),
+      ),
+    ).finally(() => {
+      showMoreRef.current = false;
+      setShowMoreLoading(false);
+      rendererRef.current?.render(rootRef.current ?? root);
+      requestAnimationFrame(() => rendererRef.current?.fit());
+    });
+  }, []);
+
   // Sahne kurulumu — yalnızca bir kez
   useEffect(() => {
     const svgEl = svgRef.current;
@@ -199,7 +248,8 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         onHoverMove: moveTooltip,
         onHoverEnd: hideTooltip,
         onPlaceholderClick: openPlaceDialog,
-        onReachBottom: loadNextGeneration,
+        // Kademeli ilerleme yalnızca "Daha Fazla Göster" butonuyla yapılır
+        onReachBottom: () => {},
       },
       () => {
         const area = svgEl.parentElement ?? wrapEl;
@@ -220,6 +270,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     const renderer = rendererRef.current;
     if (!renderer) return;
     rootRef.current = toBTNode(data, depth);
+    setNoMore(false);
     renderer.render(rootRef.current);
     // Kart animasyonu bittikten sonra sığdır; böylece ilk açılışta tam dolar
     const t = setTimeout(() => renderer.fit(false), ANIM_MS + 80);
@@ -348,6 +399,34 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
           ref={svgRef}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
         />
+      </Box>
+
+      {/* Daha Fazla Göster — her basışta bir seviye yeni kişi eklenir */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          p: 1.5,
+          borderTop: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Button
+          variant="contained"
+          startIcon={showMoreLoading ? undefined : <AddRoundedIcon />}
+          onClick={loadMoreLevels}
+          disabled={showMoreLoading || noMore}
+          sx={{ minWidth: 220 }}
+        >
+          {showMoreLoading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : noMore ? (
+            "Tümü Yüklendi"
+          ) : (
+            "Daha Fazla Göster"
+          )}
+        </Button>
       </Box>
 
       <div
