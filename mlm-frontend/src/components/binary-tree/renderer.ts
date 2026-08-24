@@ -255,10 +255,10 @@ export class BinaryTreeRenderer {
       .attr("y", -CARD_H / 2)
       .attr("width", CARD_W)
       .attr("height", CARD_H)
-      .attr("rx", 13)
+      .attr("rx", 11)
       .attr("fill", this.colors.card)
       .attr("stroke", (d) => this.accent(d))
-      .attr("stroke-width", (d) => (d.depth === 0 ? 2.4 : 1.4))
+      .attr("stroke-width", (d) => (d.depth === 0 ? 2.2 : 1.3))
       .attr("filter", "url(#bt-card-shadow)");
 
     this.buildAvatar(sel);
@@ -273,35 +273,35 @@ export class BinaryTreeRenderer {
 
   /** buildCardHeader isim + üye kodu; avatar sağına hizalanır. */
   private buildCardHeader(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const x = -CARD_W / 2 + 11 + AVATAR_R * 2 + 8;
+    const x = -CARD_W / 2 + 10 + AVATAR_R * 2 + 6;
     sel
       .append("text")
       .attr("x", x)
-      .attr("y", -CARD_H / 2 + 21)
-      .attr("font-size", 11.5)
+      .attr("y", -CARD_H / 2 + 17)
+      .attr("font-size", 10.5)
       .attr("font-weight", 800)
       .attr("fill", this.colors.text)
-      .text((d) => truncate(d.data.name, 13));
+      .text((d) => truncate(d.data.name, 12));
 
-    // Üye numarası — büyük, iri, beyaz, çok belirgin (bacak rengi rozet içinde)
+    // Üye numarası — beyaz, kalın, belirgin (bacak rengi rozet içinde)
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const code = `#${d.data.memberCode}`;
-      const w = Math.max(82, code.length * 7.6 + 20);
+      const w = Math.max(70, code.length * 5.9 + 14);
       g.append("rect")
         .attr("x", x)
         .attr("y", -CARD_H / 2 + 22)
         .attr("width", w)
-        .attr("height", 26)
-        .attr("rx", 13)
+        .attr("height", 19)
+        .attr("rx", 9.5)
         .attr("fill", this.accent(d))
         .attr("stroke", "#ffffff")
-        .attr("stroke-width", 1.6);
+        .attr("stroke-width", 1.5);
       g.append("text")
         .attr("x", x + w / 2)
-        .attr("y", -CARD_H / 2 + 39)
+        .attr("y", -CARD_H / 2 + 35)
         .attr("text-anchor", "middle")
-        .attr("font-size", 13.5)
+        .attr("font-size", 11)
         .attr("font-weight", 800)
         .attr("fill", "#ffffff")
         .text(code);
@@ -313,28 +313,28 @@ export class BinaryTreeRenderer {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
       const label = d.data.position === "R" ? "SAĞ" : d.data.position === "L" ? "SOL" : "KÖK";
-      const cx = CARD_W / 2 - 18;
-      const cy = -CARD_H / 2 + 18;
-      const w = Math.max(26, label.length * 6 + 12);
+      const cx = CARD_W / 2 - 13;
+      const cy = -CARD_H / 2 + 13;
+      const w = Math.max(22, label.length * 5.2 + 10);
       g.append("rect")
         .attr("x", cx - w / 2)
-        .attr("y", cy - 7.5)
+        .attr("y", cy - 6.5)
         .attr("width", w)
-        .attr("height", 15)
-        .attr("rx", 7.5)
+        .attr("height", 13)
+        .attr("rx", 6.5)
         .attr("fill", this.accent(d));
       g.append("text")
         .attr("x", cx)
-        .attr("y", cy + 2.8)
+        .attr("y", cy + 2.3)
         .attr("text-anchor", "middle")
-        .attr("font-size", 7.5)
+        .attr("font-size", 7)
         .attr("font-weight", 800)
         .attr("fill", "#fff")
         .text(label);
     });
   }
 
-  /** buildBadgeRow paket / durum rozetlerini eski yerine (üst orta) sağa yaslı çizer. */
+  /** buildBadgeRow paket / durum rozetlerini ortada çizer. */
   private buildBadgeRow(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
@@ -344,31 +344,30 @@ export class BinaryTreeRenderer {
       if (d.data.isActive) chips.push({ text: "AKTİF", fill: "#E3F3E8", color: this.colors.statusActive });
       else chips.push({ text: "PASİF", fill: "#FBE7E7", color: this.colors.statusPassive, stroke: this.colors.statusPassive });
 
-      // Toplam genişliği hesapla ve ortala
-      const widths = chips.map((c) => Math.max(26, c.text.length * 6 + 12));
-      const total = widths.reduce((a, b) => a + b, 0) + (chips.length - 1) * 5;
+      const widths = chips.map((c) => Math.max(22, c.text.length * 5.4 + 10));
+      const total = widths.reduce((a, b) => a + b, 0) + (chips.length - 1) * 4;
       let x = -total / 2;
-      const y = -CARD_H / 2 + 54;
+      const y = -CARD_H / 2 + 52;
       chips.forEach((c, idx) => {
         const w = widths[idx];
         g.append("rect")
           .attr("x", x)
-          .attr("y", y - 7.5)
+          .attr("y", y - 6.5)
           .attr("width", w)
-          .attr("height", 15)
-          .attr("rx", 7.5)
+          .attr("height", 13)
+          .attr("rx", 6.5)
           .attr("fill", c.fill)
           .attr("stroke", c.stroke ?? "none")
           .attr("stroke-width", 1);
         g.append("text")
           .attr("x", x + w / 2)
-          .attr("y", y + 2.8)
+          .attr("y", y + 2.3)
           .attr("text-anchor", "middle")
-          .attr("font-size", 7.5)
+          .attr("font-size", 7)
           .attr("font-weight", 800)
           .attr("fill", c.color)
           .text(c.text);
-        x += w + 5;
+        x += w + 4;
       });
     });
   }
@@ -377,18 +376,18 @@ export class BinaryTreeRenderer {
   private buildMetrics(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
-      const leftX = -CARD_W / 2 + 12;
-      const rightX = CARD_W / 2 - 12;
-      g.append("line").attr("x1", leftX).attr("x2", rightX).attr("y1", 5).attr("y2", 5).attr("stroke", this.colors.divider);
+      const leftX = -CARD_W / 2 + 10;
+      const rightX = CARD_W / 2 - 10;
+      g.append("line").attr("x1", leftX).attr("x2", rightX).attr("y1", 2).attr("y2", 2).attr("stroke", this.colors.divider);
 
       const metric = (y: number, l: string, r: string, lv: number, rv: number) => {
-        g.append("circle").attr("cx", leftX).attr("cy", y - 3).attr("r", 3).attr("fill", this.colors.legLeft);
-        g.append("text").attr("x", leftX + 6).attr("y", y).attr("font-size", 8.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${l} ${compactNum(lv)}`);
-        g.append("circle").attr("cx", rightX).attr("cy", y - 3).attr("r", 3).attr("fill", this.colors.legRight);
-        g.append("text").attr("x", rightX - 6).attr("y", y).attr("text-anchor", "end").attr("font-size", 8.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${r} ${compactNum(rv)}`);
+        g.append("circle").attr("cx", leftX).attr("cy", y - 2.5).attr("r", 2.5).attr("fill", this.colors.legLeft);
+        g.append("text").attr("x", leftX + 5).attr("y", y).attr("font-size", 7.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${l} ${compactNum(lv)}`);
+        g.append("circle").attr("cx", rightX).attr("cy", y - 2.5).attr("r", 2.5).attr("fill", this.colors.legRight);
+        g.append("text").attr("x", rightX - 5).attr("y", y).attr("text-anchor", "end").attr("font-size", 7.5).attr("font-weight", 700).attr("fill", this.colors.text).text(`${r} ${compactNum(rv)}`);
       };
-      metric(21, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
-      metric(37, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
+      metric(16, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
+      metric(31, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
     });
   }
 
@@ -400,26 +399,26 @@ export class BinaryTreeRenderer {
       const pctL = total > 0 ? Math.round((d.data.pvLeft / total) * 100) : 100;
       const pctR = 100 - pctL;
       const strongL = d.data.pvLeft >= d.data.pvRight;
-      const bx = -CARD_W / 2 + 12;
-      const bw = CARD_W - 24;
-      const by = 52;
+      const bx = -CARD_W / 2 + 10;
+      const bw = CARD_W - 20;
+      const by = 50;
 
       g.append("text")
         .attr("x", 0)
-        .attr("y", 50)
+        .attr("y", 48)
         .attr("text-anchor", "middle")
-        .attr("font-size", 8)
+        .attr("font-size", 7)
         .attr("font-weight", 800)
         .attr("fill", strongL ? this.colors.left : this.colors.right)
         .text(strongL ? `GÜÇ: SOL %${pctL}` : `GÜÇ: SAĞ %${pctR}`);
-      g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 5).attr("rx", 2.5).attr("fill", "#EDF1EC");
-      g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 5).attr("rx", 2.5).attr("fill", this.colors.legLeft);
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", bw).attr("height", 4).attr("rx", 2).attr("fill", "#EDF1EC");
+      g.append("rect").attr("x", bx).attr("y", by).attr("width", (bw * pctL) / 100).attr("height", 4).attr("rx", 2).attr("fill", this.colors.legLeft);
     });
   }
 
   private buildAvatar(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const cx = -CARD_W / 2 + 11 + AVATAR_R;
-    const cy = -CARD_H / 2 + 11 + AVATAR_R;
+    const cx = -CARD_W / 2 + 10 + AVATAR_R;
+    const cy = -CARD_H / 2 + 10 + AVATAR_R;
 
     sel
       .append("circle")
@@ -428,15 +427,15 @@ export class BinaryTreeRenderer {
       .attr("r", AVATAR_R)
       .attr("fill", (d) => (d.data.imagePath ? "#F0F5EE" : this.accent(d)))
       .attr("stroke", (d) => this.accent(d))
-      .attr("stroke-width", 1.5);
+      .attr("stroke-width", 1.4);
 
     sel
       .filter((d) => !d.data.imagePath)
       .append("text")
       .attr("x", cx)
-      .attr("y", cy + 5)
+      .attr("y", cy + 4.5)
       .attr("text-anchor", "middle")
-      .attr("font-size", 13)
+      .attr("font-size", 11)
       .attr("font-weight", 800)
       .attr("fill", "#fff")
       .text((d) => (d.data.name.charAt(0) || "?").toLocaleUpperCase("tr-TR"));
@@ -466,12 +465,12 @@ export class BinaryTreeRenderer {
     // Aktif/pasif durum noktası (avatarın sağ-altı)
     sel
       .append("circle")
-      .attr("cx", cx + AVATAR_R - 5)
-      .attr("cy", cy + AVATAR_R - 5)
-      .attr("r", 5)
+      .attr("cx", cx + AVATAR_R - 4)
+      .attr("cy", cy + AVATAR_R - 4)
+      .attr("r", 4)
       .attr("fill", (d) => (d.data.isActive ? this.colors.statusActive : this.colors.statusPassive))
       .attr("stroke", "#fff")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 1.6);
   }
 
   private buildPlaceholder(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
@@ -490,27 +489,27 @@ export class BinaryTreeRenderer {
       .attr("y", -PLACEHOLDER_H / 2)
       .attr("width", PLACEHOLDER_W)
       .attr("height", PLACEHOLDER_H)
-      .attr("rx", 12)
+      .attr("rx", 10)
       .attr("fill", "#F6F9F5")
       .attr("stroke", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
-      .attr("stroke-width", 1.6)
+      .attr("stroke-width", 1.4)
       .attr("stroke-dasharray", "6 5");
 
     // Büyük "+"
     sel
       .append("text")
-      .attr("y", 0)
+      .attr("y", -2)
       .attr("text-anchor", "middle")
-      .attr("font-size", 26)
+      .attr("font-size", 22)
       .attr("font-weight", 400)
       .attr("fill", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .text("+");
 
     sel
       .append("text")
-      .attr("y", 16)
+      .attr("y", 14)
       .attr("text-anchor", "middle")
-      .attr("font-size", 9.5)
+      .attr("font-size", 8.5)
       .attr("font-weight", 800)
       .attr("fill", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .text((d) => (d.data.position === "R" ? "SAĞ HAT" : "SOL HAT"));

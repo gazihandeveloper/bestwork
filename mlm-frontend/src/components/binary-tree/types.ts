@@ -1,13 +1,13 @@
 import type { TreeNode } from "@/services/api";
 
 // Kart ve yerleşim sabitleri — tüm çizim bu değerlerden türetilir
-export const CARD_W = 166;
-export const CARD_H = 132;
-export const AVATAR_R = 17;
-export const PLACEHOLDER_W = 130;
-export const PLACEHOLDER_H = 46;
-export const LEVEL_GAP = 152; // seviyeler arası dikey mesafe (ilk 4 seviye ekrana sığar)
-export const SIBLING_GAP = CARD_W + 26; // kardeşler arası yatay mesafe
+export const CARD_W = 148;
+export const CARD_H = 116;
+export const AVATAR_R = 14;
+export const PLACEHOLDER_W = 118;
+export const PLACEHOLDER_H = 42;
+export const LEVEL_GAP = CARD_H + 36; // seviyeler arası dikey mesafe (ilk 4 seviye ekrana sığar)
+export const SIBLING_GAP = CARD_W + 24; // kardeşler arası yatay mesafe
 export const ANIM_MS = 320;
 export const LAZY_DEPTH = 2; // "+" rozetine tıklanınca sunucudan yüklenecek derinlik
 
