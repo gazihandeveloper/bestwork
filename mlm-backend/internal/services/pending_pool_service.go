@@ -15,12 +15,13 @@ import (
 
 // Bekleyenler havuzu işlemlerine özel hatalar.
 var (
-	ErrInvalidPosition   = errors.New("pozisyon 'L' veya 'R' olmalıdır")
-	ErrPoolEntryNotFound = errors.New("bu kullanıcı için bekleyen havuz kaydı bulunamadı")
-	ErrUserAlreadyPlaced = errors.New("kullanıcı zaten ağaca yerleştirilmiş")
-	ErrPositionOccupied  = errors.New("seçilen binary bacak dolu")
-	ErrInvalidPlacement  = errors.New("yerleştirme binary ağaçta döngü oluşturur")
-	ErrInactiveUser      = errors.New("pasif kullanıcı ağaca yerleştirilemez")
+	ErrInvalidPosition           = errors.New("pozisyon 'L' veya 'R' olmalıdır")
+	ErrPoolEntryNotFound         = errors.New("bu kullanıcı için bekleyen havuz kaydı bulunamadı")
+	ErrUserAlreadyPlaced         = errors.New("kullanıcı zaten ağaca yerleştirilmiş")
+	ErrPositionOccupied          = errors.New("seçilen binary bacak dolu")
+	ErrInvalidPlacement          = errors.New("yerleştirme binary ağaçta döngü oluşturur")
+	ErrInactiveUser              = errors.New("pasif kullanıcı ağaca yerleştirilemez")
+	ErrPlacementRequiresPurchase = errors.New("ağaca yerleştirme için önce alışveriş yapılmalıdır")
 )
 
 // PendingPoolEntry bekleyen havuz kaydını kullanıcı ve sponsor bilgisiyle tutar.
@@ -241,6 +242,18 @@ func (s *PendingPoolService) validateSponsorExists(ctx context.Context, sponsorI
 func placeUserInTx(ctx context.Context, tx DBTX, poolID, sponsorID, parentID, userID int64, position string) error {
 	if sponsorID == userID {
 		return ErrInvalidPlacement
+	}
+
+	// İş kuralı: Alışveriş (ödenmiş sipariş) yapılmadan kullanıcı hiçbir şekilde
+	// ağaca yerleştirilemez (sponsor, admin veya kodla yerleştirme dahil).
+	var hasPaidOrder bool
+	if err := tx.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM orders WHERE user_id = $1 AND status = 'paid')`, userID).
+		Scan(&hasPaidOrder); err != nil {
+		return fmt.Errorf("sipariş kontrolü yapılamadı: %w", err)
+	}
+	if !hasPaidOrder {
+		return ErrPlacementRequiresPurchase
 	}
 
 	var userPending, userActive bool

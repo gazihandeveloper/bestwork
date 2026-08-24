@@ -58,7 +58,8 @@ func (h *PendingPoolHandler) Place(c *gin.Context) {
 			errors.Is(err, services.ErrPoolEntryNotFound),
 			errors.Is(err, services.ErrPositionOccupied),
 			errors.Is(err, services.ErrInvalidPlacement),
-			errors.Is(err, services.ErrInactiveUser):
+			errors.Is(err, services.ErrInactiveUser),
+			errors.Is(err, services.ErrPlacementRequiresPurchase):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		case errors.Is(err, services.ErrUserNotFound),
 			errors.Is(err, services.ErrSponsorNotFound):
@@ -107,6 +108,8 @@ func (h *PendingPoolHandler) PlaceByCode(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz yerleştirme hedefi"})
 		case errors.Is(err, services.ErrUserAlreadyPlaced):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Üye zaten ağaca yerleştirilmiş"})
+		case errors.Is(err, services.ErrPlacementRequiresPurchase):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		default:
 			log.WithError(err).Error("Kodla yerleştirme başarısız")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Yerleştirme sırasında bir hata oluştu"})

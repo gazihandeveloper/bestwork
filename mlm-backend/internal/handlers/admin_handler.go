@@ -138,7 +138,8 @@ func (h *AdminHandler) PlacePendingUser(c *gin.Context) {
 			errors.Is(err, services.ErrPoolEntryNotFound),
 			errors.Is(err, services.ErrPositionOccupied),
 			errors.Is(err, services.ErrInvalidPlacement),
-			errors.Is(err, services.ErrInactiveUser):
+			errors.Is(err, services.ErrInactiveUser),
+			errors.Is(err, services.ErrPlacementRequiresPurchase):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		case errors.Is(err, services.ErrUserNotFound),
 			errors.Is(err, services.ErrSponsorNotFound):
