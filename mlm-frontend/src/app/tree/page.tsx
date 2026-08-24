@@ -19,7 +19,7 @@ function TreeContent() {
 
   useEffect(() => {
     if (!user) return;
-    getTree(user.id, 3)
+    getTree(user.id, 4)
       .then(setRoot)
       .catch((err) => setError(getErrorMessage(err)));
   }, [user]);
@@ -39,7 +39,7 @@ function TreeContent() {
         Binary Ağacım
       </Typography>
 
-      <BinaryTree data={root} depth={3} />
+      <BinaryTree data={root} depth={4} />
     </Container>
   );
 }
