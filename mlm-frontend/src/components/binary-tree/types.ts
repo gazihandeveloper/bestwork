@@ -168,10 +168,13 @@ export function countDescendants(node: BTNode): number {
   return node.children.reduce((acc, c) => acc + 1 + countDescendants(c), 0);
 }
 
-/** setCollapsedBelowRoot kök hariç, çocuğu olan tüm düğümleri aç/kapat yapar. */
-export function setCollapsedBelowRoot(root: BTNode, collapsed: boolean): void {
+/**
+ * setCollapsedBelowRoot keepDepth'ten derin olan, çocuğu bulunan düğümleri aç/kapat yapar.
+ * keepDepth=0 (varsayılan) kök hariç her şeyi kapatır; keepDepth=1 ile kök + 2 seviye (7 kişi) görünür kalır.
+ */
+export function setCollapsedBelowRoot(root: BTNode, collapsed: boolean, keepDepth = 0): void {
   const walk = (n: BTNode, depth: number) => {
-    if (depth > 0 && n.children.length > 0) n.collapsed = collapsed;
+    if (depth > keepDepth && n.children.length > 0) n.collapsed = collapsed;
     n.children.forEach((c) => walk(c, depth + 1));
   };
   walk(root, 0);

@@ -317,7 +317,8 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
     const renderer = rendererRef.current;
     const root = rootRef.current;
     if (!renderer || !root) return;
-    setCollapsedBelowRoot(root, collapsed);
+    // keepDepth=1: "Tümünü Kapat" kök + 2 seviyeyi (7 kişi) görünür bırakır
+    setCollapsedBelowRoot(root, collapsed, 1);
     renderer.render(root);
     requestAnimationFrame(() => renderer.fit());
   };
