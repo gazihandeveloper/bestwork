@@ -60,16 +60,19 @@ export default function CartDrawer() {
       });
   }, [user]);
 
-  // Sürekli kontrol: her 30 saniyede bir ve giriş değişince güncelle
+  // Sürekli kontrol: her 15 saniyede bir ve giriş değişince güncelle
   useEffect(() => {
     if (!user) return;
     fetchLivePV();
-    const id = setInterval(fetchLivePV, 30000);
+    const id = setInterval(fetchLivePV, 15000);
     return () => clearInterval(id);
   }, [fetchLivePV, user]);
 
   useEffect(() => {
-    const openHandler = () => setOpen(true);
+    const openHandler = () => {
+      setOpen(true);
+      fetchLivePV(); // her açılışta PV'yi taze çek
+    };
     const refresh = () => setItems(loadCart());
     refresh();
     window.addEventListener("open-cart", openHandler);
@@ -91,8 +94,8 @@ export default function CartDrawer() {
   const careerPV = livePV ?? user?.total_pv_accumulated ?? 0;
   const levelPV = careerPV + totalPV;
   const isPlatin = levelPV >= 5000;
-  // Barlar platin'e ulaşılıp kutlandıysa gizlenir; PV düşerse (tam alım yapılmazsa) geri gelir.
-  const showLevels = !!user && !(isPlatin && celebrated);
+  // Barlar Platin olana kadar HER ZAMAN görünür; Platin'e ulaşılıp kutlandıktan sonra gizlenir.
+  const showLevels = !!user && (!isPlatin || !celebrated);
 
   // Platin'e ulaşınca bir kez kutla; PV platin altına düşerse bayrak sıfırlanır ve barlar geri gelir.
   useEffect(() => {
