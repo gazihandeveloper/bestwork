@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -33,7 +33,7 @@ import ZoomOutRoundedIcon from "@mui/icons-material/ZoomOutRounded";
 import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
 import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
 import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
-import { useTheme, type Theme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import {
   fileUrl,
   getTree,
@@ -46,52 +46,22 @@ import {
 } from "@/services/api";
 import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
-import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode, type TreeColors } from "./types";
-
-/** deriveTreeColors karta uygulanan renkleri MUI temasından türetir (tema değişince renkler de değişir). */
-function deriveTreeColors(theme: Theme): TreeColors {
-  const p = theme.palette;
-  const primary = p.primary.main;
-  const secondary = p.secondary.main;
-  return {
-    root: p.primary.dark,
-    left: primary,
-    right: secondary,
-    text: p.text.primary,
-    subtext: p.text.secondary,
-    card: p.background.paper,
-    divider: "#E3E2E5",
-    placeholder: p.text.secondary,
-    statusActive: (p.success as { main: string }).main,
-    statusPassive: (p.error as { main: string }).main,
-    legLeft: primary,
-    legRight: secondary,
-  };
-}
+import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode } from "./types";
 
 interface BinaryTreeProps {
   data: TreeNode;
   depth: number;
-  /** "YYYY-MM" biçiminde as-of dönemi; bu aydan önce kayıt olanlar gösterilir. */
+  /** "YYYYMM" biçiminde as-of dönemi; bu aydan önce kayıt olanlar gösterilir. */
   period?: string;
   onPeriodChange?: (p: string) => void;
-  /** Sistemdeki en eski üye kayıt ayı ("YYYY-MM") — dönem listesi buradan başlar. */
-  minMonth?: string;
 }
 
-/** currentMonth geçerli ayı "YYYY-MM" biçiminde verir. */
-function currentMonth(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
-/** periodOptions minMonth'tan bugüne kadar olan ayları üretir (sıralı, eskiden yeniye). */
-function periodOptions(minMonth: string): string[] {
+/** periodOptions 2020-06'dan bugüne kadar olan ayları üretir (sıralı, eskiden yeniye). */
+function periodOptions(): string[] {
   const arr: string[] = [];
   const end = new Date();
-  const start = /^\d{4}-\d{2}$/.test(minMonth) ? minMonth : currentMonth();
-  let y = parseInt(start.slice(0, 4), 10);
-  let m = parseInt(start.slice(5, 7), 10);
+  let y = 2020;
+  let m = 6;
   while (y < end.getFullYear() || (y === end.getFullYear() && m <= end.getMonth() + 1)) {
     arr.push(`${y}-${String(m).padStart(2, "0")}`);
     m++;
@@ -108,13 +78,13 @@ function periodOptions(minMonth: string): string[] {
  * Sahne bir kez kurulur, tıklamalarda yalnızca değişen kısımlar güncellenir;
  * derinlik sınırındaki düğümler "+" rozeti ile sunucudan tembel yüklenir.
  */
-export default function BinaryTree({ data, depth, period = "", onPeriodChange, minMonth = "" }: BinaryTreeProps) {
+export default function BinaryTree({ data, depth, period = "", onPeriodChange }: BinaryTreeProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
   const rootRef = useRef<BTNode | null>(null);
   const theme = useTheme();
-  const treeColors = useMemo(() => deriveTreeColors(theme), [theme]);
+  const dark = theme.palette.mode === "dark";
 
   const [search, setSearch] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -142,8 +112,8 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
         node.loading = true;
         renderer.render(root, node.id);
         getTree(node.userId, LAZY_DEPTH, period)
-          .then((res) => {
-            graftChildren(node, res.tree, LAZY_DEPTH);
+          .then((fetched) => {
+            graftChildren(node, fetched, LAZY_DEPTH);
             renderer.render(root, node.id);
           })
           .catch((err) => {
@@ -208,7 +178,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
         const area = svgEl.parentElement ?? wrapEl;
         return { w: area.clientWidth, h: area.clientHeight };
       },
-      treeColors,
+      dark,
     );
     rendererRef.current = renderer;
 
@@ -216,7 +186,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [handleNodeClick, openPlaceDialog, handleInfoClick, treeColors]);
+  }, [handleNodeClick, openPlaceDialog, handleInfoClick, dark]);
 
   // Veri değişince ağacı kur ve sığdır
   useEffect(() => {
@@ -255,7 +225,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       setPlaceTarget(null);
       // Ağacı yenile (gezinilen kökse onu tazele)
       const currentRootId = rootRef.current?.userId ?? data.user_id;
-      const fetched = (await getTree(currentRootId, depth, period)).tree;
+      const fetched = await getTree(currentRootId, depth, period);
       rootRef.current = toBTNode(fetched, depth);
       rendererRef.current?.render(rootRef.current);
       requestAnimationFrame(() => rendererRef.current?.fit());
@@ -292,7 +262,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       }
       try {
         const u = await lookupUserByCode(q.toUpperCase());
-        const fetched = (await getTree(u.id, 2, period)).tree;
+        const fetched = await getTree(u.id, 2, period);
         rootRef.current = toBTNode(fetched, 2);
         renderer.render(rootRef.current);
         requestAnimationFrame(() => renderer.fit());
@@ -310,8 +280,10 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
         borderColor: "divider",
         borderRadius: 3,
         overflow: "hidden",
-        bgcolor: "#FDFEFD",
-        backgroundImage: "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
+        bgcolor: dark ? "#0F1510" : "#FDFEFD",
+        backgroundImage: dark
+          ? "radial-gradient(circle, rgba(255,255,255,0.06) 1.2px, transparent 1.2px)"
+          : "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
         backgroundSize: "15px 15px",
         position: "relative",
         display: "flex",
@@ -329,7 +301,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
             aria-label="Dönem"
             sx={{ minWidth: 104 }}
           >
-            {periodOptions(minMonth).map((v) => (
+            {periodOptions().map((v) => (
               <MenuItem key={v} value={v}>
                 {v}
               </MenuItem>
@@ -353,9 +325,9 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
             }}
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Chip size="small" label="Kök" sx={{ bgcolor: treeColors.root, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
-            <Chip size="small" label="Sol" sx={{ bgcolor: treeColors.left, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
-            <Chip size="small" label="Sağ" sx={{ bgcolor: treeColors.right, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
+            <Chip size="small" label="Kök" sx={{ bgcolor: "#004786", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
+            <Chip size="small" label="Sol" sx={{ bgcolor: "#005FAF", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
+            <Chip size="small" label="Sağ" sx={{ bgcolor: "#8A2BE2", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
           </Box>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton size="small" title="Tümünü aç" aria-label="Tümünü aç" onClick={() => toggleAll(false)}>
