@@ -152,7 +152,7 @@ export default function SiteNav() {
           onKeyDown={(e) => {
             if (e.key === "Enter") submitSearch();
           }}
-          sx={{ ml: { xs: 0, md: 2 }, width: { xs: "100%", sm: 280 } }}
+          sx={{ display: { xs: "none", sm: "inline-flex" }, ml: { xs: 0, md: 2 }, width: { sm: 280 } }}
           slotProps={{
             input: {
               startAdornment: (
