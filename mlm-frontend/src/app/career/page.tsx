@@ -28,17 +28,24 @@ import type { CareerProgress, Rank } from "@/services/api";
 
 const fmt = (v: number) => v.toLocaleString("tr-TR");
 
-// Stitch panelindeki gibi her rütbeye özel ikon + renk (adına göre eşleşir)
-function rankMeta(name: string): { icon: typeof DiamondRoundedIcon; color: string } {
+// Stitch panelindeki gibi her rütbeye özel ikon + renk (+ elmas yıldızları)
+function rankMeta(name: string): { icon: typeof DiamondRoundedIcon; color: string; stars: number } {
   const n = name.toLocaleLowerCase("tr-TR");
-  const map: Record<string, { icon: typeof DiamondRoundedIcon; color: string }> = {
-    jade: { icon: PentagonRoundedIcon, color: "#2e7d32" },
-    pearl: { icon: CircleRoundedIcon, color: "#9e9e9e" },
-    safir: { icon: HexagonRoundedIcon, color: "#1565c0" },
-    ruby: { icon: DiamondRoundedIcon, color: "#c62828" },
-    zümrüt: { icon: SquareRoundedIcon, color: "#43a047" },
+  const map: Record<string, { icon: typeof DiamondRoundedIcon; color: string; stars: number }> = {
+    jade: { icon: PentagonRoundedIcon, color: "#2e7d32", stars: 0 },
+    pearl: { icon: CircleRoundedIcon, color: "#9e9e9e", stars: 0 },
+    safir: { icon: HexagonRoundedIcon, color: "#1565c0", stars: 0 },
+    ruby: { icon: DiamondRoundedIcon, color: "#c62828", stars: 0 },
+    zümrüt: { icon: SquareRoundedIcon, color: "#43a047", stars: 0 },
+    diamond: { icon: DiamondRoundedIcon, color: "#90caf9", stars: 0 },
+    "blue diamond": { icon: DiamondRoundedIcon, color: "#1e88e5", stars: 0 },
+    "green diamond": { icon: DiamondRoundedIcon, color: "#43a047", stars: 0 },
+    "red diamond": { icon: DiamondRoundedIcon, color: "#e53935", stars: 0 },
+    "black diamond": { icon: DiamondRoundedIcon, color: "#212121", stars: 0 },
+    president: { icon: DiamondRoundedIcon, color: "#ffd700", stars: 2 },
+    ambassador: { icon: DiamondRoundedIcon, color: "#ffd700", stars: 3 },
   };
-  return map[n] ?? { icon: DiamondRoundedIcon, color: "#90caf9" };
+  return map[n] ?? { icon: DiamondRoundedIcon, color: "#90caf9", stars: 0 };
 }
 
 function CareerContent() {
@@ -115,14 +122,13 @@ function CareerContent() {
           </Box>
           <Box
             sx={{
-              display: "flex",
-              gap: 1.5,
               overflowX: "auto",
               pb: 1,
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
             }}
           >
+            <Box sx={{ display: "flex", gap: 1.5, width: "max-content", mx: "auto" }}>
             {steps.map((s) => {
               const meta = rankMeta(s.rank.name);
               const Icon = meta.icon;
@@ -167,13 +173,23 @@ function CareerContent() {
                         sx={{
                           position: "absolute",
                           top: -6,
-                          right: -12,
+                          left: -10,
                           fontSize: 18,
                           color: "success.main",
                           bgcolor: "background.paper",
                           borderRadius: "50%",
                         }}
                       />
+                    )}
+                    {meta.stars > 0 && (
+                      <Box sx={{ position: "absolute", top: -7, right: -12, display: "flex", gap: 0.25 }}>
+                        {Array.from({ length: meta.stars }).map((_, k) => (
+                          <StarRoundedIcon
+                            key={k}
+                            sx={{ fontSize: 13, color: "#ffd700", bgcolor: "background.paper", borderRadius: "50%" }}
+                          />
+                        ))}
+                      </Box>
                     )}
                   </Box>
                   <Typography
@@ -204,6 +220,7 @@ function CareerContent() {
                 </Box>
               );
             })}
+          </Box>
           </Box>
         </CardContent>
       </Card>
