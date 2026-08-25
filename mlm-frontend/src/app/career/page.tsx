@@ -196,8 +196,8 @@ function CareerContent() {
                       <CheckCircleRoundedIcon
                         sx={{
                           position: "absolute",
-                          top: -6,
-                          left: -10,
+                          top: -2,
+                          left: -18,
                           fontSize: 18,
                           color: "success.main",
                           bgcolor: "background.paper",
