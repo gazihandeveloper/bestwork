@@ -18,9 +18,9 @@ body {
   margin: 0;
 }
 
-/* İçerik her ekranda %90 genişlikte, ortalanmış */
+/* İçerik her ekranda %95 genişlikte, ortalanmış */
 main {
-  width: 90%;
+  width: 95%;
   margin-inline: auto;
 }
 
