@@ -494,6 +494,20 @@ func (s *DashboardService) GetTree(ctx context.Context, userID int64, depth int,
 	return s.buildTreeNode(ctx, userID, depth, cutoff)
 }
 
+// MinRegistrationMonth sistemdeki en eski üye kayıt ayını "YYYY-MM" biçiminde döndürür
+// (dönem seçici başlangıcı için). Üye yoksa boş döner.
+func (s *DashboardService) MinRegistrationMonth(ctx context.Context) (string, error) {
+	var m *string
+	err := s.db.QueryRow(ctx, `SELECT to_char(MIN(created_at), 'YYYY-MM') FROM users`).Scan(&m)
+	if err != nil {
+		return "", err
+	}
+	if m == nil {
+		return "", nil
+	}
+	return *m, nil
+}
+
 // buildTreeNode recursive olarak ağaç düğümü oluşturur.
 // cutoff sıfır değilse alt üyeler yalnızca bu zamandan önce kayıt olmuşsa gösterilir.
 func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, depth int, cutoff time.Time) (*models.TreeNode, error) {

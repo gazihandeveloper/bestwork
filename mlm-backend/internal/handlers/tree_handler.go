@@ -59,5 +59,6 @@ func (h *TreeHandler) Get(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"tree": tree})
+	minMonth, _ := h.dash.MinRegistrationMonth(c.Request.Context())
+	c.JSON(http.StatusOK, gin.H{"tree": tree, "min_month": minMonth})
 }
