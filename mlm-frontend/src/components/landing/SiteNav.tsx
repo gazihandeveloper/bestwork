@@ -147,9 +147,6 @@ export default function SiteNav() {
                 onClick={logout}
                 sx={{
                   color: "error.main",
-                  borderRadius: "50%",
-                  border: "1.5px solid",
-                  borderColor: "error.main",
                   "&:hover": { bgcolor: (theme) => alpha(theme.palette.error.main, 0.1) },
                 }}
               >
