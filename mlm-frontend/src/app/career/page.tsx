@@ -28,6 +28,12 @@ import type { CareerProgress, Rank } from "@/services/api";
 
 const fmt = (v: number) => v.toLocaleString("tr-TR");
 
+// Girişimci dışındaki seviyeler İngilizce gösterilir
+const RANK_DISPLAY: Record<string, string> = {
+  safir: "Sapphire",
+  zümrüt: "Emerald",
+};
+
 // Stitch panelindeki gibi her rütbeye özel ikon + renk (+ elmas yıldızları)
 function rankMeta(name: string): { icon: typeof DiamondRoundedIcon; color: string; stars: number } {
   const n = name.toLocaleLowerCase("tr-TR");
@@ -129,12 +135,29 @@ function CareerContent() {
             }}
           >
             <Box sx={{ display: "flex", gap: 1.5, width: "max-content", mx: "auto" }}>
-            {steps.map((s) => {
-              const meta = rankMeta(s.rank.name);
-              const Icon = meta.icon;
+            {[
+              // Başlangıç seviyesi: GİRİŞİMCİ — rütbesi olmayan kullanıcıda seçili
+              {
+                id: "girisimci",
+                name: "Girişimci",
+                isActive: activeID == null,
+                isAchieved: true,
+                isNext: false,
+                meta: { icon: DiamondRoundedIcon, color: "#004786", stars: 0 },
+              },
+              ...steps.map((s) => ({
+                id: s.rank.id,
+                name: RANK_DISPLAY[s.rank.name.toLocaleLowerCase("tr-TR")] ?? s.rank.name,
+                isActive: s.isActive,
+                isAchieved: s.isAchieved,
+                isNext: s.next,
+                meta: rankMeta(s.rank.name),
+              })),
+            ].map((c) => {
+              const Icon = c.meta.icon;
               return (
                 <Box
-                  key={s.rank.id}
+                  key={c.id}
                   sx={{
                     flex: "0 0 auto",
                     width: 150,
@@ -148,27 +171,27 @@ function CareerContent() {
                     cursor: "pointer",
                     transition: "transform 200ms ease, box-shadow 200ms ease",
                     "&:hover": { transform: "translateY(-3px)" },
-                    bgcolor: s.isActive
+                    bgcolor: c.isActive
                       ? "primary.main"
-                      : s.next
+                      : c.isNext
                         ? (theme) => alpha(theme.palette.primary.main, 0.12)
-                        : s.isAchieved
+                        : c.isAchieved
                           ? (theme) => alpha(theme.palette.success.main, 0.12)
                           : (theme) => alpha(theme.palette.secondary.main, 0.06),
                     border: "1.5px solid",
-                    borderColor: s.isActive
+                    borderColor: c.isActive
                       ? "primary.main"
-                      : s.next
+                      : c.isNext
                         ? "primary.main"
-                        : s.isAchieved
+                        : c.isAchieved
                           ? "success.main"
                           : "divider",
-                    boxShadow: s.isActive || s.next ? 4 : 0,
+                    boxShadow: c.isActive || c.isNext ? 4 : 0,
                   }}
                 >
                   <Box sx={{ position: "relative" }}>
-                    <Icon sx={{ fontSize: 40, color: s.isActive ? "#fff" : meta.color }} />
-                    {s.isAchieved && (
+                    <Icon sx={{ fontSize: 40, color: c.isActive ? "#fff" : c.meta.color }} />
+                    {c.isAchieved && (
                       <CheckCircleRoundedIcon
                         sx={{
                           position: "absolute",
@@ -181,9 +204,9 @@ function CareerContent() {
                         }}
                       />
                     )}
-                    {meta.stars > 0 && (
+                    {c.meta.stars > 0 && (
                       <Box sx={{ position: "absolute", top: -7, right: -12, display: "flex", gap: 0.25 }}>
-                        {Array.from({ length: meta.stars }).map((_, k) => (
+                        {Array.from({ length: c.meta.stars }).map((_, k) => (
                           <StarRoundedIcon
                             key={k}
                             sx={{ fontSize: 13, color: "#ffd700", bgcolor: "background.paper", borderRadius: "50%" }}
@@ -200,21 +223,21 @@ function CareerContent() {
                       textAlign: "center",
                       px: 1,
                       lineHeight: 1.2,
-                      color: s.isActive ? "#fff" : s.isAchieved ? "success.dark" : s.next ? "primary.main" : "text.secondary",
+                      color: c.isActive ? "#fff" : c.isAchieved ? "success.dark" : c.isNext ? "primary.main" : "text.secondary",
                     }}
                   >
-                    {s.rank.name.toLocaleUpperCase("tr-TR")}
+                    {c.name.toLocaleUpperCase("tr-TR")}
                   </Typography>
-                  {(s.isActive || s.next) && (
+                  {(c.isActive || c.isNext) && (
                     <Typography
                       variant="caption"
                       sx={{
                         fontSize: 9,
                         fontWeight: 700,
-                        color: s.isActive ? "rgba(255,255,255,0.85)" : "primary.main",
+                        color: c.isActive ? "rgba(255,255,255,0.85)" : "primary.main",
                       }}
                     >
-                      {s.isActive ? "GÜNCEL" : "SONRAKİ"}
+                      {c.isActive ? "GÜNCEL" : "SONRAKİ"}
                     </Typography>
                   )}
                 </Box>
