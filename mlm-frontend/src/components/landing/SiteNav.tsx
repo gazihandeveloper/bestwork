@@ -94,7 +94,7 @@ export default function SiteNav() {
           top: 16,
           left: "50%",
           transform: "translate(-50%, 0)",
-          width: "min(92%, 1140px)",
+          width: "calc(100% - 32px)",
           height: 64,
           borderRadius: "32px",
           bgcolor: (theme) => alpha(theme.palette.background.paper, scrolled ? 0.95 : 0.86),
