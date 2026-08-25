@@ -21,6 +21,37 @@ func NewDashboardService(db *pgxpool.Pool) *DashboardService {
 	return &DashboardService{db: db}
 }
 
+// loadWallet kullanıcının cüzdanını okur; kayıt yoksa sıfır bakiye ile oluşturup döndürür.
+// (Manuel/üçüncü parti oluşturulan kullanıcılarda cüzdan eksik kalabilir; dashboard
+// 500 dönmek yerine cüzdanı kendi kendine onarır.)
+func (s *DashboardService) loadWallet(ctx context.Context, userID int64) (models.Wallet, error) {
+	var w models.Wallet
+	err := s.db.QueryRow(ctx,
+		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, updated_at
+		 FROM wallets WHERE user_id = $1`, userID).
+		Scan(&w.ID, &w.UserID, &w.Balance, &w.TotalEarned, &w.TotalWithdrawn, &w.ChipBalance, &w.UpdatedAt)
+	if err == nil {
+		return w, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return w, fmt.Errorf("cüzdan okunamadı: %w", err)
+	}
+	// Kayıt yoksa sıfır cüzdan oluştur (self-healing)
+	if _, ierr := s.db.Exec(ctx,
+		`INSERT INTO wallets (user_id, balance, total_earned, total_withdrawn, chip_balance)
+		 VALUES ($1, 0, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING`, userID); ierr != nil {
+		return w, fmt.Errorf("cüzdan oluşturulamadı: %w", ierr)
+	}
+	// Yeniden oku (race koşulunda tutarlı satır döner)
+	if err := s.db.QueryRow(ctx,
+		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, updated_at
+		 FROM wallets WHERE user_id = $1`, userID).
+		Scan(&w.ID, &w.UserID, &w.Balance, &w.TotalEarned, &w.TotalWithdrawn, &w.ChipBalance, &w.UpdatedAt); err != nil {
+		return w, fmt.Errorf("cüzdan okunamadı: %w", err)
+	}
+	return w, nil
+}
+
 // GetDashboardSummary kullanıcının kazanç özetini döndürür.
 func (s *DashboardService) GetDashboardSummary(ctx context.Context, userID int64) (*models.DashboardSummary, error) {
 	sum := &models.DashboardSummary{}
@@ -42,13 +73,10 @@ func (s *DashboardService) GetDashboardSummary(ctx context.Context, userID int64
 		return nil, fmt.Errorf("özet okunamadı: %w", err)
 	}
 
-	// Cüzdan
-	var w models.Wallet
-	if err := s.db.QueryRow(ctx,
-		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, updated_at
-		 FROM wallets WHERE user_id = $1`, userID).
-		Scan(&w.ID, &w.UserID, &w.Balance, &w.TotalEarned, &w.TotalWithdrawn, &w.ChipBalance, &w.UpdatedAt); err != nil {
-		return nil, fmt.Errorf("cüzdan okunamadı: %w", err)
+	// Cüzdan (kayıt yoksa otomatik oluşturulur)
+	w, err := s.loadWallet(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
 	sum.Wallet = w
 
@@ -161,12 +189,13 @@ func (s *DashboardService) GetUserInfoCard(ctx context.Context, userID int64) (*
 		return nil, fmt.Errorf("kart kullanıcısı okunamadı: %w", err)
 	}
 
-	// Cüzdan bakiyeleri
-	if err := s.db.QueryRow(ctx,
-		`SELECT COALESCE(balance, 0), COALESCE(chip_balance, 0) FROM wallets WHERE user_id = $1`, userID).
-		Scan(&card.WalletBalance, &card.ChipBalance); err != nil {
-		return nil, fmt.Errorf("kart cüzdanı okunamadı: %w", err)
+	// Cüzdan bakiyeleri (kayıt yoksa otomatik oluşturulur)
+	w, err := s.loadWallet(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
+	card.WalletBalance = w.Balance
+	card.ChipBalance = w.ChipBalance
 
 	// Recursive ekip sayıları (pozisyona göre sol/sağ bacak)
 	if err := s.db.QueryRow(ctx, `
@@ -268,13 +297,12 @@ func (s *DashboardService) GetUserDashboard(ctx context.Context, userID int64) (
 		d.User.PackageName = &p.Name
 	}
 
-	// Cüzdan
-	if err := s.db.QueryRow(ctx,
-		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, updated_at
-		 FROM wallets WHERE user_id = $1`, userID).
-		Scan(&d.Wallet.ID, &d.Wallet.UserID, &d.Wallet.Balance, &d.Wallet.TotalEarned, &d.Wallet.TotalWithdrawn, &d.Wallet.ChipBalance, &d.Wallet.UpdatedAt); err != nil {
-		return nil, fmt.Errorf("cüzdan okunamadı: %w", err)
+	// Cüzdan (kayıt yoksa otomatik oluşturulur)
+	w, err := s.loadWallet(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
+	d.Wallet = w
 
 	// Tip bazlı toplam kazanç
 	rows, err := s.db.Query(ctx,
