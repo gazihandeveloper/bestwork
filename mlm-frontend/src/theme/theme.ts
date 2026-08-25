@@ -18,7 +18,7 @@ const theme = createTheme({
       contrastText: "#1A3A16",
     },
     background: {
-      default: "#F6FAF2", // hafif yeşil nefesli surface
+      default: "#FFFFFF", // bembeyaz arka plan
       paper: "#FFFFFF",
     },
     text: {

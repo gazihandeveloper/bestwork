@@ -131,7 +131,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             dark: palette.secondaryDark,
             contrastText: "#1A3A16",
           },
-          background: { default: "#F6FAF2", paper: "#FFFFFF" },
+          background: { default: "#FFFFFF", paper: "#FFFFFF" },
           text: { primary: "#1F1F1F", secondary: "#625D63" },
           divider: "#C6CCC6",
           success: { main: "#2E7D32" },

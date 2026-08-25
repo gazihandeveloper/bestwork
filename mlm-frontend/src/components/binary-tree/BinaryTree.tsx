@@ -310,7 +310,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
         borderColor: "divider",
         borderRadius: 3,
         overflow: "hidden",
-        bgcolor: "#FDFEFD",
+        bgcolor: "#FFFFFF",
         backgroundImage: "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
         backgroundSize: "15px 15px",
         position: "relative",

@@ -22,7 +22,6 @@ import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import AuthCTA from "./AuthCTA";
-import { ELEVATION, MOTION } from "./tokens";
 import { cartCount } from "@/lib/cart";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -90,26 +89,20 @@ export default function SiteNav() {
         component="nav"
         aria-label="Ana menü"
         sx={{
-          position: "fixed",
-          top: 16,
-          left: "50%",
-          transform: "translate(-50%, 0)",
-          width: "calc(100% - 32px)",
+          position: "sticky",
+          top: 0,
+          width: "100%",
           height: 64,
-          borderRadius: "32px",
-          bgcolor: (theme) => alpha(theme.palette.background.paper, scrolled ? 0.95 : 0.86),
-          backdropFilter: "blur(12px)",
-          border: "1px solid",
+          bgcolor: "background.paper",
+          borderBottom: "1px solid",
           borderColor: "divider",
-          boxShadow: scrolled ? ELEVATION.l2 : ELEVATION.l1,
-          animation: `navIn 500ms ${MOTION.emphasizedDecelerate} both`,
-          "@media (prefers-reduced-motion: reduce)": { animation: "none" },
-          zIndex: 1200,
+          boxShadow: scrolled ? 1 : "none",
+          zIndex: 1100,
           display: "flex",
           alignItems: "center",
           px: 2.5,
           transition: (theme) =>
-            `box-shadow ${theme.transitions.duration.short}ms, background-color ${theme.transitions.duration.short}ms`,
+            `box-shadow ${theme.transitions.duration.short}ms`,
         }}
       >
         <Logo />

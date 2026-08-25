@@ -21,7 +21,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Box sx={{ pt: { xs: 12, md: 11 } }}>
+    <Box sx={{ pt: 2 }}>
       <Box
         component="main"
         sx={{ minHeight: "100vh", pb: { xs: 12, md: 4 }, bgcolor: "background.default" }}
