@@ -68,7 +68,7 @@ export default function Corporate() {
       id="kurumsal"
       sx={{
         py: 8,
-        scrollMarginTop: "76px",
+        scrollMarginTop: "88px",
         background: (theme) =>
           `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(
             theme.palette.secondary.main,

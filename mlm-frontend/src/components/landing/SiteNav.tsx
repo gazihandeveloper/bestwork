@@ -39,10 +39,10 @@ function Logo() {
       aria-label="BestWork ana sayfa"
       style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1 }}
     >
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15 }}>
-        <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 22, display: "inline-flex", alignItems: "flex-start" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15, mt: 0.75 }}>
+        <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 31, display: "inline-flex", alignItems: "flex-start" }}>
           BestWork
-          <Box component="span" aria-label="Registered" sx={{ fontSize: 14, lineHeight: 1, mt: -0.4, color: "primary.main", fontWeight: 700 }}>
+          <Box component="span" aria-label="Registered" sx={{ fontSize: 17, lineHeight: 1, mt: -0.5, color: "primary.main", fontWeight: 700 }}>
             <sup>®</sup>
           </Box>
         </Typography>
@@ -89,12 +89,15 @@ export default function SiteNav() {
         component="nav"
         aria-label="Ana menü"
         sx={{
-          position: "sticky",
-          top: 0,
-          width: "100%",
-          height: 64,
+          position: "fixed",
+          top: 8,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "97%",
+          height: 68,
+          borderRadius: "12px",
           bgcolor: "background.paper",
-          boxShadow: scrolled ? 1 : "none",
+          boxShadow: scrolled ? 3 : 1,
           zIndex: 1100,
           display: "flex",
           alignItems: "center",
