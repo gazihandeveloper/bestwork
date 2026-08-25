@@ -44,6 +44,9 @@ export default function CartDrawer() {
   const [successOrder, setSuccessOrder] = useState<number | null>(null);
   const [confetti, setConfetti] = useState(false);
   const [platinMsg, setPlatinMsg] = useState(false);
+  const [celebrated, setCelebrated] = useState<boolean>(() =>
+    typeof window !== "undefined" && window.localStorage.getItem(PLATIN_FLAG) === "1",
+  );
 
   useEffect(() => {
     const openHandler = () => setOpen(true);
@@ -67,18 +70,29 @@ export default function CartDrawer() {
   // Seviye dolumu: kariyer PV + bu siparişin PV'si (özetteki "Toplam PV" ile canlı dolar)
   const levelPV = (user?.total_pv_accumulated ?? 0) + totalPV;
   const isPlatin = levelPV >= 5000;
-  const celebrated =
-    typeof window !== "undefined" && window.localStorage.getItem(PLATIN_FLAG) === "1";
-  const showLevels = !!user && !celebrated;
+  // Barlar platin'e ulaşılıp kutlandıysa gizlenir; PV düşerse (tam alım yapılmazsa) geri gelir.
+  const showLevels = !!user && !(isPlatin && celebrated);
 
-  // Platin'e ulaşınca bir kez konfeti + mesaj; sonrasında tekrar gösterilmez.
+  // Platin'e ulaşınca bir kez kutla; PV platin altına düşerse bayrak sıfırlanır ve barlar geri gelir.
   useEffect(() => {
-    if (!isPlatin || celebrated) return;
+    if (!isPlatin) {
+      if (celebrated) {
+        setCelebrated(false);
+        try {
+          window.localStorage.removeItem(PLATIN_FLAG);
+        } catch {
+          /* yoksay */
+        }
+      }
+      return;
+    }
+    if (celebrated) return;
     try {
       window.localStorage.setItem(PLATIN_FLAG, "1");
     } catch {
       /* yoksay */
     }
+    setCelebrated(true);
     setConfetti(true);
     setPlatinMsg(true);
     const t = setTimeout(() => {
