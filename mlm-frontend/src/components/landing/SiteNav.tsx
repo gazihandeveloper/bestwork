@@ -164,7 +164,7 @@ export default function SiteNav() {
           }}
         />
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 0 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 3 } }}>
           <IconButton
             aria-label={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}
             size="large"
