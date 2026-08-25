@@ -36,10 +36,6 @@ export interface RendererCallbacks {
   onReachBottom: () => void;
 }
 
-function truncate(v: string, max: number): string {
-  return v.length > max ? `${v.slice(0, max - 1)}…` : v;
-}
-
 /** compactNum büyük sayıları okunaklı biçimde kısaltır (8,3B · 10,6Mn · 1,2Mr). */
 function compactNum(v: number): string {
   const trim = (x: number) => (x >= 100 ? Math.round(x).toString() : x.toFixed(1).replace(".", ","));
@@ -285,23 +281,27 @@ export class BinaryTreeRenderer {
       const tx = ax + AVATAR_R + 8;
       const n = d.data;
 
-      // İsim (Inter/title stilinde)
+      // İsim — karta tam sığacak şekilde (taşmadan, sıkıştırarak)
+      const availW = CARD_W / 2 - 10 - tx;
+      const nameEstW = n.name.length * 6.1;
       g.append("text")
         .attr("x", tx)
         .attr("y", top + 13)
         .attr("font-size", 12.5)
         .attr("font-weight", 700)
         .attr("fill", this.colors.text)
-        .text(truncate(n.name, 13));
+        .attr("textLength", Math.min(availW, Math.max(nameEstW, 24)))
+        .attr("lengthAdjust", "spacingAndGlyphs")
+        .text(n.name);
 
-      // Üye kodu
+      // Üye kodu (küçük)
       g.append("text")
         .attr("x", tx)
-        .attr("y", top + 25)
-        .attr("font-size", 9)
+        .attr("y", top + 24)
+        .attr("font-size", 8)
         .attr("font-weight", 600)
         .attr("fill", this.colors.subtext)
-        .text(truncate(`#${n.memberCode}`, 14));
+        .text(`#${n.memberCode}`);
 
       // Pozisyon rozeti (KÖK/SOL/SAĞ)
       const posLabel = n.position === "R" ? "SAĞ" : n.position === "L" ? "SOL" : "KÖK";
@@ -309,7 +309,7 @@ export class BinaryTreeRenderer {
       const posW = Math.max(18, posLabel.length * 4.6 + 9);
       g.append("rect")
         .attr("x", tx)
-        .attr("y", top + 29)
+        .attr("y", top + 28)
         .attr("width", posW)
         .attr("height", 13)
         .attr("rx", 6.5)
@@ -317,7 +317,7 @@ export class BinaryTreeRenderer {
         .attr("fill-opacity", 0.14);
       g.append("text")
         .attr("x", tx + posW / 2)
-        .attr("y", top + 38)
+        .attr("y", top + 37)
         .attr("text-anchor", "middle")
         .attr("font-size", 6.6)
         .attr("font-weight", 800)
@@ -330,7 +330,7 @@ export class BinaryTreeRenderer {
         const rk = n.rank.toLocaleUpperCase("tr-TR").slice(0, 8);
         g.append("text")
           .attr("x", cx2)
-          .attr("y", top + 38)
+          .attr("y", top + 37)
           .attr("font-size", 6.6)
           .attr("font-weight", 800)
           .attr("fill", "#8A6D1A")
@@ -339,32 +339,11 @@ export class BinaryTreeRenderer {
       }
       g.append("text")
         .attr("x", cx2)
-        .attr("y", top + 38)
+        .attr("y", top + 37)
         .attr("font-size", 6.6)
         .attr("font-weight", 800)
         .attr("fill", n.isActive ? this.colors.statusActive : this.colors.statusPassive)
         .text(n.isActive ? "AKTİF" : "PASİF");
-
-      // Sağ üst: rütbe simgesi (diamond) + etiket
-      const rx = CARD_W / 2 - 10 - 12;
-      const ry = top + 14;
-      g.append("circle").attr("cx", rx).attr("cy", ry).attr("r", 12).attr("fill", this.colors.divider);
-      g.append("text")
-        .attr("x", rx)
-        .attr("y", ry + 3.4)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 11)
-        .attr("fill", this.colors.subtext)
-        .text(n.rank ? "◆" : "◇");
-      g.append("text")
-        .attr("x", rx)
-        .attr("y", ry + 21)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 6.4)
-        .attr("font-weight", 700)
-        .attr("letter-spacing", "0.4")
-        .attr("fill", this.colors.subtext)
-        .text((n.rank ?? "GİRİŞİM").toLocaleUpperCase("tr-TR").slice(0, 8));
     });
   }
 
