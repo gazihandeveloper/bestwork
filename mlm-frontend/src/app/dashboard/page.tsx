@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Container from "@mui/material/Container";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -24,6 +25,7 @@ import Chip from "@mui/material/Chip";
 import Snackbar from "@mui/material/Snackbar";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import LinearProgress from "@mui/material/LinearProgress";
 import MilitaryTechRoundedIcon from "@mui/icons-material/MilitaryTechRounded";
@@ -622,6 +624,25 @@ function DashboardContent() {
                     onClick={() => router.push("/career")}
                   />
                 )}
+
+                {/* Başarı Raporu — üye numarasının altı */}
+                <Button
+                  component={Link}
+                  href="/success-report"
+                  size="small"
+                  variant="contained"
+                  startIcon={<BarChartRoundedIcon />}
+                  sx={{
+                    bgcolor: "common.white",
+                    color: "primary.dark",
+                    borderRadius: "28px",
+                    px: 2.5,
+                    fontWeight: 800,
+                    "&:hover": { bgcolor: "#D8F0DC" },
+                  }}
+                >
+                  🏅 Başarı Raporu
+                </Button>
               </Box>
 
               {/* Üye kayıt linki — alt */}

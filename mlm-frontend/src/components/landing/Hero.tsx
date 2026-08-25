@@ -90,45 +90,6 @@ export default function Hero() {
     <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
       <Container maxWidth={false} sx={{ pt: { xs: 3, md: 4 }, pb: { xs: 6, md: 8 } }}>
         <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mt: 1.5,
-            mb: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.75,
-              border: "1.5px solid",
-              borderColor: "primary.main",
-              bgcolor: "background.paper",
-              borderRadius: "28px",
-              px: 2,
-              py: 0.6,
-              boxShadow: 2,
-            }}
-          >
-            <ScheduleRoundedIcon sx={{ fontSize: 16, color: "primary.main" }} />
-            <Typography
-              component="span"
-              variant="caption"
-              sx={{
-                fontSize: 13.5,
-                color: "primary.dark",
-                fontWeight: 800,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} ·{" "}
-              {now.toLocaleTimeString("tr-TR")}
-            </Typography>
-          </Box>
-        </Box>
-        <Box
           role="region"
           aria-roledescription="karusel"
           aria-label="Kampanya ve ürün görselleri"
@@ -148,6 +109,40 @@ export default function Hero() {
             bgcolor: "background.paper",
           }}
         >
+          {/* Tarih/saat — slider'ın sağ üst köşesinde overlay */}
+          <Box
+            aria-hidden
+            sx={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              zIndex: 3,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.75,
+              bgcolor: "rgba(255,255,255,0.92)",
+              borderRadius: "28px",
+              px: 2,
+              py: 0.6,
+              boxShadow: 3,
+              pointerEvents: "none",
+            }}
+          >
+            <ScheduleRoundedIcon sx={{ fontSize: 16, color: "primary.main" }} />
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{
+                fontSize: 13.5,
+                color: "primary.dark",
+                fontWeight: 800,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} ·{" "}
+              {now.toLocaleTimeString("tr-TR")}
+            </Typography>
+          </Box>
           {slides.map((s, i) => {
             const isActive = i === activeIndex;
             const image = fileUrl(s.image_path);

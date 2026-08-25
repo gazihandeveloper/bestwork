@@ -94,8 +94,6 @@ export default function SiteNav() {
           width: "100%",
           height: 64,
           bgcolor: "background.paper",
-          borderBottom: "1px solid",
-          borderColor: "divider",
           boxShadow: scrolled ? 1 : "none",
           zIndex: 1100,
           display: "flex",
