@@ -22,6 +22,7 @@ import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import MailRoundedIcon from "@mui/icons-material/MailRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import PowerSettingsNewRoundedIcon from "@mui/icons-material/PowerSettingsNewRounded";
@@ -67,8 +68,14 @@ export default function SiteNav() {
   const [count, setCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
+  const [now, setNow] = useState<Date>(() => new Date());
   const router = useRouter();
   const { mode, toggleMode } = useThemeContext();
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const refresh = () => setCount(cartCount());
@@ -113,6 +120,23 @@ export default function SiteNav() {
         }}
       >
         <Logo />
+
+        {/* Tarih/saat — logonun sağında */}
+        <Box
+          aria-hidden
+          sx={{
+            display: { xs: "none", sm: "flex" },
+            alignItems: "center",
+            gap: 0.75,
+            ml: 1,
+            color: "text.secondary",
+          }}
+        >
+          <ScheduleRoundedIcon sx={{ fontSize: 17, color: "primary.main" }} />
+          <Typography component="span" variant="caption" sx={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+            {now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long" })} · {now.toLocaleTimeString("tr-TR")}
+          </Typography>
+        </Box>
 
         <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mx: "auto" }}>
           {navLinks.map((l) => {
