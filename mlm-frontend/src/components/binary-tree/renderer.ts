@@ -5,8 +5,6 @@ import {
   AVATAR_R,
   CARD_H,
   CARD_W,
-  COLORS,
-  DARK_COLORS,
   LEVEL_GAP,
   PLACEHOLDER_H,
   PLACEHOLDER_W,
@@ -73,15 +71,20 @@ export class BinaryTreeRenderer {
   private clipIds = new Set<string>();
   private cb: RendererCallbacks;
   private measure: () => { w: number; h: number };
-  /** Aktif renk paleti (karanlık modda DARK_COLORS kullanılır). */
+  /** Aktif renk paleti (temadan türetilir). */
   private colors: TreeColors;
   /** Sonraki nesil yüklenirken yeni tetiklemeyi engeller (basamaklama önlenir). */
   private awaitingLoad = false;
 
-  constructor(svgEl: SVGSVGElement, cb: RendererCallbacks, measure: () => { w: number; h: number }, dark = false) {
+  constructor(
+    svgEl: SVGSVGElement,
+    cb: RendererCallbacks,
+    measure: () => { w: number; h: number },
+    colors: TreeColors,
+  ) {
     this.cb = cb;
     this.measure = measure;
-    this.colors = dark ? DARK_COLORS : COLORS;
+    this.colors = colors;
     this.svg = d3.select(svgEl);
     this.svg.selectAll("*").remove();
 
@@ -281,14 +284,14 @@ export class BinaryTreeRenderer {
       const tx = ax + AVATAR_R + 8;
       const n = d.data;
 
-      // İsim — küçük, doğal genişlikte (sıkıştırma yok)
+      // İsim — en fazla 14 karakter
       g.append("text")
         .attr("x", tx)
         .attr("y", top + 13)
         .attr("font-size", 10.5)
         .attr("font-weight", 700)
         .attr("fill", this.colors.text)
-        .text(n.name);
+        .text(n.name.length > 14 ? n.name.slice(0, 14) : n.name);
 
       // Üye kodu (küçük)
       g.append("text")
@@ -320,19 +323,17 @@ export class BinaryTreeRenderer {
         .attr("fill", accent)
         .text(posLabel);
 
-      // Rütbe (metin) → Paket rozeti → Durum (AKTİF/PASİF)
+      // Seviye (her zaman — rütbe yoksa GİRİŞİMCİ) → Paket rozeti → Durum (AKTİF/PASİF)
       let cx2 = tx + posW + 7;
-      if (n.rank) {
-        const rk = n.rank.toLocaleUpperCase("tr-TR").slice(0, 8);
-        g.append("text")
-          .attr("x", cx2)
-          .attr("y", top + 37)
-          .attr("font-size", 6.6)
-          .attr("font-weight", 800)
-          .attr("fill", "#8A6D1A")
-          .text(rk);
-        cx2 += rk.length * 4.6 + 9;
-      }
+      const rk = (n.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("tr-TR").slice(0, 9);
+      g.append("text")
+        .attr("x", cx2)
+        .attr("y", top + 37)
+        .attr("font-size", 6.6)
+        .attr("font-weight", 800)
+        .attr("fill", "#8A6D1A")
+        .text(rk);
+      cx2 += rk.length * 4.6 + 9;
       if (n.packageName) {
         const pk = n.packageName.toLocaleUpperCase("tr-TR").slice(0, 12);
         const pw = Math.max(20, pk.length * 4.2 + 10);

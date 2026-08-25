@@ -388,11 +388,16 @@ export async function placePendingUserByAdmin(userId: number, sponsorId: number,
 }
 
 // Ağaç
-export async function getTree(userId: number, depth = 3, period?: string): Promise<TreeNode> {
+export interface TreeResult {
+  tree: TreeNode;
+  min_month: string | null;
+}
+
+export async function getTree(userId: number, depth = 3, period?: string): Promise<TreeResult> {
   const params: Record<string, unknown> = { user_id: userId, depth };
   if (period) params.month = period;
-  const { data } = await api.get<{ tree: TreeNode }>("/tree", { params });
-  return data.tree;
+  const { data } = await api.get<{ tree: TreeNode; min_month: string | null }>("/tree", { params });
+  return { tree: data.tree, min_month: data.min_month ?? null };
 }
 
 // Cüzdan

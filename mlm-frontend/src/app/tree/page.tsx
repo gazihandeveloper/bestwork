@@ -22,12 +22,16 @@ function TreeContent() {
   const [root, setRoot] = useState<TreeNode | null>(null);
   const [error, setError] = useState("");
   const [period, setPeriod] = useState<string>(currentMonth);
+  const [minMonth, setMinMonth] = useState<string>("");
 
   useEffect(() => {
     if (!user) return;
     setRoot(null);
     getTree(user.id, 2, period)
-      .then(setRoot)
+      .then((res) => {
+        setRoot(res.tree);
+        setMinMonth(res.min_month ?? "");
+      })
       .catch((err) => setError(getErrorMessage(err)));
   }, [user, period]);
 
@@ -46,7 +50,7 @@ function TreeContent() {
         Binary Ağacım
       </Typography>
 
-      <BinaryTree data={root} depth={2} period={period} onPeriodChange={setPeriod} />
+      <BinaryTree data={root} depth={2} period={period} onPeriodChange={setPeriod} minMonth={minMonth} />
     </Container>
   );
 }
