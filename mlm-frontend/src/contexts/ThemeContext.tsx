@@ -72,6 +72,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       return "#3B6B35";
     }
   });
+  // Sayfa boyanmadan önce inline script "—brand-color" CSS değişkenini koyar:
+  // böylece seçilen renk ilk karede bile direkt uygulanır (yeşil flaş yok).
+  const [color, setColorState] = useState<string>(() => {
+    if (typeof window === "undefined") return "#3B6B35";
+    try {
+      const css = window.getComputedStyle(document.documentElement).getPropertyValue("--brand-color").trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(css)) return css;
+      const saved = window.localStorage.getItem(COLOR_KEY);
+      return saved && /^#[0-9a-fA-F]{6}$/.test(saved) ? saved : "#3B6B35";
+    } catch {
+      return "#3B6B35";
+    }
+  });
   const { user } = useAuth();
   const [previewColor, setPreviewColor] = useState<string | null>(null);
   const [mode, setMode] = useState<"light" | "dark">(initialMode);
@@ -103,17 +116,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           setColorState(saved);
           try {
             window.localStorage.setItem(COLOR_KEY, saved);
-          } catch {
-            /* yoksay */
-          }
-        } else {
-          setColorState("#3B6B35");
-          try {
-            window.localStorage.removeItem(COLOR_KEY);
+            document.documentElement.style.setProperty("--brand-color", saved);
           } catch {
             /* yoksay */
           }
         }
+        // Sunucuda renk yoksa kullanıcının yerelde seçtiği renk korunur (yeşile dönülmez).
       })
       .catch(() => {});
     return () => {
@@ -196,6 +204,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setColorState(hex);
         try {
           window.localStorage.setItem(COLOR_KEY, hex);
+          document.documentElement.style.setProperty("--brand-color", hex);
         } catch {
           /* yoksay */
         }

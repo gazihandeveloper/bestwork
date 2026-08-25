@@ -25,6 +25,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr">
+      <head>
+        {/* Sayfa boyanmadan önce seçili tema rengini uygula (yeşil flaş yok) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var c=localStorage.getItem("bestwork_color");if(c&&/^#[0-9a-fA-F]{6}$/.test(c)){document.documentElement.style.setProperty("--brand-color",c);}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${roboto.variable} ${roboto.className}`}>
         <AppRouterCacheProvider>
           <Providers>

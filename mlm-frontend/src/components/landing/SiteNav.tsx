@@ -108,7 +108,7 @@ export default function SiteNav() {
           transform: "translateX(-50%)",
           width: "90%",
           height: 95,
-          bgcolor: "background.paper",
+          bgcolor: "background.default",
           boxShadow: "none",
           zIndex: 1100,
           display: "flex",
@@ -170,9 +170,8 @@ export default function SiteNav() {
             size="large"
             onClick={toggleMode}
             sx={{
-              color: "text.secondary",
-              borderRadius: "16px",
-              "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+              color: mode === "dark" ? "#FFB300" : "primary.main",
+              "&:hover": { bgcolor: "transparent" },
             }}
           >
             {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
