@@ -57,16 +57,8 @@ function Logo() {
 export default function SiteNav() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const refresh = () => setCount(cartCount());
@@ -90,20 +82,16 @@ export default function SiteNav() {
         aria-label="Ana menü"
         sx={{
           position: "fixed",
-          top: 8,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "97%",
+          top: 0,
+          left: 0,
+          width: "100%",
           height: 68,
-          borderRadius: "12px",
           bgcolor: "background.paper",
-          boxShadow: scrolled ? 3 : 1,
+          boxShadow: "none",
           zIndex: 1100,
           display: "flex",
           alignItems: "center",
           px: 2.5,
-          transition: (theme) =>
-            `box-shadow ${theme.transitions.duration.short}ms`,
         }}
       >
         <Logo />
