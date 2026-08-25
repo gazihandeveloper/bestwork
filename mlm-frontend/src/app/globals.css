@@ -76,6 +76,17 @@ a {
   }
 }
 
+/* Platin kutlama mesajı için yumuşak büyüme animasyonu */
+@keyframes bw-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
 /* Hareket azaltma tercihi — güvenlik ağı */
 @media (prefers-reduced-motion: reduce) {
   *,

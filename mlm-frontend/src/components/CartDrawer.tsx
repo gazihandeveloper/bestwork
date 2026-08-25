@@ -299,17 +299,20 @@ export default function CartDrawer() {
                   {isPlatin && platinMsg && (
                     <Box
                       sx={{
-                        mt: 1,
-                        p: 1,
-                        borderRadius: 2,
+                        mt: 1.5,
+                        p: 1.5,
+                        borderRadius: 2.5,
                         bgcolor: "primary.main",
                         color: "#fff",
                         textAlign: "center",
                         fontWeight: 800,
-                        fontSize: 13,
+                        fontSize: { xs: 16, sm: 18 },
+                        letterSpacing: 0.3,
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+                        animation: "bw-pulse 1.2s ease-in-out 2",
                       }}
                     >
-                      🎉 Artık Platin oldunuz!
+                      🎉 Artık Platin seviyesine ulaştınız!
                     </Box>
                   )}
                 </Box>
