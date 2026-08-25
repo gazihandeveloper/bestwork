@@ -257,257 +257,293 @@ export class BinaryTreeRenderer {
       .attr("y", -CARD_H / 2)
       .attr("width", CARD_W)
       .attr("height", CARD_H)
-      .attr("rx", 14)
+      .attr("rx", 16)
       .attr("fill", this.colors.card)
       .attr("stroke", this.colors.divider)
       .attr("stroke-width", 1)
       .attr("filter", "url(#bt-card-shadow)");
 
-    // MD3 sol şerit — kartın bacak kimliğini verir (kök daha koyu, sol mavi, sağ mor)
+    // Sol bacak şeridi — kartın kimliğini verir (kök koyu mavi, sol mavi, sağ mor)
     sel
       .append("rect")
       .attr("class", "bt-card-accent")
       .attr("x", -CARD_W / 2)
       .attr("y", -CARD_H / 2)
-      .attr("width", 3.5)
+      .attr("width", 4)
       .attr("height", CARD_H)
-      .attr("rx", 1.75)
+      .attr("rx", 2)
       .attr("fill", (d) => this.accent(d));
 
     this.buildAvatar(sel);
     this.buildCardHeader(sel);
-    this.buildPositionBadge(sel);
-    this.buildBadgeRow(sel);
-    this.buildMetrics(sel);
-    this.buildLegMeter(sel);
-    this.buildInfoButton(sel);
+    this.buildProgress(sel);
+    this.buildStats(sel);
+    this.buildFooter(sel);
 
     sel.append("g").attr("class", "bt-badge").attr("transform", `translate(0,${CARD_H / 2 + 3})`);
   }
 
-  /** buildCardHeader isim + üye kodu; avatar sağına hizalanır. */
+  /**
+   * buildCardHeader Stitch Network Member Card başlığı: avatar sağında isim + üye kodu,
+   * altında pozisyon/rütbe/durum satırı, sağ üstte rütbe simgesi + etiket.
+   */
   private buildCardHeader(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const x = -CARD_W / 2 + 8 + AVATAR_R * 2 + 6;
-    sel
-      .append("text")
-      .attr("x", x)
-      .attr("y", -CARD_H / 2 + 12)
-      .attr("font-size", 9.5)
-      .attr("font-weight", 800)
-      .attr("fill", this.colors.text)
-      .text((d) => truncate(d.data.name, 10));
-
-    // Üye numarası — rozetsiz, küçük düz yazı
-    sel
-      .append("text")
-      .attr("x", x)
-      .attr("y", -CARD_H / 2 + 23)
-      .attr("font-size", 7.5)
-      .attr("font-weight", 700)
-      .attr("fill", this.colors.subtext)
-      .text((d) => truncate(`#${d.data.memberCode}`, 12));
-  }
-
-  /** buildPositionBadge bacak etiketini (KÖK/SOL/SAĞ) kartın sağ üstüne MD3 rozet olarak çizer. */
-  private buildPositionBadge(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
-      const label = d.data.position === "R" ? "SAĞ" : d.data.position === "L" ? "SOL" : "KÖK";
-      const cx = CARD_W / 2 - 14;
-      const cy = -CARD_H / 2 + 9;
-      const w = Math.max(16, label.length * 4.4 + 8);
+      const top = -CARD_H / 2;
+      const left = -CARD_W / 2;
+      const ax = left + 10 + AVATAR_R;
+      const tx = ax + AVATAR_R + 8;
+      const n = d.data;
+
+      // İsim (Inter/title stilinde)
+      g.append("text")
+        .attr("x", tx)
+        .attr("y", top + 13)
+        .attr("font-size", 12.5)
+        .attr("font-weight", 700)
+        .attr("fill", this.colors.text)
+        .text(truncate(n.name, 13));
+
+      // Üye kodu
+      g.append("text")
+        .attr("x", tx)
+        .attr("y", top + 25)
+        .attr("font-size", 9)
+        .attr("font-weight", 600)
+        .attr("fill", this.colors.subtext)
+        .text(truncate(`#${n.memberCode}`, 14));
+
+      // Pozisyon rozeti (KÖK/SOL/SAĞ)
+      const posLabel = n.position === "R" ? "SAĞ" : n.position === "L" ? "SOL" : "KÖK";
+      const accent = this.accent(d);
+      const posW = Math.max(18, posLabel.length * 4.6 + 9);
       g.append("rect")
-        .attr("x", cx - w / 2)
-        .attr("y", cy - 6)
-        .attr("width", w)
-        .attr("height", 12)
-        .attr("rx", 6)
-        .attr("fill", this.accent(d))
+        .attr("x", tx)
+        .attr("y", top + 29)
+        .attr("width", posW)
+        .attr("height", 13)
+        .attr("rx", 6.5)
+        .attr("fill", accent)
         .attr("fill-opacity", 0.14);
       g.append("text")
-        .attr("x", cx)
-        .attr("y", cy + 2)
+        .attr("x", tx + posW / 2)
+        .attr("y", top + 38)
         .attr("text-anchor", "middle")
-        .attr("font-size", 6.8)
+        .attr("font-size", 6.6)
         .attr("font-weight", 800)
-        .attr("fill", this.accent(d))
-        .text(label);
+        .attr("fill", accent)
+        .text(posLabel);
+
+      // Rütbe + durum (referanstaki BRONZ / PASİF satırı)
+      let cx2 = tx + posW + 7;
+      if (n.rank) {
+        const rk = n.rank.toLocaleUpperCase("tr-TR").slice(0, 8);
+        g.append("text")
+          .attr("x", cx2)
+          .attr("y", top + 38)
+          .attr("font-size", 6.6)
+          .attr("font-weight", 800)
+          .attr("fill", "#8A6D1A")
+          .text(rk);
+        cx2 += rk.length * 4.6 + 9;
+      }
+      g.append("text")
+        .attr("x", cx2)
+        .attr("y", top + 38)
+        .attr("font-size", 6.6)
+        .attr("font-weight", 800)
+        .attr("fill", n.isActive ? this.colors.statusActive : this.colors.statusPassive)
+        .text(n.isActive ? "AKTİF" : "PASİF");
+
+      // Sağ üst: rütbe simgesi (diamond) + etiket
+      const rx = CARD_W / 2 - 10 - 12;
+      const ry = top + 14;
+      g.append("circle").attr("cx", rx).attr("cy", ry).attr("r", 12).attr("fill", this.colors.divider);
+      g.append("text")
+        .attr("x", rx)
+        .attr("y", ry + 3.4)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 11)
+        .attr("fill", this.colors.subtext)
+        .text(n.rank ? "◆" : "◇");
+      g.append("text")
+        .attr("x", rx)
+        .attr("y", ry + 21)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 6.4)
+        .attr("font-weight", 700)
+        .attr("letter-spacing", "0.4")
+        .attr("fill", this.colors.subtext)
+        .text((n.rank ?? "GİRİŞİM").toLocaleUpperCase("tr-TR").slice(0, 8));
     });
   }
 
-  /** buildBadgeRow rütbe + durum rozetlerini başlığın altına MD3 chip olarak çizer. */
-  private buildBadgeRow(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+  /** buildProgress bacak gücü satırı: SOL % · Zayıf: X · % SAĞ + doğrusal çubuk. */
+  private buildProgress(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
-      const chips: { text: string; fill: string; color: string }[] = [];
-      if (d.data.rank)
-        chips.push({
-          text: d.data.rank.toLocaleUpperCase("tr-TR").slice(0, 9),
-          fill: this.accent(d),
-          color: this.accent(d),
-        });
-      if (d.data.isActive)
-        chips.push({ text: "AKTİF", fill: this.colors.statusActive, color: this.colors.statusActive });
-      else
-        chips.push({ text: "PASİF", fill: this.colors.statusPassive, color: this.colors.statusPassive });
-
-      if (chips.length === 0) return;
-      const widths = chips.map((c) => Math.max(24, c.text.length * 3.8 + 12));
-      const gap = 4;
-      let x = -CARD_W / 2 + 8;
-      const y = -CARD_H / 2 + 33; // rozet merkezi
-      chips.forEach((c, idx) => {
-        const w = widths[idx];
-        g.append("rect")
-          .attr("x", x)
-          .attr("y", y - 6)
-          .attr("width", w)
-          .attr("height", 12)
-          .attr("rx", 6)
-          .attr("fill", c.fill)
-          .attr("fill-opacity", 0.13);
-        g.append("text")
-          .attr("x", x + w / 2)
-          .attr("y", y + 2.2)
-          .attr("text-anchor", "middle")
-          .attr("font-size", 6.5)
-          .attr("font-weight", 800)
-          .attr("fill", c.color)
-          .text(c.text);
-        x += w + gap;
-      });
-    });
-  }
-
-  /** buildMetrics sol/sağ bacak PV ve CV değerlerini MD3 düzeninde alt kısma dizer. */
-  private buildMetrics(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    sel.each((d, i, groups) => {
-      const g = d3.select(groups[i]);
-      const leftX = -CARD_W / 2 + 8;
-      const rightX = CARD_W / 2 - 8;
-      g.append("line")
-        .attr("x1", leftX)
-        .attr("x2", rightX)
-        .attr("y1", 0)
-        .attr("y2", 0)
-        .attr("stroke", this.colors.divider)
-        .attr("stroke-width", 0.75);
-
-      const metric = (y: number, l: string, r: string, lv: number, rv: number) => {
-        g.append("text")
-          .attr("x", leftX)
-          .attr("y", y)
-          .attr("font-size", 6.3)
-          .attr("font-weight", 700)
-          .attr("letter-spacing", "0.4")
-          .attr("fill", this.colors.subtext)
-          .text(l);
-        g.append("text")
-          .attr("x", leftX + 24)
-          .attr("y", y)
-          .attr("font-size", 7.5)
-          .attr("font-weight", 800)
-          .attr("fill", this.colors.legLeft)
-          .text(compactNum(lv));
-        g.append("text")
-          .attr("x", rightX)
-          .attr("y", y)
-          .attr("text-anchor", "end")
-          .attr("font-size", 6.3)
-          .attr("font-weight", 700)
-          .attr("letter-spacing", "0.4")
-          .attr("fill", this.colors.subtext)
-          .text(r);
-        g.append("text")
-          .attr("x", rightX - 20)
-          .attr("y", y)
-          .attr("text-anchor", "end")
-          .attr("font-size", 7.5)
-          .attr("font-weight", 800)
-          .attr("fill", this.colors.legRight)
-          .text(compactNum(rv));
-      };
-      metric(7, "SOL PV", "SAĞ PV", d.data.pvLeft, d.data.pvRight);
-      metric(19, "SOL CV", "SAĞ CV", d.data.cvLeft, d.data.cvRight);
-    });
-  }
-
-  /** buildLegMeter bacak dağılımını (güçlü bacak + ilerleme çubuğu) MD3 stiliyle çizer. */
-  private buildLegMeter(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    sel.each((d, i, groups) => {
-      const g = d3.select(groups[i]);
+      const l = -CARD_W / 2 + 12;
+      const r = CARD_W / 2 - 12;
+      const cy = -CARD_H / 2 + 50;
       const total = d.data.pvLeft + d.data.pvRight;
       const pctL = total > 0 ? Math.round((d.data.pvLeft / total) * 100) : 100;
       const pctR = 100 - pctL;
-      const strongL = d.data.pvLeft >= d.data.pvRight;
-      const bx = -CARD_W / 2 + 8;
-      const bw = CARD_W - 16;
-      const by = 33;
+      const weak = d.data.pvLeft >= d.data.pvRight ? "SAĞ" : "SOL";
 
       g.append("text")
-        .attr("x", 0)
-        .attr("y", 30)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 6.3)
+        .attr("x", l)
+        .attr("y", cy)
+        .attr("font-size", 8)
         .attr("font-weight", 800)
-        .attr("letter-spacing", "0.4")
-        .attr("fill", strongL ? this.colors.left : this.colors.right)
-        .text(strongL ? `GÜÇ: SOL %${pctL}` : `GÜÇ: SAĞ %${pctR}`);
+        .attr("fill", this.colors.legLeft)
+        .text(`SOL ${pctL}%`);
+      g.append("text")
+        .attr("x", 0)
+        .attr("y", cy)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 6.5)
+        .attr("font-weight", 600)
+        .attr("fill", this.colors.subtext)
+        .text(`Zayıf: ${weak}`);
+      g.append("text")
+        .attr("x", r)
+        .attr("y", cy)
+        .attr("text-anchor", "end")
+        .attr("font-size", 8)
+        .attr("font-weight", 800)
+        .attr("fill", this.colors.legRight)
+        .text(`${pctR}% SAĞ`);
+
+      const by = cy + 6;
+      const bw = r - l;
       g.append("rect")
-        .attr("x", bx)
+        .attr("x", l)
         .attr("y", by)
         .attr("width", bw)
-        .attr("height", 3.5)
-        .attr("rx", 1.75)
+        .attr("height", 5)
+        .attr("rx", 2.5)
         .attr("fill", this.colors.divider);
       g.append("rect")
-        .attr("x", bx)
+        .attr("x", l)
         .attr("y", by)
         .attr("width", (bw * pctL) / 100)
-        .attr("height", 3.5)
-        .attr("rx", 1.75)
+        .attr("height", 5)
+        .attr("rx", 2.5)
         .attr("fill", this.colors.legLeft);
     });
   }
 
-  /**
-   * buildInfoButton kartın alt-sağına "i" bilgi düğmesini çizer.
-   * Tıklanınca üye detay modalı açılır; kartın aç/kapat davranışını tetiklemez.
-   */
-  private buildInfoButton(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+  /** buildStats SOL/SAĞ CV ve PV istatistik tablosu (referanstaki 2 sütunlu grid). */
+  private buildStats(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
     sel.each((d, i, groups) => {
       const g = d3.select(groups[i]);
-      const accent = this.accent(d);
-      const btn = g
-        .append("g")
-        .attr("class", "bt-info")
-        .attr("transform", `translate(${CARD_W / 2 - 18},${CARD_H / 2 + 14})`)
-        .style("cursor", "pointer")
-        .on("click", (event: MouseEvent) => {
-          event.stopPropagation();
-          this.cb.onInfoClick(d.data);
-        });
-      btn
-        .append("circle")
-        .attr("r", 8)
-        .attr("fill", accent)
-        .attr("fill-opacity", 0.14)
-        .attr("stroke", accent)
-        .attr("stroke-width", 1.2);
-      btn
-        .append("text")
-        .attr("y", 3)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 10)
-        .attr("font-weight", 800)
-        .attr("fill", accent)
-        .text("i");
+      const sx = -CARD_W / 2 + 12;
+      const rx = CARD_W / 2 - 12;
+      const sy = -CARD_H / 2 + 66;
+      const sh = 70;
+      const sw = rx - sx;
+
+      g.append("rect")
+        .attr("x", sx)
+        .attr("y", sy)
+        .attr("width", sw)
+        .attr("height", sh)
+        .attr("rx", 8)
+        .attr("fill", this.colors.card)
+        .attr("stroke", this.colors.divider)
+        .attr("stroke-width", 0.8);
+      // Dikey orta ayırıcı + satır ayırıcı
+      g.append("line").attr("x1", 0).attr("y1", sy).attr("x2", 0).attr("y2", sy + sh).attr("stroke", this.colors.divider).attr("stroke-width", 0.8);
+      g.append("line").attr("x1", sx).attr("y1", sy + sh / 2).attr("x2", rx).attr("y2", sy + sh / 2).attr("stroke", this.colors.divider).attr("stroke-width", 0.8);
+
+      const row = (labelY: number, lLabel: string, rLabel: string, lv: number, rv: number) => {
+        // Sol hücre (mavi)
+        g.append("text")
+          .attr("x", sx + 7)
+          .attr("y", labelY)
+          .attr("font-size", 6.2)
+          .attr("font-weight", 700)
+          .attr("letter-spacing", "0.4")
+          .attr("fill", this.colors.subtext)
+          .text(lLabel);
+        g.append("text")
+          .attr("x", sx + 7)
+          .attr("y", labelY + 14)
+          .attr("font-size", 11.5)
+          .attr("font-weight", 800)
+          .attr("fill", this.colors.legLeft)
+          .text(compactNum(lv));
+        // Sağ hücre (mor)
+        g.append("text")
+          .attr("x", rx - 7)
+          .attr("y", labelY)
+          .attr("text-anchor", "end")
+          .attr("font-size", 6.2)
+          .attr("font-weight", 700)
+          .attr("letter-spacing", "0.4")
+          .attr("fill", this.colors.subtext)
+          .text(rLabel);
+        g.append("text")
+          .attr("x", rx - 7)
+          .attr("y", labelY + 14)
+          .attr("text-anchor", "end")
+          .attr("font-size", 11.5)
+          .attr("font-weight", 800)
+          .attr("fill", this.colors.legRight)
+          .text(compactNum(rv));
+      };
+      row(sy + 12, "SOL.CV", "SAĞ.CV", d.data.cvLeft, d.data.cvRight);
+      row(sy + sh / 2 + 12, "SOL.PV", "SAĞ.PV", d.data.pvLeft, d.data.pvRight);
+    });
+  }
+
+  /** buildFooter alt eylem düğmeleri; ortadaki "i" üye detay modalını açar. */
+  private buildFooter(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
+    sel.each((d, i, groups) => {
+      const g = d3.select(groups[i]);
+      const cy = CARD_H / 2 - 20;
+      const xs = [-26, 0, 26];
+      const glyphs = ["↑", "i", "↗"];
+      const fills = ["#D4E3FF", "#DAE2F9", "#D9E2FF"];
+      const texts = ["#001C3A", "#004786", "#121B30"];
+
+      // Orta düğmenin üstündeki bağlantı çizgisi
+      g.append("line")
+        .attr("x1", 0)
+        .attr("y1", cy - 18)
+        .attr("x2", 0)
+        .attr("y2", cy - 6)
+        .attr("stroke", this.colors.divider)
+        .attr("stroke-width", 1);
+
+      xs.forEach((x, k) => {
+        const btn = g
+          .append("g")
+          .attr("transform", `translate(${x},${cy})`)
+          .style("cursor", "pointer");
+        btn.append("circle").attr("r", 11).attr("fill", fills[k]);
+        btn
+          .append("text")
+          .attr("y", 3.4)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 10)
+          .attr("font-weight", 800)
+          .attr("fill", texts[k])
+          .text(glyphs[k]);
+        if (k === 1) {
+          btn.on("click", (event: MouseEvent) => {
+            event.stopPropagation();
+            this.cb.onInfoClick(d.data);
+          });
+        }
+      });
     });
   }
 
   private buildAvatar(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
-    const cx = -CARD_W / 2 + 8 + AVATAR_R;
-    const cy = -CARD_H / 2 + 8 + AVATAR_R;
+    const cx = -CARD_W / 2 + 10 + AVATAR_R;
+    const cy = -CARD_H / 2 + 10 + AVATAR_R;
 
     sel
       .append("circle")
@@ -522,9 +558,9 @@ export class BinaryTreeRenderer {
       .filter((d) => !d.data.imagePath)
       .append("text")
       .attr("x", cx)
-      .attr("y", cy + 3.5)
+      .attr("y", cy + 5.5)
       .attr("text-anchor", "middle")
-      .attr("font-size", 9)
+      .attr("font-size", 15)
       .attr("font-weight", 800)
       .attr("fill", "#fff")
       .text((d) => (d.data.name.charAt(0) || "?").toLocaleUpperCase("tr-TR"));
@@ -554,12 +590,12 @@ export class BinaryTreeRenderer {
     // Aktif/pasif durum noktası (avatarın sağ-altı)
     sel
       .append("circle")
-      .attr("cx", cx + AVATAR_R - 3.5)
-      .attr("cy", cy + AVATAR_R - 3.5)
-      .attr("r", 3.5)
+      .attr("cx", cx + AVATAR_R - 5)
+      .attr("cy", cy + AVATAR_R - 5)
+      .attr("r", 5)
       .attr("fill", (d) => (d.data.isActive ? this.colors.statusActive : this.colors.statusPassive))
       .attr("stroke", "#fff")
-      .attr("stroke-width", 1.3);
+      .attr("stroke-width", 2);
   }
 
   private buildPlaceholder(sel: d3.Selection<SVGGElement, HNode, SVGGElement, unknown>): void {
