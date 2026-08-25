@@ -108,7 +108,8 @@ export default function SiteNav() {
                 startIcon={l.icon}
                 sx={{
                   color: active ? "primary.main" : "text.primary",
-                  fontWeight: active ? 700 : 400,
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 17,
                   bgcolor: active
                     ? (theme) => alpha(theme.palette.secondary.main, 0.5)
                     : "transparent",
