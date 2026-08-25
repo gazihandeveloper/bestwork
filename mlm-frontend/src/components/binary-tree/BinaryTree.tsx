@@ -63,7 +63,7 @@ function periodOptions(): string[] {
   let y = 2020;
   let m = 6;
   while (y < end.getFullYear() || (y === end.getFullYear() && m <= end.getMonth() + 1)) {
-    arr.push(`${y}${String(m).padStart(2, "0")}`);
+    arr.push(`${y}-${String(m).padStart(2, "0")}`);
     m++;
     if (m > 12) {
       m = 1;
@@ -303,7 +303,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange }:
           >
             {periodOptions().map((v) => (
               <MenuItem key={v} value={v}>
-                {`${v.slice(0, 4)}-${v.slice(4)}`}
+                {v}
               </MenuItem>
             ))}
           </Select>
