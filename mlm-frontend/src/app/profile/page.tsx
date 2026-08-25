@@ -12,6 +12,8 @@ import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import Link from "next/link";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -74,6 +76,18 @@ function ProfileContent() {
                 </IconButton>
                 <Chip label={user?.role === "admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"} color="secondary" />
               </Box>
+
+              {/* Başarı Raporu rozeti — üye numarasının altı */}
+              <Button
+                component={Link}
+                href="/success-report"
+                size="small"
+                variant="contained"
+                startIcon={<BarChartRoundedIcon />}
+                sx={{ mb: 2, borderRadius: "28px", fontWeight: 800 }}
+              >
+                🏅 Başarı Raporu
+              </Button>
 
               <Grid container spacing={1.5}>
                 {infoItems.map((item) => (
