@@ -15,6 +15,11 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
+import PentagonRoundedIcon from "@mui/icons-material/PentagonRounded";
+import CircleRoundedIcon from "@mui/icons-material/CircleRounded";
+import HexagonRoundedIcon from "@mui/icons-material/HexagonRounded";
+import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
+import SquareRoundedIcon from "@mui/icons-material/SquareRounded";
 import { alpha } from "@mui/material/styles";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +27,19 @@ import { listCareer, getRanks, getErrorMessage } from "@/services/api";
 import type { CareerProgress, Rank } from "@/services/api";
 
 const fmt = (v: number) => v.toLocaleString("tr-TR");
+
+// Stitch panelindeki gibi her rütbeye özel ikon + renk (adına göre eşleşir)
+function rankMeta(name: string): { icon: typeof DiamondRoundedIcon; color: string } {
+  const n = name.toLocaleLowerCase("tr-TR");
+  const map: Record<string, { icon: typeof DiamondRoundedIcon; color: string }> = {
+    jade: { icon: PentagonRoundedIcon, color: "#2e7d32" },
+    pearl: { icon: CircleRoundedIcon, color: "#9e9e9e" },
+    safir: { icon: HexagonRoundedIcon, color: "#1565c0" },
+    ruby: { icon: DiamondRoundedIcon, color: "#c62828" },
+    zümrüt: { icon: SquareRoundedIcon, color: "#43a047" },
+  };
+  return map[n] ?? { icon: DiamondRoundedIcon, color: "#90caf9" };
+}
 
 function CareerContent() {
   const { user } = useAuth();
@@ -82,54 +100,113 @@ function CareerContent() {
         </Card>
       )}
 
-      {/* Sıradaki hedef bandı */}
-      {currentStep && (
-        <Card
-          sx={{
-            mb: 4,
-            borderRadius: "24px",
-            border: "1px solid",
-            borderColor: "divider",
-            background: (theme) =>
-              `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-            color: "common.white",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <StarRoundedIcon sx={{ color: "#D8F0DC" }} />
-              <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,0.9)" }}>
-                SIRADAKİ HEDEF
-              </Typography>
-            </Box>
-            <Typography variant="h4" sx={{ fontWeight: 900 }}>
-              {currentStep.rank.name}
+      {/* Kariyer seviyeleri — Stitch paneli: yatay kaydırılabilir rütbe kartları */}
+      <Card sx={{ mb: 4, borderRadius: "24px", border: "1px solid", borderColor: "divider" }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <EmojiEventsRoundedIcon sx={{ color: "primary.main" }} />
+            <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.5, color: "text.secondary" }}>
+              KARİYER SEVİYELERİ
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
-              Sol {fmt(currentStep.rank.required_left_pv)} PV · Sağ {fmt(currentStep.rank.required_right_pv)} PV
+            <Box sx={{ flexGrow: 1 }} />
+            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
+              {currentStep ? `Sıradaki: ${currentStep.rank.name}` : "Tümü kazanıldı 🎉"}
             </Typography>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2, flexWrap: "wrap", gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Sol: {fmt(leftPV)} / {fmt(currentStep.rank.required_left_pv)} PV
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Sağ: {fmt(rightPV)} / {fmt(currentStep.rank.required_right_pv)} PV
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={Math.min(100, Math.round((leftPV / currentStep.rank.required_left_pv) * 100))}
-              sx={{
-                mt: 1,
-                borderRadius: 4,
-                height: 10,
-                bgcolor: "rgba(255,255,255,0.25)",
-                "& .MuiLinearProgress-bar": { bgcolor: "#D8F0DC", borderRadius: 4 },
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              overflowX: "auto",
+              pb: 1,
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": { display: "none" },
+            }}
+          >
+            {steps.map((s) => {
+              const meta = rankMeta(s.rank.name);
+              const Icon = meta.icon;
+              return (
+                <Box
+                  key={s.rank.id}
+                  sx={{
+                    flex: "0 0 auto",
+                    width: 150,
+                    height: 100,
+                    borderRadius: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 0.75,
+                    cursor: "pointer",
+                    transition: "transform 200ms ease, box-shadow 200ms ease",
+                    "&:hover": { transform: "translateY(-3px)" },
+                    bgcolor: s.isActive
+                      ? "primary.main"
+                      : s.next
+                        ? (theme) => alpha(theme.palette.primary.main, 0.12)
+                        : s.isAchieved
+                          ? (theme) => alpha(theme.palette.success.main, 0.12)
+                          : (theme) => alpha(theme.palette.secondary.main, 0.06),
+                    border: "1.5px solid",
+                    borderColor: s.isActive
+                      ? "primary.main"
+                      : s.next
+                        ? "primary.main"
+                        : s.isAchieved
+                          ? "success.main"
+                          : "divider",
+                    boxShadow: s.isActive || s.next ? 4 : 0,
+                  }}
+                >
+                  <Box sx={{ position: "relative" }}>
+                    <Icon sx={{ fontSize: 40, color: s.isActive ? "#fff" : meta.color }} />
+                    {s.isAchieved && (
+                      <CheckCircleRoundedIcon
+                        sx={{
+                          position: "absolute",
+                          top: -6,
+                          right: -12,
+                          fontSize: 18,
+                          color: "success.main",
+                          bgcolor: "background.paper",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    )}
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: 11,
+                      textAlign: "center",
+                      px: 1,
+                      lineHeight: 1.2,
+                      color: s.isActive ? "#fff" : s.isAchieved ? "success.dark" : s.next ? "primary.main" : "text.secondary",
+                    }}
+                  >
+                    {s.rank.name.toLocaleUpperCase("tr-TR")}
+                  </Typography>
+                  {(s.isActive || s.next) && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: s.isActive ? "rgba(255,255,255,0.85)" : "primary.main",
+                      }}
+                    >
+                      {s.isActive ? "GÜNCEL" : "SONRAKİ"}
+                    </Typography>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Rütbe kutuları — satırda 3 */}
       <Grid container spacing={2}>
