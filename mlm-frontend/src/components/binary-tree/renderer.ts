@@ -374,7 +374,7 @@ export class BinaryTreeRenderer {
       const g = d3.select(groups[i]);
       const l = -CARD_W / 2 + 12;
       const r = CARD_W / 2 - 12;
-      const cy = -CARD_H / 2 + 50;
+      const cy = -CARD_H / 2 + 60;
       const total = d.data.pvLeft + d.data.pvRight;
       const pctL = total > 0 ? Math.round((d.data.pvLeft / total) * 100) : 100;
       const pctR = 100 - pctL;
@@ -429,8 +429,8 @@ export class BinaryTreeRenderer {
       const g = d3.select(groups[i]);
       const sx = -CARD_W / 2 + 12;
       const rx = CARD_W / 2 - 12;
-      const sy = -CARD_H / 2 + 66;
-      const sh = 70;
+      const sy = -CARD_H / 2 + 78;
+      const sh = 72;
       const sw = rx - sx;
 
       g.append("rect")
