@@ -108,7 +108,7 @@ function BankContent() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Banka Bilgilerim
       </Typography>

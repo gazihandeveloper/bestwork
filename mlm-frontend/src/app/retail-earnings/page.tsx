@@ -45,7 +45,7 @@ function RetailEarningsContent() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Müşteri (Perakende) Kazancı
       </Typography>

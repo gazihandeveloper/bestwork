@@ -78,7 +78,7 @@ function CommissionsContent() {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
         Prim Detayları
       </Typography>

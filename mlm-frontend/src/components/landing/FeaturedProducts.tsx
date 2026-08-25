@@ -118,7 +118,7 @@ export default function FeaturedProducts() {
       id="urunler"
       sx={{ py: 8, bgcolor: "background.paper", scrollMarginTop: "96px" }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false}>
         <Reveal>
           <Box
             sx={{

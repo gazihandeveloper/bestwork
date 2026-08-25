@@ -62,14 +62,14 @@ function AdminCorporateContent() {
 
   if (values === null) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <CircularProgress size={24} />
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Kurumsal İçerik
       </Typography>

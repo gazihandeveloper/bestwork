@@ -44,7 +44,7 @@ export default function LandingFooter() {
         borderColor: "rgba(255,255,255,0.15)",
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false}>
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>

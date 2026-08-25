@@ -55,7 +55,7 @@ export default function Corporate() {
   if (settings === null) {
     return (
       <Box component="section" id="kurumsal" sx={{ py: 8, bgcolor: "background.paper" }}>
-        <Container maxWidth="lg">
+        <Container maxWidth={false}>
           <Skeleton variant="rounded" height={260} />
         </Container>
       </Box>
@@ -76,7 +76,7 @@ export default function Corporate() {
           )} 100%)`,
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false}>
         <Reveal>
           <Box sx={{ textAlign: "center", mb: 5, maxWidth: 720, mx: "auto" }}>
             <Typography variant="h2" sx={{ fontWeight: 700, color: "primary.dark" }}>

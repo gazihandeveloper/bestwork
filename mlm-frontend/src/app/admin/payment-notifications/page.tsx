@@ -64,7 +64,7 @@ function AdminPaymentNotificationsContent() {
   const filtered = filter ? items.filter((i) => i.status === filter) : items;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Ödeme Bildirimleri (Admin)
       </Typography>

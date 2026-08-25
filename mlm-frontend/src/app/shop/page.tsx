@@ -117,7 +117,7 @@ function ShopContent() {
 
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pt: { xs: 12, md: 11 } }}>
-      <Container maxWidth="xl" sx={{ pb: 8 }}>
+      <Container maxWidth={false} sx={{ pb: 8 }}>
         <Typography variant="h4" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
           Ürünler
         </Typography>

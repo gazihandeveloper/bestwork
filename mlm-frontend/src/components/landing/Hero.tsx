@@ -72,7 +72,7 @@ export default function Hero() {
   if (slides === null) {
     return (
       <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
-        <Container maxWidth="lg" sx={{ pt: { xs: 17, md: 17 }, pb: { xs: 6, md: 8 } }}>
+        <Container maxWidth={false} sx={{ pt: { xs: 17, md: 17 }, pb: { xs: 6, md: 8 } }}>
           <Skeleton variant="rounded" sx={{ height: { xs: 280, md: 460 }, borderRadius: "28px" }} />
         </Container>
       </Box>
@@ -88,7 +88,7 @@ export default function Hero() {
 
   return (
     <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
-      <Container maxWidth="lg" sx={{ pt: { xs: 17, md: 17 }, pb: { xs: 6, md: 8 } }}>
+      <Container maxWidth={false} sx={{ pt: { xs: 17, md: 17 }, pb: { xs: 6, md: 8 } }}>
         <Box
           sx={{
             display: "flex",

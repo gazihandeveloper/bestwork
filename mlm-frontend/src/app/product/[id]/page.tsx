@@ -66,7 +66,7 @@ export default function ProductPage() {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 10, textAlign: "center" }}>
+      <Container maxWidth={false} sx={{ py: 10, textAlign: "center" }}>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
           {error}
         </Typography>
@@ -89,7 +89,7 @@ export default function ProductPage() {
 
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pt: { xs: 12, md: 11 } }}>
-      <Container maxWidth="lg" sx={{ pb: 8 }}>
+      <Container maxWidth={false} sx={{ pb: 8 }}>
         <Button
           startIcon={<ArrowBackRoundedIcon />}
           onClick={() => router.push("/shop")}

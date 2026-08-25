@@ -155,7 +155,7 @@ function AdminHeroSlidesContent() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Hero Slider Yönetimi
       </Typography>

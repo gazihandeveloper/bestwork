@@ -54,7 +54,7 @@ function ProfileContent() {
   ];
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom>
         Profilim
       </Typography>

@@ -53,7 +53,7 @@ export default function Benefits() {
   if (benefits === null) {
     return (
       <Box component="section" sx={{ py: 4, bgcolor: "background.default" }}>
-        <Container maxWidth="lg">
+        <Container maxWidth={false}>
           <Grid container spacing={2}>
             {[0, 1, 2, 3].map((i) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
@@ -68,7 +68,7 @@ export default function Benefits() {
 
   return (
     <Box component="section" id="avantajlar" sx={{ py: 4, bgcolor: "background.default" }}>
-      <Container maxWidth="lg">
+      <Container maxWidth={false}>
         <Grid container spacing={2}>
           {benefits.map((item, i) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>

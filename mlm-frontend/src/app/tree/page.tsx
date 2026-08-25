@@ -34,7 +34,7 @@ function TreeContent() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
         Binary Ağacım
       </Typography>

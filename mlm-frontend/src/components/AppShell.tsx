@@ -26,7 +26,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         component="main"
         sx={{ minHeight: "100vh", pb: { xs: 12, md: 4 }, bgcolor: "background.default" }}
       >
-          <Box sx={{ maxWidth: 1440, mx: "auto", px: { xs: 2, md: 3 }, pt: 2 }}>
+          <Box sx={{ width: "100%", px: { xs: 2, md: 3 }, pt: 2 }}>
             <BackofficeMenu />
             {children}
           </Box>
