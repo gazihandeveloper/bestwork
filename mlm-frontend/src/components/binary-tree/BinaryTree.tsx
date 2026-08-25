@@ -269,56 +269,47 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         height: { xs: 640, md: 740 },
       }}
     >
-      {/* Kart içi kontrol çubuğu */}
-      <Box sx={{ p: 1.5, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
-        <Stack direction="column" spacing={1.5}>
-          {/* Arama — ortalanmış */}
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <TextField
-              size="small"
-              placeholder="İsim veya üye kodu ara... (TR90 kod girip Enter'a basın)"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              sx={{ width: { xs: "100%", sm: 320 } }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchRoundedIcon sx={{ fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
+      {/* Tek satırlık kompakt kontrol çubuğu */}
+      <Box sx={{ p: 1.25, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 1 }}>
+          <TextField
+            size="small"
+            placeholder="Üye ara (TR90 kodu girin)..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            sx={{ width: { xs: 150, sm: 240 } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Chip size="small" label="Kök" sx={{ bgcolor: "#004786", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
+            <Chip size="small" label="Sol" sx={{ bgcolor: "#005FAF", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
+            <Chip size="small" label="Sağ" sx={{ bgcolor: "#8A2BE2", color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
           </Box>
-          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", alignItems: "center", rowGap: 1, justifyContent: "center" }}>
-            <Button size="small" variant="outlined" startIcon={<UnfoldMoreRoundedIcon />} onClick={() => toggleAll(false)}>
-              Tümünü Aç
-            </Button>
-            <Button size="small" variant="outlined" startIcon={<UnfoldLessRoundedIcon />} onClick={() => toggleAll(true)}>
-            Tümünü Kapat
-          </Button>
           <Box sx={{ flexGrow: 1 }} />
-          <Button size="small" variant="outlined" startIcon={<ZoomInRoundedIcon />} onClick={() => rendererRef.current?.zoomBy(1.3)}>
-            Yaklaş
-          </Button>
-          <Button size="small" variant="outlined" startIcon={<ZoomOutRoundedIcon />} onClick={() => rendererRef.current?.zoomBy(0.77)}>
-            Uzaklaş
-          </Button>
-          <Button size="small" variant="contained" startIcon={<FitScreenRoundedIcon />} onClick={() => rendererRef.current?.fit()}>
-            Sığdır
-          </Button>
-        </Stack>
-
-        <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
-          <Chip size="small" label="Kök" sx={{ bgcolor: "#274D24", color: "#fff", fontWeight: 700 }} />
-          <Chip size="small" label="Sol Hat" sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }} />
-          <Chip size="small" label="Sağ Hat" sx={{ bgcolor: "#B4552D", color: "#fff", fontWeight: 700 }} />
-          <Typography variant="caption" color="text.secondary">
-            Karta tıklayın: aç/kapat · &quot;+&quot; rozeti: alt ekibi yükle · &quot;i&quot; simgesi: üye bilgisi · sürükle &amp; tekerlekle yaklaş
-          </Typography>
-        </Box>
+          <IconButton size="small" title="Tümünü aç" aria-label="Tümünü aç" onClick={() => toggleAll(false)}>
+            <UnfoldMoreRoundedIcon />
+          </IconButton>
+          <IconButton size="small" title="Tümünü kapat" aria-label="Tümünü kapat" onClick={() => toggleAll(true)}>
+            <UnfoldLessRoundedIcon />
+          </IconButton>
+          <IconButton size="small" title="Yaklaş" aria-label="Yaklaş" onClick={() => rendererRef.current?.zoomBy(1.3)}>
+            <ZoomInRoundedIcon />
+          </IconButton>
+          <IconButton size="small" title="Uzaklaş" aria-label="Uzaklaş" onClick={() => rendererRef.current?.zoomBy(0.77)}>
+            <ZoomOutRoundedIcon />
+          </IconButton>
+          <IconButton size="small" title="Sığdır" aria-label="Sığdır" onClick={() => rendererRef.current?.fit()}>
+            <FitScreenRoundedIcon />
+          </IconButton>
         </Stack>
       </Box>
 

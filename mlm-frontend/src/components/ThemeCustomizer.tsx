@@ -9,8 +9,6 @@ import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import BrushRoundedIcon from "@mui/icons-material/BrushRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -30,7 +28,7 @@ function hslToHex(h: number, s: number, l: number): string {
 
 // Sağ alt köşe: fırça (tema rengi, giriş yapınca) + güneş/ay (tüm sistem için karanlık/aydınlık mod).
 export default function ThemeCustomizer() {
-  const { color, setColor, mode, toggleMode } = useThemeContext();
+  const { color, setColor } = useThemeContext();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const stripRef = useRef<HTMLDivElement | null>(null);
@@ -160,22 +158,6 @@ export default function ThemeCustomizer() {
           </Fab>
         </Tooltip>
       )}
-
-      <Tooltip title={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}>
-        <Fab
-          size="medium"
-          aria-label="Karanlık / Aydınlık mod"
-          onClick={toggleMode}
-          sx={{
-            boxShadow: 4,
-            bgcolor: "background.paper",
-            color: "text.primary",
-            "&:hover": { bgcolor: "background.paper" },
-          }}
-        >
-          {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-        </Fab>
-      </Tooltip>
     </Box>
   );
 }
