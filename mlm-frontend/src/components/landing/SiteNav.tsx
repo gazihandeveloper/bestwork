@@ -86,7 +86,7 @@ export default function SiteNav() {
           left: "50%",
           transform: "translateX(-50%)",
           width: "90%",
-          height: 84,
+          height: 95,
           bgcolor: "background.paper",
           boxShadow: "none",
           zIndex: 1100,
