@@ -42,7 +42,7 @@ function Logo() {
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15, mt: 0.75 }}>
         <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 31, display: "inline-flex", alignItems: "flex-start" }}>
           BestWork
-          <Box component="span" aria-label="Registered" sx={{ fontSize: 17, lineHeight: 1, mt: -0.5, color: "primary.main", fontWeight: 700 }}>
+          <Box component="span" aria-label="Registered" sx={{ fontSize: 19, lineHeight: 1, mt: -0.15, color: "primary.main", fontWeight: 700 }}>
             <sup>®</sup>
           </Box>
         </Typography>
