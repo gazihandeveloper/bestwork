@@ -12,17 +12,24 @@ import { useAuth } from "@/hooks/useAuth";
 import { getTree, getErrorMessage } from "@/services/api";
 import type { TreeNode } from "@/services/api";
 
+function currentMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function TreeContent() {
   const { user } = useAuth();
   const [root, setRoot] = useState<TreeNode | null>(null);
   const [error, setError] = useState("");
+  const [period, setPeriod] = useState<string>(currentMonth);
 
   useEffect(() => {
     if (!user) return;
-    getTree(user.id, 2)
+    setRoot(null);
+    getTree(user.id, 2, period)
       .then(setRoot)
       .catch((err) => setError(getErrorMessage(err)));
-  }, [user]);
+  }, [user, period]);
 
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!root) {
@@ -39,7 +46,7 @@ function TreeContent() {
         Binary Ağacım
       </Typography>
 
-      <BinaryTree data={root} depth={2} />
+      <BinaryTree data={root} depth={2} period={period} onPeriodChange={setPeriod} />
     </Container>
   );
 }

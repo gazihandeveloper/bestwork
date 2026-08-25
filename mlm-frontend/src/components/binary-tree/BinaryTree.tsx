@@ -25,6 +25,8 @@ import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import ZoomInRoundedIcon from "@mui/icons-material/ZoomInRounded";
 import ZoomOutRoundedIcon from "@mui/icons-material/ZoomOutRounded";
@@ -49,6 +51,26 @@ import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, ty
 interface BinaryTreeProps {
   data: TreeNode;
   depth: number;
+  /** "YYYYMM" biçiminde as-of dönemi; bu aydan önce kayıt olanlar gösterilir. */
+  period?: string;
+  onPeriodChange?: (p: string) => void;
+}
+
+/** periodOptions 2020-06'dan bugüne kadar olan ayları üretir (sıralı, eskiden yeniye). */
+function periodOptions(): string[] {
+  const arr: string[] = [];
+  const end = new Date();
+  let y = 2020;
+  let m = 6;
+  while (y < end.getFullYear() || (y === end.getFullYear() && m <= end.getMonth() + 1)) {
+    arr.push(`${y}${String(m).padStart(2, "0")}`);
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+  return arr;
 }
 
 /**
@@ -56,7 +78,7 @@ interface BinaryTreeProps {
  * Sahne bir kez kurulur, tıklamalarda yalnızca değişen kısımlar güncellenir;
  * derinlik sınırındaki düğümler "+" rozeti ile sunucudan tembel yüklenir.
  */
-export default function BinaryTree({ data, depth }: BinaryTreeProps) {
+export default function BinaryTree({ data, depth, period = "", onPeriodChange }: BinaryTreeProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
@@ -89,7 +111,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
         // Derinlik sınırı: alt ağacı sunucudan getirip mevcut ağaca aşıla
         node.loading = true;
         renderer.render(root, node.id);
-        getTree(node.userId, LAZY_DEPTH)
+        getTree(node.userId, LAZY_DEPTH, period)
           .then((fetched) => {
             graftChildren(node, fetched, LAZY_DEPTH);
             renderer.render(root, node.id);
@@ -203,7 +225,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       setPlaceTarget(null);
       // Ağacı yenile (gezinilen kökse onu tazele)
       const currentRootId = rootRef.current?.userId ?? data.user_id;
-      const fetched = await getTree(currentRootId, depth);
+      const fetched = await getTree(currentRootId, depth, period);
       rootRef.current = toBTNode(fetched, depth);
       rendererRef.current?.render(rootRef.current);
       requestAnimationFrame(() => rendererRef.current?.fit());
@@ -240,7 +262,7 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       }
       try {
         const u = await lookupUserByCode(q.toUpperCase());
-        const fetched = await getTree(u.id, 2);
+        const fetched = await getTree(u.id, 2, period);
         rootRef.current = toBTNode(fetched, 2);
         renderer.render(rootRef.current);
         requestAnimationFrame(() => renderer.fit());
@@ -272,6 +294,19 @@ export default function BinaryTree({ data, depth }: BinaryTreeProps) {
       {/* Tek satırlık kompakt kontrol çubuğu */}
       <Box sx={{ p: 1.25, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 1 }}>
+          <Select
+            size="small"
+            value={period}
+            onChange={(e) => onPeriodChange?.(e.target.value as string)}
+            aria-label="Dönem"
+            sx={{ minWidth: 104 }}
+          >
+            {periodOptions().map((v) => (
+              <MenuItem key={v} value={v}>
+                {`${v.slice(0, 4)}-${v.slice(4)}`}
+              </MenuItem>
+            ))}
+          </Select>
           <TextField
             size="small"
             placeholder="Üye ara (TR90 kodu girin)..."

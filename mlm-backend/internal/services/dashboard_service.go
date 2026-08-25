@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -473,18 +474,29 @@ func (s *DashboardService) GetAdminDashboard(ctx context.Context) (*models.Admin
 
 // GetTree belirtilen kullanıcının binary alt ağacını döndürür.
 // depth, kökün altına kaç seviye inileceğini belirler (0 = yalnız kök, max 5).
-func (s *DashboardService) GetTree(ctx context.Context, userID int64, depth int) (*models.TreeNode, error) {
+// GetTree kullanıcının binary alt ağacını döndürür.
+// period "YYYY-MM" biçiminde verilirse yalnızca bu ayın SONUNDA (veya öncesinde)
+// kayıt olmuş üyeler ağaçta gösterilir (as-of görünümü). Boşsa filtre uygulanmaz.
+func (s *DashboardService) GetTree(ctx context.Context, userID int64, depth int, period string) (*models.TreeNode, error) {
 	if depth < 0 {
 		depth = 0
 	}
 	if depth > 5 {
 		depth = 5
 	}
-	return s.buildTreeNode(ctx, userID, depth)
+	cutoff := time.Time{}
+	if period != "" {
+		if t, err := time.Parse("2006-01", period); err == nil {
+			// Kesme anı: seçilen ayın BİR SONRAKİ ayının ilk günü (ayrıcalıklı).
+			cutoff = t.AddDate(0, 1, 0)
+		}
+	}
+	return s.buildTreeNode(ctx, userID, depth, cutoff)
 }
 
 // buildTreeNode recursive olarak ağaç düğümü oluşturur.
-func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, depth int) (*models.TreeNode, error) {
+// cutoff sıfır değilse alt üyeler yalnızca bu zamandan önce kayıt olmuşsa gösterilir.
+func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, depth int, cutoff time.Time) (*models.TreeNode, error) {
 	node := &models.TreeNode{}
 
 	err := s.db.QueryRow(ctx, `
@@ -511,8 +523,13 @@ func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, dept
 
 	// Alt düğüm id'lerini önce topla ve satırları KAPAT; ardından recursive çağrı
 	// yap. Böylece her istek aynı anda yalnızca 1 bağlantı kullanır (havuz tükenmez).
-	children, err := s.db.Query(ctx,
-		`SELECT id, position FROM users WHERE parent_id = $1 ORDER BY position`, userID)
+	childQuery := `SELECT id, position FROM users WHERE parent_id = $1 ORDER BY position`
+	childArgs := []any{userID}
+	if !cutoff.IsZero() {
+		childQuery += ` AND created_at < $2`
+		childArgs = append(childArgs, cutoff)
+	}
+	children, err := s.db.Query(ctx, childQuery, childArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("alt düğümler okunamadı: %w", err)
 	}
@@ -537,7 +554,7 @@ func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, dept
 	children.Close()
 
 	for _, ref := range refs {
-		child, err := s.buildTreeNode(ctx, ref.id, depth-1)
+		child, err := s.buildTreeNode(ctx, ref.id, depth-1, cutoff)
 		if err != nil {
 			return nil, err
 		}

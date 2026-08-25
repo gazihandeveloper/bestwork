@@ -45,7 +45,10 @@ func (h *TreeHandler) Get(c *gin.Context) {
 		depth = d
 	}
 
-	tree, err := h.dash.GetTree(c.Request.Context(), userID, depth)
+	// month "YYYY-MM" biçiminde opsiyonel as-of filtresi (kayıt ayına göre ağaç).
+	period := c.Query("month")
+
+	tree, err := h.dash.GetTree(c.Request.Context(), userID, depth, period)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Kullanıcı bulunamadı"})
