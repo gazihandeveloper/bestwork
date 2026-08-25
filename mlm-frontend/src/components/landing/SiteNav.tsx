@@ -83,8 +83,9 @@ export default function SiteNav() {
         sx={{
           position: "fixed",
           top: 0,
-          left: 0,
-          width: "100%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "95%",
           height: 68,
           bgcolor: "background.paper",
           boxShadow: "none",
