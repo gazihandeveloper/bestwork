@@ -65,10 +65,15 @@ export default function SiteNav() {
   const { user, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [count, setCount] = useState(0);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
+  const [now, setNow] = useState<Date>(() => new Date());
   const router = useRouter();
   const { mode, toggleMode } = useThemeContext();
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const refresh = () => setCount(cartCount());
@@ -87,7 +92,6 @@ export default function SiteNav() {
 
   const submitSearch = () => {
     const q = searchQ.trim();
-    setSearchOpen(false);
     setSearchQ("");
     router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
@@ -140,44 +144,27 @@ export default function SiteNav() {
           })}
         </Box>
 
-        {searchOpen && (
-          <TextField
-            autoFocus
-            size="small"
-            placeholder="Ürün ara..."
-            value={searchQ}
-            onChange={(e) => setSearchQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") submitSearch();
-              if (e.key === "Escape") setSearchOpen(false);
-            }}
-            sx={{ flexGrow: 1, maxWidth: 320 }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ fontSize: 18 }} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        )}
+        <TextField
+          size="small"
+          placeholder={`${now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} · ${now.toLocaleTimeString("tr-TR")}`}
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submitSearch();
+          }}
+          sx={{ ml: { xs: 0, md: 2 }, width: { xs: "100%", sm: 280 } }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={{ fontSize: 18 }} />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 0 } }}>
-          <IconButton
-            aria-label="Ürün ara"
-            size="large"
-            onClick={() => setSearchOpen((v) => !v)}
-            sx={{
-              display: { xs: "none", md: "inline-flex" },
-              color: "text.secondary",
-              borderRadius: "16px",
-              "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
-            }}
-          >
-            <SearchRoundedIcon />
-          </IconButton>
           <IconButton
             aria-label={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}
             size="large"
