@@ -43,7 +43,7 @@ function Logo() {
     <Link
       href="/"
       aria-label="BestWork ana sayfa"
-      style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1 }}
+      style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1, marginLeft: 8 }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15, mt: 0.75 }}>
         <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 31, display: "inline-flex", alignItems: "flex-start" }}>
