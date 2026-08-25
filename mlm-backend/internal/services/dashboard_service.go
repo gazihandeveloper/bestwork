@@ -523,12 +523,13 @@ func (s *DashboardService) buildTreeNode(ctx context.Context, userID int64, dept
 
 	// Alt düğüm id'lerini önce topla ve satırları KAPAT; ardından recursive çağrı
 	// yap. Böylece her istek aynı anda yalnızca 1 bağlantı kullanır (havuz tükenmez).
-	childQuery := `SELECT id, position FROM users WHERE parent_id = $1 ORDER BY position`
+	childQuery := `SELECT id, position FROM users WHERE parent_id = $1`
 	childArgs := []any{userID}
 	if !cutoff.IsZero() {
 		childQuery += ` AND created_at < $2`
 		childArgs = append(childArgs, cutoff)
 	}
+	childQuery += ` ORDER BY position`
 	children, err := s.db.Query(ctx, childQuery, childArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("alt düğümler okunamadı: %w", err)
