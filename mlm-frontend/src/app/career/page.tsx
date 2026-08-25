@@ -129,13 +129,15 @@ function CareerContent() {
           </Box>
           <Box
             sx={{
+              display: "flex",
+              gap: 1.5,
               overflowX: "auto",
               py: 1,
+              justifyContent: "safe center",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
             }}
           >
-            <Box sx={{ display: "flex", gap: 1.5, width: "max-content", mx: "auto" }}>
             {[
               // Başlangıç seviyesi: GİRİŞİMCİ — rütbesi olmayan kullanıcıda seçili (user ikonu)
               {
@@ -244,7 +246,6 @@ function CareerContent() {
                 </Box>
               );
             })}
-          </Box>
           </Box>
         </CardContent>
       </Card>
