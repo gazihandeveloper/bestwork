@@ -45,6 +45,25 @@ export default function CartDrawer() {
   const [confetti, setConfetti] = useState(false);
   const [platinMsg, setPlatinMsg] = useState(false);
 
+  useEffect(() => {
+    const openHandler = () => setOpen(true);
+    const refresh = () => setItems(loadCart());
+    refresh();
+    window.addEventListener("open-cart", openHandler);
+    window.addEventListener("cart-updated", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("open-cart", openHandler);
+      window.removeEventListener("cart-updated", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  const totalAmount = items.reduce((sum, c) => sum + c.product.price * c.quantity, 0);
+  const totalPV = items.reduce((sum, c) => sum + c.product.pv * c.quantity, 0);
+  const totalCV = items.reduce((sum, c) => sum + c.product.cv * c.quantity, 0);
+  const totalQuantity = items.reduce((sum, c) => sum + c.quantity, 0);
+
   // Seviye dolumu: kariyer PV + bu siparişin PV'si (özetteki "Toplam PV" ile canlı dolar)
   const levelPV = (user?.total_pv_accumulated ?? 0) + totalPV;
   const isPlatin = levelPV >= 5000;
@@ -68,25 +87,6 @@ export default function CartDrawer() {
     }, 5200);
     return () => clearTimeout(t);
   }, [isPlatin, celebrated]);
-
-  useEffect(() => {
-    const openHandler = () => setOpen(true);
-    const refresh = () => setItems(loadCart());
-    refresh();
-    window.addEventListener("open-cart", openHandler);
-    window.addEventListener("cart-updated", refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener("open-cart", openHandler);
-      window.removeEventListener("cart-updated", refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
-
-  const totalAmount = items.reduce((sum, c) => sum + c.product.price * c.quantity, 0);
-  const totalPV = items.reduce((sum, c) => sum + c.product.pv * c.quantity, 0);
-  const totalCV = items.reduce((sum, c) => sum + c.product.cv * c.quantity, 0);
-  const totalQuantity = items.reduce((sum, c) => sum + c.quantity, 0);
 
   const checkout = async () => {
     if (!user) {
