@@ -213,7 +213,7 @@ function CareerTimeline({ ranks, career }: { ranks: Rank[]; career: CareerProgre
   const achieved = new Map(career.map((c) => [c.rank_id, c]));
   const activeID = career.find((c) => c.is_active)?.rank_id ?? null;
   const cards = [
-    { id: "g0", name: "Girişimci", achieved: true, active: activeID == null },
+    { id: "g0", name: "Girişimci", achieved: true, active: activeID == null, next: false },
     ...ranks.map((r, i) => ({
       id: r.id,
       name: r.name,
