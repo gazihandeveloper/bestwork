@@ -22,6 +22,17 @@ import { useAuth } from "@/hooks/useAuth";
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
 
+// Kariyer/paket seviyeleri — required_pv bilindik (250→5000)
+const LEVELS = [
+  { name: "Starter", pv: 250 },
+  { name: "Bronze", pv: 500 },
+  { name: "Gümüş", pv: 1300 },
+  { name: "Altın", pv: 2500 },
+  { name: "Platin", pv: 5000 },
+];
+const PLATIN_FLAG = "bestwork_platin_confetti_done";
+const CONFETTI_COLORS = ["#f44336", "#4caf50", "#2196f3", "#ffeb3b", "#ff9800", "#9c27b0", "#00bcd4", "#e91e63"];
+
 // Global sepet paneli — her sayfada "open-cart" olayıyla sağdan açılır.
 export default function CartDrawer() {
   const router = useRouter();
@@ -31,6 +42,31 @@ export default function CartDrawer() {
   const [error, setError] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const [successOrder, setSuccessOrder] = useState<number | null>(null);
+  const [confetti, setConfetti] = useState(false);
+  const [platinMsg, setPlatinMsg] = useState(false);
+
+  const userPV = user?.total_pv_accumulated ?? 0;
+  const isPlatin = userPV >= 5000;
+  const celebrated =
+    typeof window !== "undefined" && window.localStorage.getItem(PLATIN_FLAG) === "1";
+  const showLevels = !!user && !celebrated;
+
+  // Platin'e ulaşınca bir kez konfeti + mesaj; sonrasında tekrar gösterilmez.
+  useEffect(() => {
+    if (!isPlatin || celebrated) return;
+    try {
+      window.localStorage.setItem(PLATIN_FLAG, "1");
+    } catch {
+      /* yoksay */
+    }
+    setConfetti(true);
+    setPlatinMsg(true);
+    const t = setTimeout(() => {
+      setConfetti(false);
+      setPlatinMsg(false);
+    }, 5200);
+    return () => clearTimeout(t);
+  }, [isPlatin, celebrated]);
 
   useEffect(() => {
     const openHandler = () => setOpen(true);
@@ -196,6 +232,83 @@ export default function CartDrawer() {
                 ))}
               </Box>
 
+              {/* Kariyer seviyeleri — şebeke gibi dikey çubuklar (özet çizgisinin üstünde) */}
+              {showLevels && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 700, color: "text.secondary", display: "block", mb: 1 }}
+                  >
+                    Kariyer Seviyeleri
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 0.75 }}>
+                    {LEVELS.map((lv) => {
+                      const pct = Math.min(100, Math.round((userPV / lv.pv) * 100));
+                      const reached = userPV >= lv.pv;
+                      return (
+                        <Box key={lv.name} sx={{ flex: 1, textAlign: "center" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontSize: 10,
+                              fontWeight: reached ? 800 : 500,
+                              color: reached ? "primary.main" : "text.secondary",
+                            }}
+                          >
+                            {lv.name}
+                          </Typography>
+                          <Box
+                            sx={{
+                              height: 34,
+                              width: "100%",
+                              bgcolor: "grey.200",
+                              borderRadius: 2,
+                              overflow: "hidden",
+                              position: "relative",
+                              mt: 0.5,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                bottom: 0,
+                                left: 0,
+                                width: "100%",
+                                height: `${pct}%`,
+                                bgcolor: reached ? "primary.main" : "primary.light",
+                                boxShadow: reached ? "inset 0 2px 0 rgba(0,0,0,0.15)" : "none",
+                              }}
+                            />
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            sx={{ fontSize: 9, color: "text.secondary", display: "block", mt: 0.5 }}
+                          >
+                            {lv.pv.toLocaleString("tr-TR")} PV
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                  {isPlatin && platinMsg && (
+                    <Box
+                      sx={{
+                        mt: 1,
+                        p: 1,
+                        borderRadius: 2,
+                        bgcolor: "primary.main",
+                        color: "#fff",
+                        textAlign: "center",
+                        fontWeight: 800,
+                        fontSize: 13,
+                      }}
+                    >
+                      🎉 Artık Platin oldunuz!
+                    </Box>
+                  )}
+                </Box>
+              )}
+
               <Box sx={{ borderTop: "1px solid", borderColor: "divider", mt: 2, pt: 1.5 }}>
                 <Typography variant="body1" sx={{ fontWeight: 700, mb: 1 }}>
                   Sipariş Özeti
@@ -261,6 +374,28 @@ export default function CartDrawer() {
           </Button>
         }
       />
+
+      {confetti && (
+        <Box sx={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 2000, overflow: "hidden" }}>
+          {Array.from({ length: 40 }).map((_, i) => (
+            <Box
+              key={i}
+              component="span"
+              sx={{
+                position: "absolute",
+                top: "-16px",
+                left: `${(i * 37) % 100}%`,
+                width: 8,
+                height: 14,
+                bgcolor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                borderRadius: "2px",
+                animation: `bw-fall ${2.4 + (i % 5) * 0.5}s ${(i % 9) * 0.08}s linear forwards`,
+                transform: `rotate(${(i * 29) % 360}deg)`,
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </>
   );
 }
