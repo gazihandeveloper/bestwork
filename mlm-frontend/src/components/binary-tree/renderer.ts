@@ -281,17 +281,13 @@ export class BinaryTreeRenderer {
       const tx = ax + AVATAR_R + 8;
       const n = d.data;
 
-      // İsim — karta tam sığacak şekilde (taşmadan, sıkıştırarak)
-      const availW = CARD_W / 2 - 10 - tx;
-      const nameEstW = n.name.length * 6.1;
+      // İsim — küçük, doğal genişlikte (sıkıştırma yok)
       g.append("text")
         .attr("x", tx)
         .attr("y", top + 13)
-        .attr("font-size", 12.5)
+        .attr("font-size", 10.5)
         .attr("font-weight", 700)
         .attr("fill", this.colors.text)
-        .attr("textLength", Math.min(availW, Math.max(nameEstW, 24)))
-        .attr("lengthAdjust", "spacingAndGlyphs")
         .text(n.name);
 
       // Üye kodu (küçük)
@@ -324,7 +320,7 @@ export class BinaryTreeRenderer {
         .attr("fill", accent)
         .text(posLabel);
 
-      // Rütbe + durum (referanstaki BRONZ / PASİF satırı)
+      // Rütbe (metin) → Paket rozeti → Durum (AKTİF/PASİF)
       let cx2 = tx + posW + 7;
       if (n.rank) {
         const rk = n.rank.toLocaleUpperCase("tr-TR").slice(0, 8);
@@ -336,6 +332,27 @@ export class BinaryTreeRenderer {
           .attr("fill", "#8A6D1A")
           .text(rk);
         cx2 += rk.length * 4.6 + 9;
+      }
+      if (n.packageName) {
+        const pk = n.packageName.toLocaleUpperCase("tr-TR").slice(0, 12);
+        const pw = Math.max(20, pk.length * 4.2 + 10);
+        g.append("rect")
+          .attr("x", cx2)
+          .attr("y", top + 28)
+          .attr("width", pw)
+          .attr("height", 13)
+          .attr("rx", 6.5)
+          .attr("fill", accent)
+          .attr("fill-opacity", 0.08);
+        g.append("text")
+          .attr("x", cx2 + pw / 2)
+          .attr("y", top + 37)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 6.2)
+          .attr("font-weight", 800)
+          .attr("fill", this.colors.text)
+          .text(pk);
+        cx2 += pw + 6;
       }
       g.append("text")
         .attr("x", cx2)
