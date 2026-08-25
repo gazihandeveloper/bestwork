@@ -22,13 +22,13 @@ import { useAuth } from "@/hooks/useAuth";
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
 
-// Kariyer/paket seviyeleri — required_pv bilindik (250→5000)
+// Kariyer/paket seviyeleri — required_pv bilindik (250→5000); her seviyenin rengi ve yüksekliği
 const LEVELS = [
-  { name: "Starter", pv: 250 },
-  { name: "Bronze", pv: 500 },
-  { name: "Gümüş", pv: 1300 },
-  { name: "Altın", pv: 2500 },
-  { name: "Platin", pv: 5000 },
+  { name: "Starter", pv: 250, height: 15, color: "#2196F3" }, // mavi
+  { name: "Bronze", pv: 500, height: 35, color: "#4CAF50" }, // yeşil
+  { name: "Gümüş", pv: 1300, height: 55, color: "#FF9800" }, // turuncu
+  { name: "Altın", pv: 2500, height: 75, color: "#9C27B0" }, // mor
+  { name: "Platin", pv: 5000, height: 100, color: "#F44336" }, // kırmızı
 ];
 const PLATIN_FLAG = "bestwork_platin_confetti_done";
 const CONFETTI_COLORS = ["#f44336", "#4caf50", "#2196f3", "#ffeb3b", "#ff9800", "#9c27b0", "#00bcd4", "#e91e63"];
@@ -243,47 +243,35 @@ export default function CartDrawer() {
                   </Typography>
                   <Box sx={{ display: "flex", gap: 0.75 }}>
                     {LEVELS.map((lv) => {
-                      const pct = Math.min(100, Math.round((userPV / lv.pv) * 100));
                       const reached = userPV >= lv.pv;
                       return (
                         <Box key={lv.name} sx={{ flex: 1, textAlign: "center" }}>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontSize: 10,
-                              fontWeight: reached ? 800 : 500,
-                              color: reached ? "primary.main" : "text.secondary",
-                            }}
-                          >
-                            {lv.name}
-                          </Typography>
-                          <Box
-                            sx={{
-                              height: 34,
-                              width: "100%",
-                              bgcolor: "grey.200",
-                              borderRadius: 2,
-                              overflow: "hidden",
-                              position: "relative",
-                              mt: 0.5,
-                            }}
-                          >
+                          {/* Merdiven: yukarı doğru yükselen sabit yükseklikli çubuk */}
+                          <Box sx={{ height: 56, width: "100%", display: "flex", alignItems: "flex-end" }}>
                             <Box
                               sx={{
-                                position: "absolute",
-                                bottom: 0,
-                                left: 0,
                                 width: "100%",
-                                height: `${pct}%`,
-                                bgcolor: reached ? "primary.main" : "primary.light",
-                                boxShadow: reached ? "inset 0 2px 0 rgba(0,0,0,0.15)" : "none",
+                                height: `${lv.height}%`,
+                                bgcolor: reached ? lv.color : "#E8E8E8",
+                                borderRadius: "6px 6px 2px 2px",
+                                boxShadow: reached ? "inset 0 -3px 0 rgba(0,0,0,0.12)" : "none",
+                                transition: "background-color 300ms",
                               }}
                             />
                           </Box>
                           <Typography
                             variant="caption"
-                            sx={{ fontSize: 9, color: "text.secondary", display: "block", mt: 0.5 }}
+                            sx={{
+                              fontSize: 10,
+                              fontWeight: reached ? 800 : 500,
+                              color: reached ? lv.color : "text.secondary",
+                              display: "block",
+                              mt: 0.5,
+                            }}
                           >
+                            {lv.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: 9, color: "text.secondary", display: "block" }}>
                             {lv.pv.toLocaleString("tr-TR")} PV
                           </Typography>
                         </Box>
