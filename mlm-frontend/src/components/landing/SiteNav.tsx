@@ -19,7 +19,7 @@ import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import MailRoundedIcon from "@mui/icons-material/MailRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import PowerSettingsNewRoundedIcon from "@mui/icons-material/PowerSettingsNewRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import AuthCTA from "./AuthCTA";
 import { cartCount } from "@/lib/cart";
@@ -147,11 +147,13 @@ export default function SiteNav() {
                 onClick={logout}
                 sx={{
                   color: "error.main",
-                  borderRadius: "16px",
-                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.error.main, 0.08) },
+                  borderRadius: "50%",
+                  border: "1.5px solid",
+                  borderColor: "error.main",
+                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.error.main, 0.1) },
                 }}
               >
-                <LogoutRoundedIcon />
+                <PowerSettingsNewRoundedIcon />
               </IconButton>
             )}
           </Box>
@@ -221,7 +223,7 @@ export default function SiteNav() {
                 fullWidth
                 variant="outlined"
                 color="error"
-                startIcon={<LogoutRoundedIcon />}
+                startIcon={<PowerSettingsNewRoundedIcon />}
                 onClick={logout}
               >
                 Çıkış Yap
