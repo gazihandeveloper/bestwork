@@ -74,6 +74,13 @@ function ShopContent() {
   const [snackbar, setSnackbar] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Menü aramasından gelen ?q= parametresini başlangıç aramasına yükle
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    if (q) setSearch(q);
+  }, []);
+
   useEffect(() => {
     listProducts()
       .then(setProducts)

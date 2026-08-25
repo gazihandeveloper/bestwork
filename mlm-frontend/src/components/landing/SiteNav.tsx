@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -13,17 +13,23 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
 import { alpha } from "@mui/material/styles";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import MailRoundedIcon from "@mui/icons-material/MailRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import PowerSettingsNewRoundedIcon from "@mui/icons-material/PowerSettingsNewRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import AuthCTA from "./AuthCTA";
 import { cartCount } from "@/lib/cart";
 import { useAuth } from "@/hooks/useAuth";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 const navLinks = [
   { href: "/", label: "Anasayfa", icon: <HomeRoundedIcon /> },
@@ -59,6 +65,10 @@ export default function SiteNav() {
   const { user, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [count, setCount] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState("");
+  const router = useRouter();
+  const { mode, toggleMode } = useThemeContext();
 
   useEffect(() => {
     const refresh = () => setCount(cartCount());
@@ -73,6 +83,13 @@ export default function SiteNav() {
 
   const handleCart = () => {
     window.dispatchEvent(new CustomEvent("open-cart"));
+  };
+
+  const submitSearch = () => {
+    const q = searchQ.trim();
+    setSearchOpen(false);
+    setSearchQ("");
+    router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
 
   return (
@@ -123,7 +140,55 @@ export default function SiteNav() {
           })}
         </Box>
 
+        {searchOpen && (
+          <TextField
+            autoFocus
+            size="small"
+            placeholder="Ürün ara..."
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitSearch();
+              if (e.key === "Escape") setSearchOpen(false);
+            }}
+            sx={{ flexGrow: 1, maxWidth: 320 }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        )}
+
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 0 } }}>
+          <IconButton
+            aria-label="Ürün ara"
+            size="large"
+            onClick={() => setSearchOpen((v) => !v)}
+            sx={{
+              color: "text.secondary",
+              borderRadius: "16px",
+              "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+            }}
+          >
+            <SearchRoundedIcon />
+          </IconButton>
+          <IconButton
+            aria-label={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}
+            size="large"
+            onClick={toggleMode}
+            sx={{
+              color: "text.secondary",
+              borderRadius: "16px",
+              "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+            }}
+          >
+            {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
+          </IconButton>
           <IconButton
             aria-label={`Sepet (${count} ürün)`}
             size="large"
