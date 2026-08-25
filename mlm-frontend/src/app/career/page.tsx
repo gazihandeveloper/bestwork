@@ -20,6 +20,7 @@ import CircleRoundedIcon from "@mui/icons-material/CircleRounded";
 import HexagonRoundedIcon from "@mui/icons-material/HexagonRounded";
 import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
 import SquareRoundedIcon from "@mui/icons-material/SquareRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { alpha } from "@mui/material/styles";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
@@ -129,21 +130,21 @@ function CareerContent() {
           <Box
             sx={{
               overflowX: "auto",
-              pb: 1,
+              py: 1,
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
             }}
           >
             <Box sx={{ display: "flex", gap: 1.5, width: "max-content", mx: "auto" }}>
             {[
-              // Başlangıç seviyesi: GİRİŞİMCİ — rütbesi olmayan kullanıcıda seçili
+              // Başlangıç seviyesi: GİRİŞİMCİ — rütbesi olmayan kullanıcıda seçili (user ikonu)
               {
                 id: "girisimci",
                 name: "Girişimci",
                 isActive: activeID == null,
                 isAchieved: true,
                 isNext: false,
-                meta: { icon: DiamondRoundedIcon, color: "#004786", stars: 0 },
+                meta: { icon: PersonRoundedIcon, color: "#004786", stars: 0 },
               },
               ...steps.map((s) => ({
                 id: s.rank.id,
