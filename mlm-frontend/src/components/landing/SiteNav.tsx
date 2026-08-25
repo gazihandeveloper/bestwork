@@ -128,7 +128,7 @@ export default function SiteNav() {
             display: { xs: "none", sm: "flex" },
             alignItems: "center",
             gap: 0.75,
-            ml: 1,
+            ml: 2.5,
             color: "text.secondary",
           }}
         >
@@ -194,6 +194,7 @@ export default function SiteNav() {
             size="large"
             onClick={() => setSearchOpen((v) => !v)}
             sx={{
+              display: { xs: "none", md: "inline-flex" },
               color: "text.secondary",
               borderRadius: "16px",
               "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
