@@ -81,10 +81,10 @@ function ProfileContent() {
               <Button
                 component={Link}
                 href="/success-report"
-                size="small"
+                size="medium"
                 variant="contained"
                 startIcon={<BarChartRoundedIcon />}
-                sx={{ mb: 2, borderRadius: "28px", fontWeight: 800 }}
+                sx={{ mb: 2, borderRadius: "28px", fontWeight: 800, px: 3, boxShadow: 2 }}
               >
                 🏅 Başarı Raporu
               </Button>

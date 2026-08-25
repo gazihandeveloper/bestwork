@@ -94,7 +94,7 @@ export default function Hero() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            mt: -5,
+            mt: 1.5,
             mb: 2,
           }}
         >
