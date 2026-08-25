@@ -45,8 +45,9 @@ export default function CartDrawer() {
   const [confetti, setConfetti] = useState(false);
   const [platinMsg, setPlatinMsg] = useState(false);
 
-  const userPV = user?.total_pv_accumulated ?? 0;
-  const isPlatin = userPV >= 5000;
+  // Seviye dolumu: kariyer PV + bu siparişin PV'si (özetteki "Toplam PV" ile canlı dolar)
+  const levelPV = (user?.total_pv_accumulated ?? 0) + totalPV;
+  const isPlatin = levelPV >= 5000;
   const celebrated =
     typeof window !== "undefined" && window.localStorage.getItem(PLATIN_FLAG) === "1";
   const showLevels = !!user && !celebrated;
@@ -243,21 +244,36 @@ export default function CartDrawer() {
                   </Typography>
                   <Box sx={{ display: "flex", gap: 0.75 }}>
                     {LEVELS.map((lv) => {
-                      const reached = userPV >= lv.pv;
+                      const reached = levelPV >= lv.pv;
+                      const fillPct = Math.min(100, Math.round((levelPV / lv.pv) * 100));
                       return (
                         <Box key={lv.name} sx={{ flex: 1, textAlign: "center" }}>
-                          {/* Merdiven: yukarı doğru yükselen sabit yükseklikli çubuk */}
+                          {/* Merdiven: sabit yükseklikli çubuk + PV'ye göre iç dolum */}
                           <Box sx={{ height: 56, width: "100%", display: "flex", alignItems: "flex-end" }}>
                             <Box
                               sx={{
+                                position: "relative",
                                 width: "100%",
                                 height: `${lv.height}%`,
-                                bgcolor: reached ? lv.color : "#E8E8E8",
+                                bgcolor: "#EDEDED",
                                 borderRadius: "6px 6px 2px 2px",
-                                boxShadow: reached ? "inset 0 -3px 0 rgba(0,0,0,0.12)" : "none",
-                                transition: "background-color 300ms",
+                                overflow: "hidden",
                               }}
-                            />
+                            >
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  bottom: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: `${fillPct}%`,
+                                  bgcolor: lv.color,
+                                  opacity: reached ? 1 : 0.55,
+                                  transition: "height 300ms",
+                                  boxShadow: reached ? "inset 0 -3px 0 rgba(0,0,0,0.12)" : "none",
+                                }}
+                              />
+                            </Box>
                           </Box>
                           <Typography
                             variant="caption"
