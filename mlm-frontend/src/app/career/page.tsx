@@ -130,10 +130,9 @@ function CareerContent() {
           <Box
             sx={{
               display: "flex",
-              gap: 1.5,
-              overflowX: "auto",
+              gap: { xs: 1, md: 1.5 },
+              overflowX: { xs: "auto", md: "hidden" },
               py: 1,
-              justifyContent: "safe center",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
             }}
@@ -162,8 +161,8 @@ function CareerContent() {
                 <Box
                   key={c.id}
                   sx={{
-                    flex: "0 0 auto",
-                    width: 150,
+                    flex: "1 1 0",
+                    minWidth: { xs: 120, md: 56 },
                     height: 100,
                     borderRadius: "16px",
                     display: "flex",
@@ -193,7 +192,7 @@ function CareerContent() {
                   }}
                 >
                   <Box sx={{ position: "relative" }}>
-                    <Icon sx={{ fontSize: 40, color: c.isActive ? "#fff" : c.meta.color }} />
+                    <Icon sx={{ fontSize: { xs: 40, md: 32 }, color: c.isActive ? "#fff" : c.meta.color }} />
                     {c.isAchieved && (
                       <CheckCircleRoundedIcon
                         sx={{
@@ -222,10 +221,10 @@ function CareerContent() {
                     variant="caption"
                     sx={{
                       fontWeight: 800,
-                      fontSize: 11,
+                      fontSize: { xs: 11, md: 10 },
                       textAlign: "center",
-                      px: 1,
-                      lineHeight: 1.2,
+                      px: 0.5,
+                      lineHeight: 1.15,
                       color: c.isActive ? "#fff" : c.isAchieved ? "success.dark" : c.isNext ? "primary.main" : "text.secondary",
                     }}
                   >
