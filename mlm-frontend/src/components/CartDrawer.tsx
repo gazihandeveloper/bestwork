@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
@@ -16,7 +16,7 @@ import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
 import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/cart";
-import { createOrder, getErrorMessage, fileUrl as apiFileUrl } from "@/services/api";
+import { createOrder, getErrorMessage, getMe, fileUrl as apiFileUrl } from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
 
 const tl = (v: number) =>
@@ -47,6 +47,26 @@ export default function CartDrawer() {
   const [celebrated, setCelebrated] = useState<boolean>(() =>
     typeof window !== "undefined" && window.localStorage.getItem(PLATIN_FLAG) === "1",
   );
+  // Sunucudan canlı çekilen kullanıcı PV'si (seviye kontrolü için sürekli güncellenir)
+  const [livePV, setLivePV] = useState<number | null>(null);
+
+  // Kullanıcının güncel PV'sini sunucudan al (login anlık görüntüsü değil)
+  const fetchLivePV = useCallback(() => {
+    if (!user) return;
+    getMe()
+      .then((u) => setLivePV(u.total_pv_accumulated ?? 0))
+      .catch(() => {
+        /* yoksay */
+      });
+  }, [user]);
+
+  // Sürekli kontrol: her 30 saniyede bir ve giriş değişince güncelle
+  useEffect(() => {
+    if (!user) return;
+    fetchLivePV();
+    const id = setInterval(fetchLivePV, 30000);
+    return () => clearInterval(id);
+  }, [fetchLivePV, user]);
 
   useEffect(() => {
     const openHandler = () => setOpen(true);
@@ -67,8 +87,9 @@ export default function CartDrawer() {
   const totalCV = items.reduce((sum, c) => sum + c.product.cv * c.quantity, 0);
   const totalQuantity = items.reduce((sum, c) => sum + c.quantity, 0);
 
-  // Seviye dolumu: kariyer PV + bu siparişin PV'si (özetteki "Toplam PV" ile canlı dolar)
-  const levelPV = (user?.total_pv_accumulated ?? 0) + totalPV;
+  // Seviye dolumu: sunucudaki canlı kariyer PV + bu siparişin PV'si
+  const careerPV = livePV ?? user?.total_pv_accumulated ?? 0;
+  const levelPV = careerPV + totalPV;
   const isPlatin = levelPV >= 5000;
   // Barlar platin'e ulaşılıp kutlandıysa gizlenir; PV düşerse (tam alım yapılmazsa) geri gelir.
   const showLevels = !!user && !(isPlatin && celebrated);
