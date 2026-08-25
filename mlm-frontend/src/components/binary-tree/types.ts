@@ -27,34 +27,34 @@ export interface TreeColors {
 }
 
 export const COLORS: TreeColors = {
-  root: "#274D24",
-  left: "#2E7D32",
-  right: "#B4552D",
-  text: "#1B3A1E",
-  subtext: "#5A6F5C",
+  root: "#004786",
+  left: "#005FAF",
+  right: "#8A2BE2",
+  text: "#1A1C1E",
+  subtext: "#414751",
   card: "#FFFFFF",
-  divider: "#E3EAE2",
-  placeholder: "#8FA891",
-  statusActive: "#2E9E57",
-  statusPassive: "#C62828",
-  legLeft: "#3A7BD5",
-  legRight: "#E8A33D",
+  divider: "#E3E2E5",
+  placeholder: "#727783",
+  statusActive: "#2E7D32",
+  statusPassive: "#BA1A1A",
+  legLeft: "#005FAF",
+  legRight: "#8A2BE2",
 };
 
 /** DARK_COLORS karanlık modda kart ve metinlerin okunabilir kalması için kullanılır. */
 export const DARK_COLORS: TreeColors = {
-  root: "#6FA26A",
-  left: "#52A85C",
-  right: "#DE7F4E",
-  text: "#E6EDE3",
-  subtext: "#A4B5A1",
-  card: "#1D2A1E",
-  divider: "#33463A",
-  placeholder: "#7FA085",
-  statusActive: "#3EC26E",
-  statusPassive: "#E05A5A",
-  legLeft: "#63A0E8",
-  legRight: "#E8B054",
+  root: "#A5C8FF",
+  left: "#7EB6FF",
+  right: "#C79BFF",
+  text: "#E4E4EA",
+  subtext: "#C0C3CE",
+  card: "#1C1E22",
+  divider: "#3A3D44",
+  placeholder: "#8E9199",
+  statusActive: "#4CC38A",
+  statusPassive: "#FF8A80",
+  legLeft: "#7EB6FF",
+  legRight: "#C79BFF",
 };
 
 /** BTNode ağacın iç temsilidir; API TreeNode'dan bir kez dönüştürülür ve yerinde mutasyona uğrar. */
