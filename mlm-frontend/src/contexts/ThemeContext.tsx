@@ -63,15 +63,6 @@ export function useThemeContext() {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [color, setColorState] = useState<string>(() => {
-    if (typeof window === "undefined") return "#3B6B35";
-    try {
-      const saved = window.localStorage.getItem(COLOR_KEY);
-      return saved && /^#[0-9a-fA-F]{6}$/.test(saved) ? saved : "#3B6B35";
-    } catch {
-      return "#3B6B35";
-    }
-  });
   // Sayfa boyanmadan önce inline script "—brand-color" CSS değişkenini koyar:
   // böylece seçilen renk ilk karede bile direkt uygulanır (yeşil flaş yok).
   const [color, setColorState] = useState<string>(() => {
