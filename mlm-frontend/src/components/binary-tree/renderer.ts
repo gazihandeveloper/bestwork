@@ -263,17 +263,6 @@ export class BinaryTreeRenderer {
       .attr("stroke-width", 1)
       .attr("filter", "url(#bt-card-shadow)");
 
-    // Sol bacak şeridi — kartın kimliğini verir (kök koyu mavi, sol mavi, sağ mor)
-    sel
-      .append("rect")
-      .attr("class", "bt-card-accent")
-      .attr("x", -CARD_W / 2)
-      .attr("y", -CARD_H / 2)
-      .attr("width", 4)
-      .attr("height", CARD_H)
-      .attr("rx", 2)
-      .attr("fill", (d) => this.accent(d));
-
     this.buildAvatar(sel);
     this.buildCardHeader(sel);
     this.buildProgress(sel);
