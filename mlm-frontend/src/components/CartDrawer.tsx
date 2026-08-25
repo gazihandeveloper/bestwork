@@ -236,12 +236,14 @@ export default function CartDrawer() {
               {/* Kariyer seviyeleri — şebeke gibi dikey çubuklar (özet çizgisinin üstünde) */}
               {showLevels && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{ fontWeight: 700, color: "text.secondary", display: "block", mb: 1 }}
-                  >
-                    Kariyer Seviyeleri
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                      Kariyer Seviyeleri
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: "primary.main" }}>
+                      Seviye PV: {levelPV.toLocaleString("tr-TR")}
+                    </Typography>
+                  </Box>
                   <Box sx={{ display: "flex", gap: 0.75 }}>
                     {LEVELS.map((lv) => {
                       const reached = levelPV >= lv.pv;
