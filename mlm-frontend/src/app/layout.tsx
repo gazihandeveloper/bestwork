@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Sayfa boyanmadan önce seçili tema rengini uygula (yeşil flaş yok) */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var c=localStorage.getItem("bestwork_color");if(c&&/^#[0-9a-fA-F]{6}$/.test(c)){document.documentElement.style.setProperty("--brand-color",c);}}catch(e){}`,
+            __html: `try{var c=localStorage.getItem("bestwork_color");if(c&&/^#[0-9a-fA-F]{6}$/.test(c)){function m(t,r){var x=function(v){return Math.round(v+(t-v)*r).toString(16).padStart(2,"0")};return "#"+x(parseInt(c.slice(1,3),16))+x(parseInt(c.slice(3,5),16))+x(parseInt(c.slice(5,7),16));}var s=document.documentElement.style;s.setProperty("--brand-color",c);s.setProperty("--brand-color-light",m(255,0.35));s.setProperty("--brand-color-dark",m(0,0.25));}}catch(e){}`,
           }}
         />
       </head>

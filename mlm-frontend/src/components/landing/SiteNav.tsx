@@ -146,15 +146,17 @@ export default function SiteNav() {
 
         <TextField
           size="small"
+          variant="filled"
           placeholder={`${now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} · ${now.toLocaleTimeString("tr-TR")}`}
           value={searchQ}
           onChange={(e) => setSearchQ(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") submitSearch();
           }}
-          sx={{ display: { xs: "none", sm: "inline-flex" }, ml: { xs: 0, md: 2 }, width: { sm: 280 } }}
+          sx={{ display: { xs: "none", sm: "inline-flex" }, ml: { xs: 0, md: 2 }, width: { sm: 280 }, "& .MuiFilledInput-root": { borderRadius: "24px", bgcolor: "background.paper" } }}
           slotProps={{
             input: {
+              disableUnderline: true,
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchRoundedIcon sx={{ fontSize: 18 }} />

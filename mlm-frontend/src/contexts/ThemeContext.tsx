@@ -134,9 +134,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       palette: {
         mode,
         primary: {
-          main: palette.primary,
-          light: palette.primaryLight,
-          dark: isDark ? mix(palette.primary, 255, 0.55) : palette.primaryDark,
+          main: "var(--brand-color, #3B6B35)",
+          light: "var(--brand-color-light, #A3C79D)",
+          dark: "var(--brand-color-dark, #2E5E28)",
           contrastText: "#ffffff",
         },
         secondary: {
