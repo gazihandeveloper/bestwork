@@ -5,7 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import Providers from "@/components/Providers";
 import AppShell from "@/components/AppShell";
 import SiteNav from "@/components/landing/SiteNav";
-import LandingFooter from "@/components/landing/LandingFooter";
+import Footer from "@/components/landing2/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import LoginDialog from "@/components/LoginDialog";
 import "./globals.css";
@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Providers initialMode={initialMode}>
             <SiteNav />
             <AppShell>{children}</AppShell>
-            <LandingFooter />
+            <Footer />
             <CartDrawer />
             <LoginDialog />
           </Providers>

@@ -19,7 +19,8 @@ import {
 import { listPopularProducts, listProducts, fileUrl } from "@/services/api";
 import type { PopularProduct } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
-import { Reveal } from "./Reveal";
+import { Reveal } from "../landing/Reveal";
+import { PASTELS } from "../landing/tokens";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,19 +44,19 @@ function productIcon(name: string, size = 64) {
   return <ShoppingBag style={{ width: size, height: size }} />;
 }
 
-// Yeşil pastel dünyasından türetilen 3 döngülü gradyan.
+// PASTELS + secondary tonlarında döngülü gradyanlar (kart görsel zemini).
 const mediaGradient = (index: number) => {
   const gradients = [
-    "linear-gradient(135deg, var(--secondary), var(--secondary-light))",
-    "linear-gradient(135deg, #D8F0DC, var(--secondary-light))",
-    "linear-gradient(135deg, #FBE0D6, #DDE8D9)",
+    `linear-gradient(135deg, ${PASTELS.mint}, var(--secondary-light))`,
+    `linear-gradient(135deg, var(--secondary), var(--secondary-light))`,
+    `linear-gradient(135deg, ${PASTELS.peach}, var(--secondary-light))`,
   ];
   return gradients[index % 3];
 };
 
 // Ürünlerimiz bölümü — hafta içinde en çok satın alınan 3 ürün.
 // Kartlarda adet seçimi + Sepete Ekle; tıklayınca ürün detay sayfası açılır.
-export default function FeaturedProducts() {
+export default function Products() {
   const router = useRouter();
   const [products, setProducts] = useState<PopularProduct[] | null>(null);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -160,16 +161,20 @@ export default function FeaturedProducts() {
             return (
               <Reveal key={p.id} delay={(index % 3) * 80} className="h-full">
                 <div
-                  className="border-border bg-card group flex h-full cursor-pointer flex-col overflow-hidden rounded-[17px] border shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-250 hover:-translate-y-1.5 hover:shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)]"
+                  className="border-border bg-card group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                   onClick={() => router.push(`/product/${p.id}`)}
                 >
                   <div
-                    className="relative flex h-[170px] items-center justify-center overflow-hidden"
+                    className="relative flex h-[180px] items-center justify-center overflow-hidden"
                     style={{ background: mediaGradient(index) }}
                   >
                     <div
                       aria-hidden
-                      className="absolute -top-10 -right-10 size-[140px] rounded-full bg-white/28"
+                      className="absolute -top-10 -right-10 size-[140px] rounded-full bg-white/25"
+                    />
+                    <div
+                      aria-hidden
+                      className="absolute -bottom-9 -left-9 size-[120px] rounded-full bg-white/15"
                     />
                     <Badge
                       className={cn(
@@ -181,7 +186,7 @@ export default function FeaturedProducts() {
                       {soldOut ? "Stokta Yok" : "Stokta"}
                     </Badge>
                     {p.sold_quantity > 0 && (
-                      <Badge className="bg-primary-dark absolute top-2.5 right-2.5 z-[2] text-white">
+                      <Badge className="bg-primary absolute top-2.5 right-2.5 z-[2] text-white">
                         Bu hafta {p.sold_quantity} adet
                       </Badge>
                     )}
@@ -206,7 +211,7 @@ export default function FeaturedProducts() {
                     )}
                   </div>
 
-                  <div className="flex flex-1 flex-col p-2.5">
+                  <div className="flex flex-1 flex-col p-3">
                     <h3 className="truncate text-[1.05rem] leading-[1.35] font-bold">
                       {p.name}
                     </h3>
@@ -224,8 +229,8 @@ export default function FeaturedProducts() {
 
                     <div className="border-border my-1.5 h-px w-full" />
 
-                    <div className="flex items-center gap-1">
-                      <div className="border-border flex items-center gap-0.5 rounded-full border px-0.5 py-0.25">
+                    <div className="mt-auto flex items-center gap-1.5">
+                      <div className="border-border bg-muted/40 flex items-center gap-1 rounded-full border px-1 py-1">
                         <button
                           type="button"
                           aria-label="Adedi azalt"
@@ -291,7 +296,7 @@ export default function FeaturedProducts() {
             <button
               type="button"
               aria-label="Bildirimi kapat"
-              className="text-muted-foreground ml-1 cursor-pointer text-xl leading-none"
+              className="ml-1 cursor-pointer text-xl leading-none opacity-60 transition-opacity hover:opacity-100"
               onClick={() => setSnackbar("")}
             >
               ×

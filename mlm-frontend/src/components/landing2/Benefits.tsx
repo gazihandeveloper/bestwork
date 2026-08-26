@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Truck, ShieldCheck, Gift, Headphones } from "lucide-react";
 import { listBenefits } from "@/services/api";
 import type { Benefit } from "@/services/api";
-import { Reveal } from "./Reveal";
+import { Reveal } from "../landing/Reveal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // İkon anahtarları (admin panelindeki seçimle eşleşir)
-const ICONS: Record<string, React.ReactNode> = {
+const ICONS: Record<string, ReactNode> = {
   shipping: <Truck className="size-5" />,
   payment: <ShieldCheck className="size-5" />,
   pv: <Gift className="size-5" />,
@@ -43,10 +44,10 @@ export default function Benefits() {
 
   if (benefits === null) {
     return (
-      <section className="bg-background py-4">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="bg-background py-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[84px]" />
+            <Skeleton key={i} className="h-[92px]" />
           ))}
         </div>
       </section>
@@ -54,12 +55,12 @@ export default function Benefits() {
   }
 
   return (
-    <section id="avantajlar" className="bg-background py-4">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+    <section id="avantajlar" className="bg-background py-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {benefits.map((item, i) => (
           <Reveal key={item.id} delay={i * 60} className="h-full">
-            <div className="border-border bg-card flex h-full items-center gap-4 rounded-xl border p-4 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)]">
-              <div className="bg-secondary text-primary-dark flex size-[46px] shrink-0 items-center justify-center rounded-full">
+            <div className="border-border bg-card shadow-sm flex h-full items-center gap-4 rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+              <div className="bg-gradient-to-br from-secondary-light to-secondary text-primary-dark flex size-12 shrink-0 items-center justify-center rounded-full">
                 {ICONS[item.icon] ?? ICONS.shipping}
               </div>
               <div className="min-w-0">
