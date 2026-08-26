@@ -50,15 +50,15 @@ function Logo() {
         <Typography
           component="span"
           sx={{
-            fontWeight: 800,
+            fontWeight: 900,
             color: "primary.main",
-            fontSize: 31,
+            fontSize: 36,
             display: "inline-flex",
             alignItems: "flex-start",
           }}
         >
           BestWork
-          <Box component="span" aria-label="Registered" sx={{ fontSize: 19, lineHeight: 1, mt: -0.15, color: "primary.main", fontWeight: 700 }}>
+          <Box component="span" aria-label="Registered" sx={{ fontSize: 22, lineHeight: 1, mt: 0.3, color: "primary.main", fontWeight: 900 }}>
             <sup>®</sup>
           </Box>
         </Typography>
