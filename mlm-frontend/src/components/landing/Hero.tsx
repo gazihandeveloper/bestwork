@@ -1,25 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Typography from "@mui/material/Typography";
-import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
 import { useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import IconButton from "@mui/material/IconButton";
-import Skeleton from "@mui/material/Skeleton";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
-import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { listHeroSlides, fileUrl } from "@/services/api";
 import type { HeroSlide } from "@/services/api";
-import { ELEVATION, MOTION } from "./tokens";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 // Hero (anasayfa) — büyük, köşeleri yuvarlatılmış görsel slider (metin overlay'siz).
 // Görselin tamamına tıklanınca DB'deki link açılır; kayıt yoksa bölüm render edilmez.
 export default function Hero() {
   const router = useRouter();
-  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reduceMotion = usePrefersReducedMotion();
   const [slides, setSlides] = useState<HeroSlide[] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -65,11 +59,11 @@ export default function Hero() {
 
   if (slides === null) {
     return (
-      <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
-        <Container maxWidth={false} sx={{ pt: { xs: 13, md: 14 }, pb: { xs: 6, md: 8 } }}>
-          <Skeleton variant="rounded" sx={{ height: { xs: 320, md: 646 }, borderRadius: "20px", maxWidth: 1782, mx: "auto" }} />
-        </Container>
-      </Box>
+      <section id="anasayfa" className="bg-background">
+        <div className="px-0 pt-[104px] pb-6 md:pt-[112px] md:pb-8">
+          <Skeleton className="mx-auto h-[320px] w-full max-w-[1782px] rounded-[20px] md:h-[646px]" />
+        </div>
+      </section>
     );
   }
 
@@ -81,9 +75,9 @@ export default function Hero() {
   const duration = reduceMotion ? 0 : 450;
 
   return (
-    <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
-      <Container maxWidth={false} sx={{ pt: { xs: 13, md: 14 }, pb: { xs: 6, md: 8 } }}>
-        <Box
+    <section id="anasayfa" className="bg-background">
+      <div className="px-0 pt-[104px] pb-6 md:pt-[112px] md:pb-8">
+        <div
           role="region"
           aria-roledescription="karusel"
           aria-label="Kampanya ve ürün görselleri"
@@ -93,23 +87,13 @@ export default function Hero() {
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
           }}
-          sx={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 1782,
-            mx: "auto",
-            height: { xs: 320, sm: 480, md: 646 },
-            borderRadius: "20px",
-            overflow: "hidden",
-            boxShadow: ELEVATION.l2,
-            bgcolor: "background.paper",
-          }}
+          className="bg-card relative mx-auto h-[320px] w-full max-w-[1782px] overflow-hidden rounded-[20px] shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)] sm:h-[480px] md:h-[646px]"
         >
           {slides.map((s, i) => {
             const isActive = i === activeIndex;
             const image = fileUrl(s.image_path);
             return (
-              <Box
+              <div
                 key={s.id}
                 aria-hidden={!isActive}
                 role={s.link ? "link" : undefined}
@@ -124,20 +108,21 @@ export default function Hero() {
                     router.push(s.link);
                   }
                 }}
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  cursor: s.link ? "pointer" : "default",
+                style={{
                   opacity: isActive ? 1 : 0,
                   transform: isActive
                     ? "scale(1)"
                     : direction > 0
                       ? "scale(1.03) translateX(30px)"
                       : "scale(1.03) translateX(-30px)",
-                  transition: `opacity ${duration}ms ${MOTION.emphasized}, transform ${duration}ms ${MOTION.emphasized}`,
-                  pointerEvents: isActive ? "auto" : "none",
-                  "&:focus-visible": { outline: "3px solid #fff", outlineOffset: -3 },
+                  transition: `opacity ${duration}ms cubic-bezier(0.2,0,0,1), transform ${duration}ms cubic-bezier(0.2,0,0,1)`,
                 }}
+                className={cn(
+                  "absolute inset-0 cursor-default",
+                  s.link && "cursor-pointer",
+                  isActive ? "pointer-events-auto" : "pointer-events-none",
+                  "focus-visible:outline-[3px] focus-visible:-outline-offset-3 focus-visible:outline-white"
+                )}
               >
                 {image ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -145,88 +130,49 @@ export default function Hero() {
                     src={image}
                     alt={s.title}
                     loading={i === 0 ? "eager" : "lazy"}
+                    className="block h-full w-full object-cover object-center"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      display: "block",
                       // 4K içerikten maksimum netlik + hafif canlılık
                       filter: "saturate(1.12) contrast(1.04)",
-                      imageRendering: "auto",
                     }}
                   />
                 ) : null}
 
-                <Box
+                <div
                   aria-hidden
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
+                  className="absolute inset-0"
+                  style={{
                     background:
                       "linear-gradient(180deg, rgba(0,0,0,0) 70%, rgba(0,0,0,0.28) 100%)",
                   }}
                 />
-              </Box>
+              </div>
             );
           })}
 
           {slides.length > 1 && (
             <>
-              <IconButton
+              <button
                 aria-label="Önceki görsel"
                 onClick={goPrev}
-                size="large"
-                sx={{
-                  position: "absolute",
-                  left: 16,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  bgcolor: "rgba(255,255,255,0.85)",
-                  color: "primary.dark",
-                  boxShadow: ELEVATION.l1,
-                  zIndex: 2,
-                  "&:hover": { bgcolor: "common.white" },
-                }}
+                className="bg-white/85 text-primary-dark absolute top-1/2 left-4 z-[2] flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-colors hover:bg-white"
               >
-                <ChevronLeftRoundedIcon />
-              </IconButton>
-              <IconButton
+                <ChevronLeft className="size-6" />
+              </button>
+              <button
                 aria-label="Sonraki görsel"
                 onClick={goNext}
-                size="large"
-                sx={{
-                  position: "absolute",
-                  right: 16,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  bgcolor: "rgba(255,255,255,0.85)",
-                  color: "primary.dark",
-                  boxShadow: ELEVATION.l1,
-                  zIndex: 2,
-                  "&:hover": { bgcolor: "common.white" },
-                }}
+                className="bg-white/85 text-primary-dark absolute top-1/2 right-4 z-[2] flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-colors hover:bg-white"
               >
-                <ChevronRightRoundedIcon />
-              </IconButton>
+                <ChevronRight className="size-6" />
+              </button>
 
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: 16,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  display: "flex",
-                  gap: 1,
-                  zIndex: 2,
-                }}
-              >
+              <div className="absolute bottom-4 left-1/2 z-[2] flex -translate-x-1/2 gap-1">
                 {slides.map((s, i) => {
                   const isActive = i === activeIndex;
                   return (
-                    <Box
+                    <button
                       key={s.id}
-                      component="button"
                       type="button"
                       aria-label={`Slayt ${i + 1} göster`}
                       aria-current={isActive ? "true" : undefined}
@@ -234,36 +180,23 @@ export default function Hero() {
                         setDirection(i > activeIndex ? 1 : -1);
                         setActiveIndex(i);
                       }}
-                      sx={{
-                        p: 0.5,
-                        minWidth: 44,
-                        minHeight: 44,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        border: "none",
-                        cursor: "pointer",
-                        bgcolor: "transparent",
-                      }}
+                      className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-none bg-transparent p-0.5"
                     >
-                      <Box
+                      <span
                         aria-hidden
-                        sx={{
-                          width: isActive ? 24 : 8,
-                          height: 8,
-                          borderRadius: 2.8,
-                          bgcolor: isActive ? "common.white" : "rgba(255,255,255,0.5)",
-                          transition: "all 250ms ease",
-                        }}
+                        className={cn(
+                          "h-2 rounded-[2.8px] transition-all duration-250",
+                          isActive ? "w-6 bg-white" : "w-2 bg-white/50"
+                        )}
                       />
-                    </Box>
+                    </button>
                   );
                 })}
-              </Box>
+              </div>
             </>
           )}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

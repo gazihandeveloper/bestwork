@@ -1,28 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Box from "@mui/material/Box";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import type { ReactNode } from "react";
-import type { SxProps, Theme } from "@mui/material/styles";
-import { MOTION } from "./tokens";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 interface RevealProps {
   children: ReactNode;
   delay?: number;
   y?: number;
   duration?: number;
-  sx?: SxProps<Theme>;
+  className?: string;
 }
 
 // IntersectionObserver tabanlı giriş animasyonu sarmalayıcısı.
 // SSR / JS-off güvenli: mount olmadan animasyonsuz görünür.
 // prefers-reduced-motion: reduce ise geçiş süresi 0, kayma 0 (anında görünür).
-export default function Reveal({ children, delay = 0, y = 24, duration = MOTION.medium, sx }: RevealProps) {
+export function Reveal({ children, delay = 0, y = 24, duration = 400, className }: RevealProps) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
-  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     // Hydration güvenliği: sunucuda false, istemcide mount sonrası true.
@@ -63,17 +60,17 @@ export default function Reveal({ children, delay = 0, y = 24, duration = MOTION.
   const shown = !mounted || reduceMotion || visible;
 
   return (
-    <Box
+    <div
       ref={ref}
-      sx={{
+      className={className}
+      style={{
         opacity: shown ? 1 : 0,
         transform: shown ? "translateY(0)" : `translateY(${effectiveY}px)`,
-        transition: `opacity ${effectiveDuration}ms ${MOTION.emphasizedDecelerate} ${effectiveDelay}ms, transform ${effectiveDuration}ms ${MOTION.emphasizedDecelerate} ${effectiveDelay}ms`,
+        transition: `opacity ${effectiveDuration}ms cubic-bezier(0.05,0.7,0.1,1) ${effectiveDelay}ms, transform ${effectiveDuration}ms cubic-bezier(0.05,0.7,0.1,1) ${effectiveDelay}ms`,
         willChange: shown ? "auto" : "opacity, transform",
-        ...sx,
       }}
     >
       {children}
-    </Box>
+    </div>
   );
 }

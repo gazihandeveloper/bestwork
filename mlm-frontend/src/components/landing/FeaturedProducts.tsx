@@ -3,35 +3,27 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
-import Snackbar from "@mui/material/Snackbar";
-import Skeleton from "@mui/material/Skeleton";
-import type { Theme } from "@mui/material/styles";
-import CoffeeRoundedIcon from "@mui/icons-material/CoffeeRounded";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import LocalDrinkRoundedIcon from "@mui/icons-material/LocalDrinkRounded";
-import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
-import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
-import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import {
+  Coffee,
+  Zap,
+  CupSoda,
+  Flower2,
+  ShoppingBag,
+  ShoppingCart,
+  ArrowRight,
+  Plus,
+  Minus,
+  Check,
+  PackageSearch,
+} from "lucide-react";
 import { listPopularProducts, listProducts, fileUrl } from "@/services/api";
 import type { PopularProduct } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
-import Reveal from "./Reveal";
-import { PASTELS, ELEVATION, MOTION } from "./tokens";
+import { Reveal } from "./Reveal";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const formatPrice = (v: number) =>
   new Intl.NumberFormat("tr-TR", {
@@ -41,28 +33,28 @@ const formatPrice = (v: number) =>
     maximumFractionDigits: 2,
   }).format(v);
 
-function productIcon(name: string) {
+function productIcon(name: string, size = 64) {
   const n = name.toLowerCase();
-  if (n.includes("kahve") || n.includes("coffee")) return <CoffeeRoundedIcon sx={{ fontSize: 64 }} />;
-  if (n.includes("enerji") || n.includes("energy")) return <BoltRoundedIcon sx={{ fontSize: 64 }} />;
-  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <LocalDrinkRoundedIcon sx={{ fontSize: 64 }} />;
+  if (n.includes("kahve") || n.includes("coffee")) return <Coffee style={{ width: size, height: size }} />;
+  if (n.includes("enerji") || n.includes("energy")) return <Zap style={{ width: size, height: size }} />;
+  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <CupSoda style={{ width: size, height: size }} />;
   if (n.includes("krem") || n.includes("bakım") || n.includes("beauty") || n.includes("cilt"))
-    return <SpaRoundedIcon sx={{ fontSize: 64 }} />;
-  return <ShoppingBagRoundedIcon sx={{ fontSize: 64 }} />;
+    return <Flower2 style={{ width: size, height: size }} />;
+  return <ShoppingBag style={{ width: size, height: size }} />;
 }
 
-// M3 yeşil dünyasından türetilen 3 döngülü gradyan.
-const mediaGradient = (theme: Theme, index: number) => {
+// Yeşil pastel dünyasından türetilen 3 döngülü gradyan.
+const mediaGradient = (index: number) => {
   const gradients = [
-    `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.light})`,
-    `linear-gradient(135deg, ${PASTELS.mint}, ${theme.palette.secondary.light})`,
-    `linear-gradient(135deg, ${PASTELS.peach}, ${PASTELS.sage})`,
+    "linear-gradient(135deg, var(--secondary), var(--secondary-light))",
+    "linear-gradient(135deg, #D8F0DC, var(--secondary-light))",
+    "linear-gradient(135deg, #FBE0D6, #DDE8D9)",
   ];
   return gradients[index % 3];
 };
 
 // Ürünlerimiz bölümü — hafta içinde en çok satın alınan 3 ürün.
-// Kartlarda adet seçimi + Sepete Ekle; tıklayınca şık detay modalı açılır.
+// Kartlarda adet seçimi + Sepete Ekle; tıklayınca ürün detay sayfası açılır.
 export default function FeaturedProducts() {
   const router = useRouter();
   const [products, setProducts] = useState<PopularProduct[] | null>(null);
@@ -113,312 +105,200 @@ export default function FeaturedProducts() {
   };
 
   return (
-    <Box
-      component="section"
-      id="urunler"
-      sx={{ py: 8, bgcolor: "background.paper", scrollMarginTop: "112px" }}
-    >
-      <Container maxWidth={false}>
-        <Reveal>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 2,
-              flexWrap: "wrap",
-              mb: 4,
-            }}
-          >
-            <Box>
-              <Typography
-                variant="overline"
-                sx={{ color: "primary.main", letterSpacing: 2, fontWeight: 700 }}
-              >
-                ÇOK SATANLAR
-              </Typography>
-              <Typography variant="h2" sx={{ fontWeight: 700, color: "primary.dark" }}>
-                Ürünlerimiz
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Hafta içinde en çok satın alınan 3 ürün.
-              </Typography>
-            </Box>
-            <Button component={Link} href="/shop" endIcon={<ArrowForwardRoundedIcon />}>
+    <section id="urunler" className="bg-card py-8 scroll-mt-[112px]">
+      <Reveal>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-primary text-xs font-bold tracking-[2px] uppercase">ÇOK SATANLAR</p>
+            <h2 className="text-primary-dark text-3xl font-bold">Ürünlerimiz</h2>
+            <p className="text-muted-foreground">Hafta içinde en çok satın alınan 3 ürün.</p>
+          </div>
+          <Button asChild variant="ghost" className="text-primary">
+            <Link href="/shop">
               Tümünü Gör
-            </Button>
-          </Box>
-        </Reveal>
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        </div>
+      </Reveal>
 
-        {products === null && !error ? (
-          <Grid container spacing={3}>
-            {[0, 1, 2].map((i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
-                <Skeleton variant="rounded" height={420} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : error ? (
-          <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
-            <Inventory2RoundedIcon sx={{ fontSize: 48, color: "text.secondary", mb: 1 }} />
-            <Typography variant="body1">Ürünler yüklenemedi. Lütfen tekrar deneyin.</Typography>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setProducts(null);
-                setError(false);
-                void load();
-              }}
-              sx={{ mt: 2 }}
-            >
-              Tekrar Dene
-            </Button>
-          </Box>
-        ) : products && products.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
-            <Inventory2RoundedIcon sx={{ fontSize: 48, color: "text.secondary", mb: 1 }} />
-            <Typography variant="body1">Henüz ürün eklenmemiş.</Typography>
-            <Button component={Link} href="/shop" variant="contained" sx={{ mt: 2 }}>
-              Alışverişe Başla
-            </Button>
-          </Box>
-        ) : (
-          <Grid container spacing={3}>
-            {products?.map((p, index) => {
-              const qty = quantityOf(p.id);
-              const soldOut = p.stock <= 0;
-              return (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={p.id}>
-                  <Reveal delay={(index % 3) * 80} sx={{ height: "100%" }}>
-                    <Card
-                      sx={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        overflow: "hidden",
-                        borderRadius: "17px",
-                        boxShadow: ELEVATION.l1,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        cursor: "pointer",
-                        transition: `box-shadow 250ms ${MOTION.standard}, transform 250ms ${MOTION.standard}`,
-                        "&:hover": {
-                          boxShadow: ELEVATION.l3,
-                          transform: "translateY(-6px)",
-                          "& .product-media": { transform: "scale(1.05)" },
-                        },
-                      }}
-                      onClick={() => router.push(`/product/${p.id}`)}
+      {products === null && !error ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[420px]" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="text-muted-foreground py-8 text-center">
+          <PackageSearch className="text-muted-foreground mx-auto mb-1 size-12" />
+          <p>Ürünler yüklenemedi. Lütfen tekrar deneyin.</p>
+          <Button
+            variant="default"
+            onClick={() => {
+              setProducts(null);
+              setError(false);
+              void load();
+            }}
+            className="mt-2"
+          >
+            Tekrar Dene
+          </Button>
+        </div>
+      ) : products && products.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">
+          <PackageSearch className="text-muted-foreground mx-auto mb-1 size-12" />
+          <p>Henüz ürün eklenmemiş.</p>
+          <Button asChild className="mt-2">
+            <Link href="/shop">Alışverişe Başla</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {products?.map((p, index) => {
+            const qty = quantityOf(p.id);
+            const soldOut = p.stock <= 0;
+            return (
+              <Reveal key={p.id} delay={(index % 3) * 80} className="h-full">
+                <div
+                  className="border-border bg-card group flex h-full cursor-pointer flex-col overflow-hidden rounded-[17px] border shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-250 hover:-translate-y-1.5 hover:shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)]"
+                  onClick={() => router.push(`/product/${p.id}`)}
+                >
+                  <div
+                    className="relative flex h-[170px] items-center justify-center overflow-hidden"
+                    style={{ background: mediaGradient(index) }}
+                  >
+                    <div
+                      aria-hidden
+                      className="absolute -top-10 -right-10 size-[140px] rounded-full bg-white/28"
+                    />
+                    <Badge
+                      className={cn(
+                        "absolute top-2.5 left-2.5 z-[2] bg-white/92",
+                        soldOut ? "text-destructive" : "text-[#2E7D32]"
+                      )}
                     >
-                      <Box
-                        sx={{
-                          position: "relative",
-                          height: 170,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: (theme) => mediaGradient(theme, index),
-                          overflow: "hidden",
+                      <PackageSearch className="size-3.5" />
+                      {soldOut ? "Stokta Yok" : "Stokta"}
+                    </Badge>
+                    {p.sold_quantity > 0 && (
+                      <Badge className="bg-primary-dark absolute top-2.5 right-2.5 z-[2] text-white">
+                        Bu hafta {p.sold_quantity} adet
+                      </Badge>
+                    )}
+                    {p.image_path ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={fileUrl(p.image_path) ?? ""}
+                        alt={p.name}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        className="block h-full w-full object-cover transition-transform duration-350 group-hover:scale-105"
+                        style={{
+                          filter: soldOut ? "grayscale(1) opacity(0.55)" : "saturate(1.1)",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="text-primary-dark transition-transform duration-350 group-hover:scale-105"
+                        style={{ filter: soldOut ? "grayscale(1) opacity(0.55)" : "none" }}
+                      >
+                        {productIcon(p.name)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-2.5">
+                    <h3 className="truncate text-[1.05rem] leading-[1.35] font-bold">
+                      {p.name}
+                    </h3>
+                    {p.description ? (
+                      <p className="text-muted-foreground mt-0.5 line-clamp-2 text-sm">
+                        {p.description}
+                      </p>
+                    ) : null}
+
+                    <div className="mt-1">
+                      <p className="text-primary-dark text-lg font-extrabold">
+                        {formatPrice(p.price)}
+                      </p>
+                    </div>
+
+                    <div className="border-border my-1.5 h-px w-full" />
+
+                    <div className="flex items-center gap-1">
+                      <div className="border-border flex items-center gap-0.5 rounded-full border px-0.5 py-0.25">
+                        <button
+                          type="button"
+                          aria-label="Adedi azalt"
+                          disabled={qty <= 1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeQuantity(p.id, -1, p.stock);
+                          }}
+                          className="flex size-8 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <Minus className="size-4" />
+                        </button>
+                        <span className="min-w-[22px] text-center text-sm font-bold">{qty}</span>
+                        <button
+                          type="button"
+                          aria-label="Adedi artır"
+                          disabled={qty >= p.stock}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            changeQuantity(p.id, 1, p.stock);
+                          }}
+                          className="flex size-8 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <Plus className="size-4" />
+                        </button>
+                      </div>
+                      <Button
+                        className="h-10 flex-1"
+                        disabled={soldOut}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(p, quantityOf(p.id));
                         }}
                       >
-                        <Box
-                          aria-hidden
-                          sx={{
-                            position: "absolute",
-                            top: -40,
-                            right: -40,
-                            width: 140,
-                            height: 140,
-                            borderRadius: "50%",
-                            bgcolor: "rgba(255,255,255,0.28)",
-                          }}
-                        />
-                        <Chip
-                          size="small"
-                          icon={<Inventory2RoundedIcon sx={{ fontSize: 14 }} />}
-                          label={soldOut ? "Stokta Yok" : "Stokta"}
-                          sx={{
-                            position: "absolute",
-                            top: 10,
-                            left: 10,
-                            zIndex: 2,
-                            bgcolor: "rgba(255,255,255,0.92)",
-                            color: soldOut ? "error.main" : "success.main",
-                            borderRadius: "20px",
-                            "& .MuiChip-label": { fontSize: 11, fontWeight: 700 },
-                          }}
-                        />
-                        {p.sold_quantity > 0 && (
-                          <Chip
-                            size="small"
-                            label={`Bu hafta ${p.sold_quantity} adet`}
-                            sx={{
-                              position: "absolute",
-                              top: 10,
-                              right: 10,
-                              zIndex: 2,
-                              bgcolor: (theme) => theme.palette.primary.dark,
-                              color: "common.white",
-                              borderRadius: "20px",
-                              "& .MuiChip-label": { fontSize: 11, fontWeight: 700 },
-                            }}
-                          />
-                        )}
-                        {p.image_path ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={fileUrl(p.image_path) ?? ""}
-                            alt={p.name}
-                            loading={index === 0 ? "eager" : "lazy"}
-                            className="product-media"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                              transition: `transform 350ms ${MOTION.emphasized}`,
-                              filter: soldOut ? "grayscale(1) opacity(0.55)" : "saturate(1.1)",
-                            }}
-                          />
-                        ) : (
-                          <Box
-                            className="product-media"
-                            sx={{
-                              color: "primary.dark",
-                              display: "flex",
-                              transition: `transform 350ms ${MOTION.emphasized}`,
-                              filter: soldOut ? "grayscale(1) opacity(0.55)" : "none",
-                            }}
-                          >
-                            {productIcon(p.name)}
-                          </Box>
-                        )}
-                      </Box>
+                        <ShoppingCart className="size-4" />
+                        Sepete Ekle
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      )}
 
-                      <CardContent sx={{ p: 2.5, display: "flex", flexDirection: "column", flexGrow: 1 }}>
-                        <Typography
-                          variant="h6"
-                          noWrap
-                          sx={{
-                            textOverflow: "ellipsis",
-                            fontWeight: 700,
-                            fontSize: "1.05rem",
-                            lineHeight: 1.35,
-                          }}
-                        >
-                          {p.name}
-                        </Typography>
-                        {p.description ? (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              mt: 0.25,
-                            }}
-                          >
-                            {p.description}
-                          </Typography>
-                        ) : null}
-
-                        <Box sx={{ mt: 1 }}>
-                          <Typography variant="h6" sx={{ fontWeight: 800, color: "primary.dark" }}>
-                            {formatPrice(p.price)}
-                          </Typography>
-                        </Box>
-
-                        <Divider sx={{ my: 1.5 }} />
-
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.5,
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: "20px",
-                              px: 0.5,
-                              py: 0.25,
-                            }}
-                          >
-                            <IconButton
-                              size="small"
-                              aria-label="Adedi azalt"
-                              disabled={qty <= 1}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                changeQuantity(p.id, -1, p.stock);
-                              }}
-                            >
-                              <RemoveRoundedIcon fontSize="small" />
-                            </IconButton>
-                            <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 22, textAlign: "center" }}>
-                              {qty}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              aria-label="Adedi artır"
-                              disabled={qty >= p.stock}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                changeQuantity(p.id, 1, p.stock);
-                              }}
-                            >
-                              <AddRoundedIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                          <Button
-                            variant="contained"
-                            fullWidth
-                            startIcon={<ShoppingCartRoundedIcon />}
-                            disabled={soldOut}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCart(p, quantityOf(p.id));
-                            }}
-                            sx={{ flex: 1, height: 40 }}
-                          >
-                            Sepete Ekle
-                          </Button>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Reveal>
-                </Grid>
-              );
-            })}
-          </Grid>
-        )}
-
-        <Snackbar
-          open={!!snackbar}
-          autoHideDuration={4000}
-          onClose={() => setSnackbar("")}
-          message={
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <CheckRoundedIcon sx={{ fontSize: 20 }} />
-              {snackbar}
-            </Box>
-          }
-          action={
-            <Button
-              color="inherit"
-              size="small"
+      {/* Sepete ekleme bildirimi */}
+      {snackbar && (
+        <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold">
+            <Check className="size-5 shrink-0" />
+            <span className="flex-1 truncate">{snackbar}</span>
+            <button
+              type="button"
+              className="cursor-pointer font-bold underline underline-offset-2"
               onClick={() => {
                 setSnackbar("");
                 window.dispatchEvent(new CustomEvent("open-cart"));
               }}
-              sx={{ fontWeight: 700 }}
             >
               Sepete Git
-            </Button>
-          }
-        />
-      </Container>
-    </Box>
+            </button>
+            <button
+              type="button"
+              aria-label="Bildirimi kapat"
+              className="text-muted-foreground ml-1 cursor-pointer text-xl leading-none"
+              onClick={() => setSnackbar("")}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

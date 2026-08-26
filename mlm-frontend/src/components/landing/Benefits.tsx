@@ -1,27 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import Skeleton from "@mui/material/Skeleton";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
-import RedeemRoundedIcon from "@mui/icons-material/RedeemRounded";
-import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import { Truck, ShieldCheck, Gift, Headphones } from "lucide-react";
 import { listBenefits } from "@/services/api";
 import type { Benefit } from "@/services/api";
-import Reveal from "./Reveal";
-import { ELEVATION, MOTION } from "./tokens";
+import { Reveal } from "./Reveal";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // İkon anahtarları (admin panelindeki seçimle eşleşir)
 const ICONS: Record<string, React.ReactNode> = {
-  shipping: <LocalShippingRoundedIcon />,
-  payment: <VerifiedUserRoundedIcon />,
-  pv: <RedeemRoundedIcon />,
-  support: <SupportAgentRoundedIcon />,
+  shipping: <Truck className="size-5" />,
+  payment: <ShieldCheck className="size-5" />,
+  pv: <Gift className="size-5" />,
+  support: <Headphones className="size-5" />,
 };
 
 const fallbackBenefits: Benefit[] = [
@@ -52,78 +43,37 @@ export default function Benefits() {
 
   if (benefits === null) {
     return (
-      <Box component="section" sx={{ py: 4, bgcolor: "background.default" }}>
-        <Container maxWidth={false}>
-          <Grid container spacing={2}>
-            {[0, 1, 2, 3].map((i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
-                <Skeleton variant="rounded" height={84} />
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
+      <section className="bg-background py-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-[84px]" />
+          ))}
+        </div>
+      </section>
     );
   }
 
   return (
-    <Box component="section" id="avantajlar" sx={{ py: 4, bgcolor: "background.default" }}>
-      <Container maxWidth={false}>
-        <Grid container spacing={2}>
-          {benefits.map((item, i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>
-              <Reveal delay={i * 60} sx={{ height: "100%" }}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: (theme) => theme.palette.divider,
-                    boxShadow: ELEVATION.l1,
-                    transition: `box-shadow 250ms ${MOTION.standard}, transform 250ms ${MOTION.standard}`,
-                    "&:hover": { boxShadow: ELEVATION.l2, transform: "translateY(-3px)" },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: "50%",
-                      bgcolor: "secondary.main",
-                      color: "primary.dark",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {ICONS[item.icon] ?? ICONS.shipping}
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="h3"
-                      sx={{ fontSize: "0.95rem", fontWeight: 700, lineHeight: 1.3, wordBreak: "break-word" }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mt: 0.25, fontSize: "0.8rem", lineHeight: 1.35, wordBreak: "break-word" }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </Box>
-                </Card>
-              </Reveal>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    </Box>
+    <section id="avantajlar" className="bg-background py-4">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {benefits.map((item, i) => (
+          <Reveal key={item.id} delay={i * 60} className="h-full">
+            <div className="border-border bg-card flex h-full items-center gap-4 rounded-xl border p-4 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)]">
+              <div className="bg-secondary text-primary-dark flex size-[46px] shrink-0 items-center justify-center rounded-full">
+                {ICONS[item.icon] ?? ICONS.shipping}
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[0.95rem] leading-[1.3] font-bold break-words">
+                  {item.title}
+                </h3>
+                <p className="text-muted-foreground mt-0.5 text-[0.8rem] leading-[1.35] break-words">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
   );
 }

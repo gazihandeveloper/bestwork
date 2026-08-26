@@ -1,37 +1,127 @@
-* {
-  box-sizing: border-box;
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Karanlık mod: .dark sınıfı <html> üzerinde (ThemeContext + SSR cookie ile senkron) */
+@custom-variant dark (&:is(.dark *));
+
+/* ── BestWork tasarım tokenları (shadcn/ui uyumlu) ─────────────────────── */
+:root {
+  --background: #ffffff;
+  --foreground: #1f1f1f;
+  --card: #ffffff;
+  --card-foreground: #1f1f1f;
+  --popover: #ffffff;
+  --popover-foreground: #1f1f1f;
+  --primary: #476f16;
+  --primary-light: #b5c5a2;
+  --primary-dark: #355310;
+  --primary-foreground: #ffffff;
+  --secondary: #b5c5a2;
+  --secondary-light: #dae2d0;
+  --secondary-dark: #90a873;
+  --secondary-foreground: #1a3a16;
+  --muted: #f2f5ee;
+  --muted-foreground: #625d63;
+  --accent: #eef3e4;
+  --accent-foreground: #1f1f1f;
+  --destructive: #d3381f;
+  --destructive-foreground: #ffffff;
+  --border: #c6ccc6;
+  --input: #c6ccc6;
+  --ring: #476f16;
+  --radius: 0.75rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
+.dark {
+  --background: #09090b;
+  --foreground: #f9f9f9;
+  --card: #09090b;
+  --card-foreground: #f9f9f9;
+  --popover: #131316;
+  --popover-foreground: #f9f9f9;
+  --primary: #476f16;
+  --primary-light: #87a168;
+  --primary-dark: #acbe96;
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2e;
+  --secondary-light: #3a3a3e;
+  --secondary-dark: #1e1e20;
+  --secondary-foreground: #f9f9f9;
+  --muted: #1c1c20;
+  --muted-foreground: #b8bcc4;
+  --accent: #26262a;
+  --accent-foreground: #f9f9f9;
+  --destructive: #ef5350;
+  --destructive-foreground: #ffffff;
+  --border: #26262a;
+  --input: #333338;
+  --ring: #acbe96;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-secondary-dark: var(--secondary-dark);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ── Taban stiller ─────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /* İçerik her ekranda %75 genişlikte, ortalanmış */
+  main {
+    width: 75%;
+    margin-inline: auto;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-}
-
-/* İçerik her ekranda %50 genişlikte, ortalanmış */
-main {
-  width: 75%;
-
-  margin-inline: auto;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* M3 motion keyframes — yalnızca transform/opacity (60fps güvenli) */
+/* ── Motion keyframes (mevcut, aynen korundu) ───────────────────────────── */
 @keyframes drift {
   from {
     transform: translate(0, 0);

@@ -3,29 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import { alpha } from "@mui/material/styles";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
-import PowerSettingsNewRoundedIcon from "@mui/icons-material/PowerSettingsNewRounded";
-import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import { Search, Moon, Sun, ShoppingCart, LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { cartCount } from "@/lib/cart";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetCloseButton } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Anasayfa" },
@@ -39,32 +26,16 @@ function Logo() {
     <Link
       href="/"
       aria-label="BestWork ana sayfa"
-      style={{
-        textDecoration: "none",
-        color: "inherit",
-        display: "inline-flex",
-        alignItems: "center",
-        lineHeight: 1,
-        marginLeft: 8,
-      }}
+      className="inline-flex items-center leading-none no-underline text-inherit ml-2"
     >
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15, mt: 0.75 }}>
-        <Typography
-          component="span"
-          sx={{
-            fontWeight: 900,
-            color: "primary.main",
-            fontSize: 36,
-            display: "inline-flex",
-            alignItems: "flex-start",
-          }}
-        >
+      <span className="flex flex-col items-start leading-tight mt-0.5">
+        <span className="inline-flex items-start font-black text-primary text-4xl">
           BestWork
-          <Box component="span" aria-label="Registered" sx={{ fontSize: 22, lineHeight: 1, mt: 0.3, color: "primary.main", fontWeight: 900 }}>
+          <span aria-label="Registered" className="text-[22px] leading-none mt-[0.3em] font-black text-primary">
             <sup>®</sup>
-          </Box>
-        </Typography>
-      </Box>
+          </span>
+        </span>
+      </span>
     </Link>
   );
 }
@@ -100,204 +71,168 @@ export default function SiteNav() {
     router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
 
+  const iconBtn =
+    "inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent";
+
   return (
     <>
-      <Box
-        component="nav"
+      <nav
         aria-label="Ana menü"
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          marginInline: "auto",
-          width: "75%",
-
-          height: 95,
-          bgcolor: "background.default",
-          boxShadow: "none",
-          border: "none",
-          zIndex: 1100,
-          display: "flex",
-          alignItems: "center",
-          px: 2.5,
-        }}
+        className="bg-background fixed top-0 right-0 left-0 z-[1100] mx-auto flex h-[95px] w-[75%] items-center px-2.5"
       >
         <Logo />
 
         {/* Menü linkleri */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 8 }}>
+        <div className="ml-8 hidden items-center gap-1 md:flex">
           {navLinks.map((l) => {
             const active = l.href === pathname;
             return (
               <Button
                 key={l.href}
-                component={Link}
-                href={l.href}
-                disableRipple
-                sx={{
-                  color: active ? "primary.main" : "text.primary",
-                  fontWeight: active ? 700 : 500,
-                  fontSize: 17,
-                  bgcolor: active ? (theme) => alpha(theme.palette.secondary.main, 0.5) : "transparent",
-                  whiteSpace: "nowrap",
-                }}
+                asChild
+                variant="ghost"
+                className={cn(
+                  "text-[17px] whitespace-nowrap",
+                  active ? "bg-secondary/60 font-bold text-primary" : "font-medium"
+                )}
               >
-                {l.label}
+                <Link href={l.href}>{l.label}</Link>
               </Button>
             );
           })}
-        </Box>
+        </div>
 
-        <Box sx={{ flexGrow: 1 }} />
+        <div className="flex-1" />
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <div className="flex items-center gap-1">
           {/* Arama ikonu → ortada blur popup */}
-          <IconButton aria-label="Ara" size="large" disableRipple onClick={() => setSearchOpen(true)} sx={{ color: "primary.main" }}>
-            <SearchRoundedIcon />
-          </IconButton>
+          <button aria-label="Ara" className={iconBtn} onClick={() => setSearchOpen(true)}>
+            <Search className="size-5" />
+          </button>
 
           {/* Gece/gündüz */}
-          <IconButton aria-label="Gece/gündüz modu" size="large" disableRipple onClick={toggleMode} sx={{ color: mode === "dark" ? "#FFB300" : "primary.main" }}>
-            {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-          </IconButton>
+          <button
+            aria-label="Gece/gündüz modu"
+            className={iconBtn}
+            onClick={toggleMode}
+            style={{ color: mode === "dark" ? "#FFB300" : undefined }}
+          >
+            {mode === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </button>
 
           {/* Sepet */}
-          <IconButton aria-label={`Sepet (${count} ürün)`} size="large" disableRipple onClick={openCart} sx={{ color: "primary.main" }}>
-            <Badge badgeContent={count} color="primary" max={99}>
-              <ShoppingCartRoundedIcon />
-            </Badge>
-          </IconButton>
+          <button
+            aria-label={`Sepet (${count} ürün)`}
+            className={cn(iconBtn, "relative")}
+            onClick={openCart}
+          >
+            <ShoppingCart className="size-5" />
+            {count > 0 && (
+              <Badge className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 h-[18px] min-w-[18px] justify-center rounded-full px-1 text-[11px] font-bold">
+                {Math.min(count, 99)}
+              </Badge>
+            )}
+          </button>
 
           {/* Oturum */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+          <div className="hidden items-center gap-1 md:flex">
             {loading ? (
-              <Box sx={{ width: 90, height: 36, borderRadius: "999px", bgcolor: "secondary.main", opacity: 0.5 }} />
+              <div className="bg-secondary/60 h-9 w-[90px] rounded-full opacity-50" />
             ) : user ? (
               <>
-                <Button component={Link} href="/dashboard" disableRipple sx={{ color: "primary.main", whiteSpace: "nowrap", fontWeight: 800, fontSize: 17 }}>
-                  {user.name.toLocaleUpperCase("tr-TR")}
+                <Button asChild variant="ghost" className="text-primary text-[17px] font-extrabold whitespace-nowrap">
+                  <Link href="/dashboard">{user.name.toLocaleUpperCase("tr-TR")}</Link>
                 </Button>
-                <IconButton aria-label="Çıkış yap" size="large" disableRipple onClick={logout} sx={{ color: "primary.main" }}>
-                  <PowerSettingsNewRoundedIcon sx={{ fontSize: 30 }} />
-                </IconButton>
+                <button aria-label="Çıkış yap" className={iconBtn} onClick={logout}>
+                  <LogOut className="size-[30px]" />
+                </button>
               </>
             ) : (
-              <Button onClick={openLogin} disableRipple variant="contained" sx={{ fontWeight: 800, color: "#fff" }}>
+              <Button onClick={openLogin} className="font-extrabold text-white">
                 Oturum Aç
               </Button>
             )}
-          </Box>
+          </div>
 
           {/* Mobil menü */}
-          <IconButton
+          <button
             aria-label="Menü"
-            size="large"
-            disableRipple
+            className={cn(iconBtn, "md:hidden")}
             onClick={() => setDrawerOpen(true)}
-            sx={{ display: { xs: "inline-flex", md: "none" }, color: "primary.main" }}
           >
-            <MenuRoundedIcon />
-          </IconButton>
-        </Box>
-      </Box>
+            <Menu className="size-6" />
+          </button>
+        </div>
+      </nav>
 
       {/* Arama popup — ortada, blur arka plan */}
-      <Dialog
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        slotProps={{
-          backdrop: { sx: { backdropFilter: "blur(8px)", bgcolor: "rgba(0,0,0,0.55)" } },
-          paper: { sx: { borderRadius: "24px", p: 2, bgcolor: "background.paper" } },
-        }}
-      >
-        <DialogContent sx={{ p: "8px !important" }}>
-          <TextField
-            autoFocus
-            fullWidth
-            placeholder="Ürün ara..."
-            value={searchQ}
-            onChange={(e) => setSearchQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") submitSearch();
-              if (e.key === "Escape") setSearchOpen(false);
-            }}
-            sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ fontSize: 22 }} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="max-w-md rounded-3xl p-3">
+          <div className="relative">
+            <Search className="text-primary absolute top-1/2 left-4 size-5 -translate-y-1/2" />
+            <Input
+              autoFocus
+              placeholder="Ürün ara..."
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submitSearch();
+              }}
+              className="border-primary/60 pl-11 pr-4 text-base"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Mobil çekmece */}
-      <Drawer
-        id="site-menu-drawer"
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              width: "min(84%, 320px)",
-              borderTopLeftRadius: "28px",
-              borderBottomLeftRadius: "28px",
-              p: 2.5,
-            },
-          },
-        }}
-      >
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent className="rounded-l-[28px] p-5">
+          <div className="flex items-center justify-between">
             <Logo />
-            <IconButton aria-label="Kapat" size="large" disableRipple onClick={() => setDrawerOpen(false)}>
-              <MenuRoundedIcon />
-            </IconButton>
-          </Box>
+            <SheetCloseButton />
+          </div>
 
-          <List sx={{ mt: 1 }}>
+          <nav className="mt-1 flex flex-col gap-1">
             {navLinks.map((l) => (
-              <ListItemButton
+              <Button
                 key={l.href}
-                component={Link}
-                href={l.href}
-                disableRipple
+                asChild
+                variant="ghost"
+                className="justify-start rounded-2xl px-4 py-3 text-base"
                 onClick={() => setDrawerOpen(false)}
-                sx={{ borderRadius: "16px" }}
               >
-                <ListItemText primary={l.label} />
-              </ListItemButton>
+                <Link href={l.href}>{l.label}</Link>
+              </Button>
             ))}
-          </List>
+          </nav>
 
-          <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1, pb: 2 }}>
+          <div className="mt-auto flex flex-col gap-1 pb-2">
             {loading ? (
-              <Box sx={{ height: 44, borderRadius: "28px", bgcolor: "secondary.main", opacity: 0.5 }} />
+              <div className="bg-secondary/60 h-11 rounded-full opacity-50" />
             ) : user ? (
               <>
-                <Button component={Link} href="/dashboard" fullWidth variant="contained" disableRipple onClick={() => setDrawerOpen(false)}>
-                  {user.name.toLocaleUpperCase("tr-TR")}
+                <Button asChild className="w-full" onClick={() => setDrawerOpen(false)}>
+                  <Link href="/dashboard">{user.name.toLocaleUpperCase("tr-TR")}</Link>
                 </Button>
-                <Button fullWidth variant="outlined" color="primary" disableRipple startIcon={<PowerSettingsNewRoundedIcon />} onClick={logout}>
+                <Button variant="outline" className="w-full" onClick={logout}>
+                  <LogOut className="size-4" />
                   Çıkış Yap
                 </Button>
               </>
             ) : (
-              <Button fullWidth variant="contained" disableRipple onClick={() => { setDrawerOpen(false); openLogin(); }}>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  openLogin();
+                }}
+              >
                 Oturum Aç
               </Button>
             )}
-          </Box>
-        </Box>
-      </Drawer>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const ck = await cookies();
   const initialMode = (ck.get("bw_mode")?.value === "dark" ? "dark" : ck.get("bw_mode")?.value === "light" ? "light" : null) as "light" | "dark" | null;
   return (
-    <html lang="tr">
+    <html lang="tr" className={initialMode === "dark" ? "dark" : ""} style={{ colorScheme: initialMode === "dark" ? "dark" : "light" }}>
       <body className={`${plusJakarta.variable} ${plusJakarta.className}`}>
         <AppRouterCacheProvider>
           <Providers initialMode={initialMode}>

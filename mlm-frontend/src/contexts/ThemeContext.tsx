@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createTheme } from "@mui/material/styles";
 
@@ -65,6 +65,13 @@ export function ThemeProvider({
   const [mode, setMode] = useState<"light" | "dark">(
     () => (initialModeProp === "light" || initialModeProp === "dark" ? initialModeProp : initialMode()),
   );
+
+  // Tailwind (.dark) sınıfını <html> üzerinde MUI moduyla senkron tutar.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", mode === "dark");
+    root.style.colorScheme = mode;
+  }, [mode]);
 
   // Sabit marka rengi #476F16 — gece/gündüz moduna göre yalnızca zemin metni değişir
   const theme = useMemo(() => {
