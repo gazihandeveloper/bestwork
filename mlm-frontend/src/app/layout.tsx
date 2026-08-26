@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* İlk boyamadan önce renk (cache-bust için değil; hydration öncesi tutarlılık) */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var c=localStorage.getItem("bestwork_color");if(c&&/^#[0-9a-fA-F]{6}$/.test(c)){document.documentElement.style.setProperty("--brand-color",c);}}catch(e){}`,
+            __html: `try{var c=localStorage.getItem("bestwork_color");if(c&&/^#[0-9a-fA-F]{6}$/.test(c)){document.documentElement.style.setProperty("--brand-color",c);document.cookie="bw_color="+c+"; max-age=31536000; path=/; SameSite=Lax";}}catch(e){}`,
           }}
         />
       </head>
