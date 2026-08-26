@@ -1,16 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import RequireAuth from "@/components/RequireAuth";
-import BinaryTree from "@/components/binary-tree/BinaryTree";
 import { useAuth } from "@/hooks/useAuth";
 import { getTree, getErrorMessage } from "@/services/api";
 import type { TreeNode } from "@/services/api";
+
+// d3 tabanlı ağır ağaç bileşeni tembel yüklenir (sayfa anında açılır)
+const BinaryTree = dynamic(() => import("@/components/binary-tree/BinaryTree"), {
+  ssr: false,
+  loading: () => (
+    <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+      <CircularProgress />
+    </Box>
+  ),
+});
 
 function currentMonth(): string {
   const d = new Date();

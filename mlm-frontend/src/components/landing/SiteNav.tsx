@@ -199,8 +199,8 @@ export default function SiteNav() {
                 size="large"
                 onClick={logout}
                 sx={{
-                  color: "error.main",
-                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.error.main, 0.1) },
+                  color: "primary.main",
+                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1) },
                 }}
               >
                 <PowerSettingsNewRoundedIcon />
@@ -272,7 +272,7 @@ export default function SiteNav() {
               <Button
                 fullWidth
                 variant="outlined"
-                color="error"
+                color="primary"
                 startIcon={<PowerSettingsNewRoundedIcon />}
                 onClick={logout}
               >

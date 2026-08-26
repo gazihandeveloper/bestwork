@@ -32,10 +32,10 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
           fullWidth={fullWidth}
           sx={{
             color: "primary.main",
-            bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.45),
+            bgcolor: "transparent",
             whiteSpace: "nowrap",
             fontWeight: 700,
-            "&:hover": { bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.7) },
+            "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
           }}
         >
           {user.name}
