@@ -3,17 +3,12 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   return (
@@ -48,48 +43,53 @@ function LoginContent() {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ py: 8 }}>
-      <Card>
-        <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" color="primary.dark" gutterBottom>
-            Giriş Yap
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            E-posta adresiniz veya üye numaranız (TR90XXXXXX) ile giriş yapın.
-          </Typography>
+    <div className="bg-background flex min-h-screen items-center justify-center px-4 pt-[104px] pb-8 md:pt-[112px]">
+      <div className="border-border bg-card w-full max-w-xs rounded-xl border p-6 shadow-sm">
+        <h1 className="text-primary-dark text-xl font-bold">Giriş Yap</h1>
+        <p className="text-muted-foreground mt-1 mb-3 text-sm">
+          E-posta adresiniz veya üye numaranız (TR90XXXXXX) ile giriş yapın.
+        </p>
 
-          <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={2}>
-              {error && <Alert severity="error">{error}</Alert>}
-              <TextField
-                label="E-posta veya Üye Numarası"
-                value={loginValue}
-                onChange={(e) => setLoginValue(e.target.value)}
-                fullWidth
-                required
-              />
-              <TextField
-                label="Şifre"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                fullWidth
-                required
-              />
-              <Button type="submit" variant="contained" size="large" disabled={submitting}>
-                {submitting ? "Giriş yapılıyor..." : "Giriş Yap"}
-              </Button>
-            </Stack>
-          </Box>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+          {error && (
+            <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm font-medium">
+              {error}
+            </div>
+          )}
+          <Input
+            placeholder="E-posta veya üye numarası"
+            value={loginValue}
+            onChange={(e) => setLoginValue(e.target.value)}
+            required
+            autoComplete="username"
+          />
+          <Input
+            type="password"
+            placeholder="Şifre"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+          <Button type="submit" size="lg" disabled={submitting} className="mt-1 w-full">
+            {submitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Giriş yapılıyor...
+              </>
+            ) : (
+              "Giriş Yap"
+            )}
+          </Button>
+        </form>
 
-          <Typography variant="body2" sx={{ mt: 2, textAlign: "center" }}>
-            Hesabınız yok mu?{" "}
-            <Link href="/register" style={{ color: "#2E7D32" }}>
-              Kayıt olun
-            </Link>
-          </Typography>
-        </CardContent>
-      </Card>
-    </Container>
+        <p className="mt-2 text-center text-sm">
+          Hesabınız yok mu?{" "}
+          <Link href="/register" className={cn("font-semibold text-[#2E7D32]")}>
+            Kayıt olun
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }

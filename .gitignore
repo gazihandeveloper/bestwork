@@ -7,3 +7,4 @@ uploads/
 bin/
 .DS_Store
 .aider*
+.sshpass.sh

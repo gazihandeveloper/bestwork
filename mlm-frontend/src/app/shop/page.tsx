@@ -2,36 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
-import Chip from "@mui/material/Chip";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import CircularProgress from "@mui/material/CircularProgress";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import LocalDrinkRoundedIcon from "@mui/icons-material/LocalDrinkRounded";
-import KitchenRoundedIcon from "@mui/icons-material/KitchenRounded";
-import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
-import CoffeeRoundedIcon from "@mui/icons-material/CoffeeRounded";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
-import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
-import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
+import {
+  Search,
+  Plus,
+  CupSoda,
+  CookingPot,
+  LayoutGrid,
+  Coffee,
+  Zap,
+  Flower2,
+  ShoppingBag,
+  Store,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { listProducts, getErrorMessage, fileUrl } from "@/services/api";
 import type { Product } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
@@ -39,29 +30,29 @@ const tl = (v: number) =>
 interface CategoryDef {
   key: string | null;
   label: string;
-  icon: React.ReactElement;
+  icon: React.ReactNode;
 }
 
 const CATEGORIES: CategoryDef[] = [
-  { key: null, label: "Tümü", icon: <StorefrontRoundedIcon /> },
-  { key: "icecek", label: "İçecek", icon: <LocalDrinkRoundedIcon /> },
-  { key: "enerji", label: "Enerji & Sağlık", icon: <BoltRoundedIcon /> },
-  { key: "bakim", label: "Bakım & Güzellik", icon: <SpaRoundedIcon /> },
-  { key: "ev", label: "Ev & Mutfak", icon: <KitchenRoundedIcon /> },
-  { key: "diger", label: "Diğer", icon: <CategoryRoundedIcon /> },
+  { key: null, label: "Tümü", icon: <Store className="size-5" /> },
+  { key: "icecek", label: "İçecek", icon: <CupSoda className="size-5" /> },
+  { key: "enerji", label: "Enerji & Sağlık", icon: <Zap className="size-5" /> },
+  { key: "bakim", label: "Bakım & Güzellik", icon: <Flower2 className="size-5" /> },
+  { key: "ev", label: "Ev & Mutfak", icon: <CookingPot className="size-5" /> },
+  { key: "diger", label: "Diğer", icon: <LayoutGrid className="size-5" /> },
 ];
 
 const categoryLabel = (key: string | null) =>
   CATEGORIES.find((c) => c.key === key)?.label ?? key ?? "Diğer";
 
-function productIcon(name: string) {
+function productIcon(name: string, size = 52) {
   const n = name.toLowerCase();
-  if (n.includes("kahve") || n.includes("coffee")) return <CoffeeRoundedIcon sx={{ fontSize: 52 }} />;
-  if (n.includes("enerji") || n.includes("energy")) return <BoltRoundedIcon sx={{ fontSize: 52 }} />;
-  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <LocalDrinkRoundedIcon sx={{ fontSize: 52 }} />;
+  if (n.includes("kahve") || n.includes("coffee")) return <Coffee style={{ width: size, height: size }} />;
+  if (n.includes("enerji") || n.includes("energy")) return <Zap style={{ width: size, height: size }} />;
+  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <CupSoda style={{ width: size, height: size }} />;
   if (n.includes("krem") || n.includes("bakım") || n.includes("beauty") || n.includes("cilt"))
-    return <SpaRoundedIcon sx={{ fontSize: 52 }} />;
-  return <ShoppingBagRoundedIcon sx={{ fontSize: 52 }} />;
+    return <Flower2 style={{ width: size, height: size }} />;
+  return <ShoppingBag style={{ width: size, height: size }} />;
 }
 
 function ShopContent() {
@@ -116,231 +107,164 @@ function ShopContent() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex min-h-[60vh] items-center justify-center bg-background pt-[112px] md:pt-[104px]">
+        <Loader2 className="text-primary size-8 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pt: { xs: 14, md: 13 }, width: "90%", mx: "auto" }}>
-      <Container maxWidth={false} sx={{ pb: 8 }}>
-        <Typography variant="h4" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
-          Ürünler
-        </Typography>
+    <div className="bg-background mx-auto min-h-screen w-[75%] pt-[112px] pb-8 md:pt-[104px]">
+      <h1 className="text-primary-dark mb-2 text-2xl font-extrabold md:text-3xl">Ürünler</h1>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded-lg border px-4 py-2.5 text-sm font-medium">
+          {error}
+        </div>
+      )}
 
-        <Grid container spacing={3}>
-          {/* Kategoriler */}
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Card sx={{ position: { md: "sticky" }, top: 96 }}>
-              <CardContent>
-                <TextField
-                  fullWidth
-                  size="small"
-                  placeholder="Ürün adı veya stok kodu ara..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          {searching ? <CircularProgress size={16} /> : <SearchRoundedIcon />}
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                  sx={{ mb: 2 }}
-                />
-                <Typography variant="h6" gutterBottom>
-                  Kategoriler
-                </Typography>
-                <List dense disablePadding>
-                  {CATEGORIES.map((c) => {
-                    const active = category === c.key;
-                    const count = countFor(c.key);
-                    return (
-                      <ListItemButton
-                        key={c.key ?? "all"}
-                        selected={active}
-                        onClick={() => setCategory(c.key)}
-                        sx={{
-                          borderRadius: 2.1,
-                          mb: 0.5,
-                          "&.Mui-selected": {
-                            bgcolor: "primary.main",
-                            color: "#fff",
-                            "&:hover": { bgcolor: "primary.dark" },
-                          },
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>{c.icon}</ListItemIcon>
-                        <ListItemText
-                          primary={c.label}
-                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: 600 } } }}
-                        />
-                        <Chip
-                          size="small"
-                          label={count}
-                          sx={{
-                            fontSize: 12,
-                            bgcolor: "common.white",
-                            color: "text.primary",
-                            "&:hover": { bgcolor: "common.white" },
-                          }}
-                        />
-                      </ListItemButton>
-                    );
-                  })}
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Ürünler — satırda 3 ürün */}
-          <Grid size={{ xs: 12, md: 9 }}>
-            <Grid container spacing={2}>
-              {visibleProducts.map((p) => {
-                const soldOut = p.stock <= 0;
-                const image = fileUrl(p.image_path);
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+        {/* Kategoriler */}
+        <div className="md:col-span-3">
+          <div className="border-border bg-card md:sticky md:top-[96px] rounded-xl border p-4">
+            <div className="relative mb-2">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+              <Input
+                placeholder="Ürün adı veya stok kodu ara..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-9"
+              />
+              {searching && (
+                <Loader2 className="text-primary absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin" />
+              )}
+            </div>
+            <h2 className="mb-1.5 text-base font-bold">Kategoriler</h2>
+            <nav className="flex flex-col gap-0.5">
+              {CATEGORIES.map((c) => {
+                const active = category === c.key;
+                const count = countFor(c.key);
                 return (
-                  <Grid size={{ xs: 6, sm: 6, md: 4 }} key={p.id}>
-                    <Card
-                      sx={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        transition: "box-shadow 250ms ease, transform 250ms ease",
-                        "&:hover": {
-                          boxShadow: 6,
-                          transform: "translateY(-4px)",
-                          "& .shop-media": { transform: "scale(1.04)" },
-                        },
-                      }}
-                      onClick={() => router.push(`/product/${p.id}`)}
+                  <button
+                    key={c.key ?? "all"}
+                    type="button"
+                    onClick={() => setCategory(c.key)}
+                    className={cn(
+                      "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors",
+                      active
+                        ? "bg-primary text-white hover:bg-primary-dark"
+                        : "hover:bg-accent text-foreground"
+                    )}
+                  >
+                    <span className="flex shrink-0 items-center">{c.icon}</span>
+                    <span className="flex-1 text-sm font-semibold">{c.label}</span>
+                    <Badge
+                      className={cn(
+                        "h-5 min-w-5 justify-center px-1.5 text-xs font-normal",
+                        active ? "bg-white text-foreground" : "bg-accent text-foreground"
+                      )}
                     >
-                      <Box
-                        sx={{
-                          position: "relative",
-                          height: 130,
-                          bgcolor: "secondary.main",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={image}
-                            alt={p.name}
-                            loading="lazy"
-                            className="shop-media"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                              transition: "transform 300ms ease",
-                            }}
-                          />
-                        ) : (
-                          <Box sx={{ color: "primary.dark", display: "flex" }}>
-                            {productIcon(p.name)}
-                          </Box>
-                        )}
-                        <Chip
-                          size="small"
-                          label={soldOut ? "Yok" : "Stokta"}
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            left: 8,
-                            bgcolor: "rgba(255,255,255,0.92)",
-                            color: soldOut ? "error.main" : "success.main",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            height: 20,
-                          }}
-                        />
-                      </Box>
-                      <CardContent
-                        sx={{
-                          p: 1.5,
-                          display: "flex",
-                          flexDirection: "column",
-                          flexGrow: 1,
-                        }}
-                      >
-                        <Chip
-                          size="small"
-                          label={categoryLabel(p.category)}
-                          variant="outlined"
-                          sx={{ fontSize: 10, height: 20, alignSelf: "flex-start", mb: 0.5 }}
-                        />
-                        <Typography variant="body1" noWrap sx={{ fontWeight: 700, fontSize: "0.95rem" }}>
-                          {p.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap sx={{ fontSize: 12 }}>
-                          Stok Kodu: {p.sku ?? "—"}
-                        </Typography>
-                        <Box sx={{ mt: "auto", pt: 1 }}>
-                          <Typography variant="h6" sx={{ fontWeight: 800, color: "primary.dark", fontSize: "1rem" }}>
-                            {tl(p.price)}
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            fullWidth
-                            size="small"
-                            startIcon={<AddRoundedIcon />}
-                            disabled={soldOut}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(p);
-                            }}
-                            sx={{ mt: 0.75, height: 32, fontSize: 13 }}
-                          >
-                            Sepete Ekle
-                          </Button>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                      {count}
+                    </Badge>
+                  </button>
                 );
               })}
-            </Grid>
-          </Grid>
-        </Grid>
-      </Container>
+            </nav>
+          </div>
+        </div>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar("")}
-        message={snackbar}
-        action={
-          <Button
-            color="inherit"
-            size="small"
-            onClick={() => {
-              setSnackbar("");
-              window.dispatchEvent(new CustomEvent("open-cart"));
-            }}
-            sx={{ fontWeight: 700 }}
-          >
-            Sepete Git
-          </Button>
-        }
-      />
-    </Box>
+        {/* Ürünler — satırda 3 ürün */}
+        <div className="md:col-span-9">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3">
+            {visibleProducts.map((p) => {
+              const soldOut = p.stock <= 0;
+              const image = fileUrl(p.image_path);
+              return (
+                <div
+                  key={p.id}
+                  className="border-border bg-card group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-250 hover:-translate-y-1 hover:shadow-md"
+                  onClick={() => router.push(`/product/${p.id}`)}
+                >
+                  <div className="bg-secondary relative flex h-[130px] items-center justify-center overflow-hidden">
+                    {image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={image}
+                        alt={p.name}
+                        loading="lazy"
+                        className="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="text-primary-dark flex">{productIcon(p.name)}</div>
+                    )}
+                    <Badge
+                      className={cn(
+                        "absolute top-2 left-2 h-5 bg-white/92 text-[10px]",
+                        soldOut ? "text-destructive" : "text-[#2E7D32]"
+                      )}
+                    >
+                      {soldOut ? "Yok" : "Stokta"}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-1 flex-col p-1.5">
+                    <Badge
+                      variant="outline"
+                      className="border-border text-muted-foreground mb-0.5 h-5 self-start px-2 text-[10px] font-medium"
+                    >
+                      {categoryLabel(p.category)}
+                    </Badge>
+                    <h3 className="truncate text-[0.95rem] font-bold">{p.name}</h3>
+                    <p className="text-muted-foreground truncate text-xs">Stok Kodu: {p.sku ?? "—"}</p>
+                    <div className="mt-auto pt-1">
+                      <p className="text-primary-dark text-base font-extrabold">{tl(p.price)}</p>
+                      <Button
+                        className="mt-0.5 h-8 w-full text-[13px]"
+                        disabled={soldOut}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(p);
+                        }}
+                      >
+                        <Plus className="size-4" />
+                        Sepete Ekle
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Sepete ekleme bildirimi */}
+      {snackbar && (
+        <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold">
+            <Check className="size-5 shrink-0" />
+            <span className="flex-1 truncate">{snackbar}</span>
+            <button
+              type="button"
+              className="cursor-pointer font-bold underline underline-offset-2"
+              onClick={() => {
+                setSnackbar("");
+                window.dispatchEvent(new CustomEvent("open-cart"));
+              }}
+            >
+              Sepete Git
+            </button>
+            <button
+              type="button"
+              aria-label="Bildirimi kapat"
+              className="text-muted-foreground ml-1 cursor-pointer text-xl leading-none"
+              onClick={() => setSnackbar("")}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

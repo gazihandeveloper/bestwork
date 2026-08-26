@@ -3,28 +3,25 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Chip from "@mui/material/Chip";
-import Snackbar from "@mui/material/Snackbar";
-import CircularProgress from "@mui/material/CircularProgress";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import CoffeeRoundedIcon from "@mui/icons-material/CoffeeRounded";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
-import LocalDrinkRoundedIcon from "@mui/icons-material/LocalDrinkRounded";
-import SpaRoundedIcon from "@mui/icons-material/SpaRounded";
-import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
+import {
+  ArrowLeft,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Coffee,
+  Zap,
+  CupSoda,
+  Flower2,
+  ShoppingBag,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { getProduct, getErrorMessage, fileUrl } from "@/services/api";
 import type { Product } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
@@ -38,14 +35,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   diger: "Diğer",
 };
 
-function productIcon(name: string) {
+function productIcon(name: string, size = 80) {
   const n = name.toLowerCase();
-  if (n.includes("kahve") || n.includes("coffee")) return <CoffeeRoundedIcon sx={{ fontSize: 80 }} />;
-  if (n.includes("enerji") || n.includes("energy")) return <BoltRoundedIcon sx={{ fontSize: 80 }} />;
-  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <LocalDrinkRoundedIcon sx={{ fontSize: 80 }} />;
+  if (n.includes("kahve") || n.includes("coffee")) return <Coffee style={{ width: size, height: size }} />;
+  if (n.includes("enerji") || n.includes("energy")) return <Zap style={{ width: size, height: size }} />;
+  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <CupSoda style={{ width: size, height: size }} />;
   if (n.includes("krem") || n.includes("bakım") || n.includes("beauty") || n.includes("cilt"))
-    return <SpaRoundedIcon sx={{ fontSize: 80 }} />;
-  return <ShoppingBagRoundedIcon sx={{ fontSize: 80 }} />;
+    return <Flower2 style={{ width: size, height: size }} />;
+  return <ShoppingBag style={{ width: size, height: size }} />;
 }
 
 export default function ProductPage() {
@@ -66,187 +63,157 @@ export default function ProductPage() {
 
   if (error) {
     return (
-      <Container maxWidth={false} sx={{ py: 10, textAlign: "center" }}>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
-        <Button variant="contained" component={Link} href="/shop">
-          Ürünlere Dön
+      <div className="bg-background min-h-screen px-4 py-10 pt-[112px] text-center md:pt-[104px]">
+        <h2 className="text-muted-foreground mb-2 text-xl font-semibold">{error}</h2>
+        <Button asChild>
+          <Link href="/shop">Ürünlere Dön</Link>
         </Button>
-      </Container>
+      </div>
     );
   }
 
   if (!product) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="bg-background flex min-h-[60vh] items-center justify-center pt-[112px] md:pt-[104px]">
+        <Loader2 className="text-primary size-8 animate-spin" />
+      </div>
     );
   }
 
   const soldOut = product.stock <= 0;
 
   return (
-    <Box sx={{ bgcolor: "background.default", minHeight: "100vh", pt: { xs: 12, md: 11 } }}>
-      <Container maxWidth={false} sx={{ pb: 8 }}>
+    <div className="bg-background min-h-screen px-0 pt-[96px] pb-8 md:pt-[88px]">
+      <div className="mx-auto w-[75%]">
         <Button
-          startIcon={<ArrowBackRoundedIcon />}
+          variant="ghost"
           onClick={() => router.push("/shop")}
-          sx={{ mb: 3, textTransform: "none", fontWeight: 600, ml: -1 }}
+          className="text-foreground mb-3 ml-[-8px] font-semibold"
         >
+          <ArrowLeft className="size-4" />
           Ürünlere Dön
         </Button>
 
-        <Card sx={{ borderRadius: "17px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
-          <Grid container>
+        <div className="border-border bg-card overflow-hidden rounded-[17px] border shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Görsel */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box
-                sx={{
-                  height: { xs: 280, md: "100%" },
-                  minHeight: { md: 420 },
-                  bgcolor: "secondary.main",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
-              >
-                {fileUrl(product.image_path) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={fileUrl(product.image_path)!}
-                    alt={product.name}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                      filter: soldOut ? "grayscale(1) opacity(0.55)" : "saturate(1.1)",
-                    }}
-                  />
-                ) : (
-                  <Box sx={{ color: "primary.dark", display: "flex" }}>{productIcon(product.name)}</Box>
-                )}
-              </Box>
-            </Grid>
+            <div
+              className="bg-secondary flex items-center justify-center overflow-hidden md:min-h-[420px]"
+              style={{ height: "auto" }}
+            >
+              {fileUrl(product.image_path) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={fileUrl(product.image_path)!}
+                  alt={product.name}
+                  className="block h-[280px] w-full object-cover md:h-full"
+                  style={{
+                    filter: soldOut ? "grayscale(1) opacity(0.55)" : "saturate(1.1)",
+                  }}
+                />
+              ) : (
+                <div className="text-primary-dark flex p-10">{productIcon(product.name)}</div>
+              )}
+            </div>
 
             {/* Detay */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box sx={{ p: { xs: 3, md: 5 } }}>
-                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1.5 }}>
-                  <Chip
-                    size="small"
-                    label={CATEGORY_LABELS[product.category ?? ""] ?? "Diğer"}
-                    variant="outlined"
-                  />
-                  <Chip size="small" label={`Stok Kodu: ${product.sku ?? "—"}`} variant="outlined" />
-                  <Chip
-                    size="small"
-                    label={`${product.pv} PV · ${product.cv} CV`}
-                    sx={{ bgcolor: "secondary.main", color: "primary.dark", fontWeight: 600 }}
-                  />
-                  <Chip
-                    size="small"
-                    label={soldOut ? "Stokta Yok" : "Stokta"}
-                    color={soldOut ? "error" : "success"}
-                    variant="outlined"
-                  />
-                </Box>
+            <div className="p-4 md:p-5">
+              <div className="mb-1.5 flex flex-wrap gap-1">
+                <Badge variant="outline" className="border-border text-muted-foreground font-medium">
+                  {CATEGORY_LABELS[product.category ?? ""] ?? "Diğer"}
+                </Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground font-medium">
+                  Stok Kodu: {product.sku ?? "—"}
+                </Badge>
+                <Badge className="bg-secondary text-primary-dark font-semibold">
+                  {product.pv} PV · {product.cv} CV
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "font-semibold",
+                    soldOut ? "border-destructive/50 text-destructive" : "border-[#2E7D32]/50 text-[#2E7D32]"
+                  )}
+                >
+                  {soldOut ? "Stokta Yok" : "Stokta"}
+                </Badge>
+              </div>
 
-                <Typography variant="h4" sx={{ fontWeight: 800, color: "primary.dark" }}>
-                  {product.name}
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
-                  {product.description || "Açıklama yok."}
-                </Typography>
+              <h1 className="text-primary-dark text-3xl font-extrabold md:text-4xl">{product.name}</h1>
+              <p className="text-muted-foreground mt-1.5">
+                {product.description || "Açıklama yok."}
+              </p>
 
-                <Typography variant="h4" sx={{ fontWeight: 900, mt: 3 }}>
-                  {tl(product.price)}
-                </Typography>
+              <p className="text-primary-dark mt-3 text-3xl font-black md:text-4xl">{tl(product.price)}</p>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    mt: 3,
-                    flexWrap: "wrap",
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <div className="border-border flex items-center gap-0.5 rounded-full border px-0.5 py-0.25">
+                  <button
+                    type="button"
+                    aria-label="Adedi azalt"
+                    disabled={qty <= 1}
+                    onClick={() => setQty((q) => q - 1)}
+                    className="flex size-9 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <Minus className="size-4" />
+                  </button>
+                  <span className="min-w-[26px] text-center text-base font-bold">{qty}</span>
+                  <button
+                    type="button"
+                    aria-label="Adedi artır"
+                    disabled={qty >= product.stock}
+                    onClick={() => setQty((q) => q + 1)}
+                    className="flex size-9 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                </div>
+
+                <Button
+                  size="lg"
+                  className="h-[52px] min-w-[220px] flex-1"
+                  disabled={soldOut}
+                  onClick={() => {
+                    addToCartStorage(product, qty);
+                    setSnackbar(`"${product.name}" sepete eklendi.`);
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: "20px",
-                      px: 0.5,
-                      py: 0.25,
-                    }}
-                  >
-                    <IconButton
-                      size="small"
-                      aria-label="Adedi azalt"
-                      disabled={qty <= 1}
-                      onClick={() => setQty((q) => q - 1)}
-                    >
-                      <RemoveRoundedIcon fontSize="small" />
-                    </IconButton>
-                    <Typography variant="body1" sx={{ fontWeight: 700, minWidth: 26, textAlign: "center" }}>
-                      {qty}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      aria-label="Adedi artır"
-                      disabled={qty >= product.stock}
-                      onClick={() => setQty((q) => q + 1)}
-                    >
-                      <AddRoundedIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                  <ShoppingCart className="size-5" />
+                  Sepete Ekle
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<ShoppingCartRoundedIcon />}
-                    disabled={soldOut}
-                    onClick={() => {
-                      addToCartStorage(product, qty);
-                      setSnackbar(`"${product.name}" sepete eklendi.`);
-                    }}
-                    sx={{ flex: 1, minWidth: 220, height: 52 }}
-                  >
-                    Sepete Ekle
-                  </Button>
-                </Box>
-              </Box>
-            </Grid>
-          </Grid>
-        </Card>
-      </Container>
-
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar("")}
-        message={snackbar}
-        action={
-          <Button
-            color="inherit"
-            size="small"
-            onClick={() => {
-              setSnackbar("");
-              window.dispatchEvent(new CustomEvent("open-cart"));
-            }}
-            sx={{ fontWeight: 700 }}
-          >
-            Sepete Git
-          </Button>
-        }
-      />
-    </Box>
+      {/* Sepete ekleme bildirimi */}
+      {snackbar && (
+        <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold">
+            <Check className="size-5 shrink-0" />
+            <span className="flex-1 truncate">{snackbar}</span>
+            <button
+              type="button"
+              className="cursor-pointer font-bold underline underline-offset-2"
+              onClick={() => {
+                setSnackbar("");
+                window.dispatchEvent(new CustomEvent("open-cart"));
+              }}
+            >
+              Sepete Git
+            </button>
+            <button
+              type="button"
+              aria-label="Bildirimi kapat"
+              className="text-muted-foreground ml-1 cursor-pointer text-xl leading-none"
+              onClick={() => setSnackbar("")}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
