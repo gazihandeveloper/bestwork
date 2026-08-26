@@ -3,9 +3,7 @@
 import Link from "next/link";
 import Button from "@mui/material/Button";
 import { alpha } from "@mui/material/styles";
-import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
-import { useAuth } from "@/hooks/useAuth";
-import { ELEVATION, MOTION } from "./tokens";
+import { useAuth } from "@/hooks/useAuth";import { ELEVATION, MOTION } from "./tokens";
 
 interface AuthCTAProps {
   variant?: "nav" | "hero" | "cta" | "shop";
@@ -28,13 +26,13 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
         <Button
           component={Link}
           href="/dashboard"
-          startIcon={<AccountCircleRoundedIcon sx={{ fontSize: 28 }} />}
           fullWidth={fullWidth}
           sx={{
             color: "primary.main",
             bgcolor: "transparent",
             whiteSpace: "nowrap",
-            fontWeight: 700,
+            fontWeight: 800,
+            fontSize: 17,
             "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
           }}
         >
