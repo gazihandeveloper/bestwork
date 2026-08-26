@@ -26,10 +26,9 @@ import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import PowerSettingsNewRoundedIcon from "@mui/icons-material/PowerSettingsNewRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
-import AuthCTA from "./AuthCTA";
-import { cartCount } from "@/lib/cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { cartCount } from "@/lib/cart";
 
 const navLinks = [
   { href: "/", label: "Anasayfa", icon: <HomeRoundedIcon /> },
@@ -43,32 +42,45 @@ function Logo() {
     <Link
       href="/"
       aria-label="BestWork ana sayfa"
-      style={{ textDecoration: "none", color: "inherit", display: "inline-flex", alignItems: "center", lineHeight: 1, marginLeft: 8 }}
+      style={{
+        textDecoration: "none",
+        color: "inherit",
+        display: "inline-flex",
+        alignItems: "center",
+        lineHeight: 1,
+        marginLeft: 8,
+      }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", lineHeight: 1.15, mt: 0.75 }}>
-        <Typography component="span" sx={{ fontWeight: 800, color: "primary.main", fontSize: 31, display: "inline-flex", alignItems: "flex-start" }}>
+        <Typography
+          component="span"
+          sx={{
+            fontWeight: 800,
+            color: "primary.main",
+            fontSize: 31,
+            display: "inline-flex",
+            alignItems: "flex-start",
+          }}
+        >
           BestWork
           <Box component="span" aria-label="Registered" sx={{ fontSize: 19, lineHeight: 1, mt: -0.15, color: "primary.main", fontWeight: 700 }}>
             <sup>®</sup>
           </Box>
         </Typography>
-
       </Box>
     </Link>
   );
 }
 
-// Ortak yüzen üst menü (M3 pill). Anasayfa ve shop dahil tüm public sayfalarda kullanılır.
-// Sepet ikonu shop sayfasında sağ paneli açar, diğer sayfalarda /shop'a gider.
 export default function SiteNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
+  const { mode, toggleMode } = useThemeContext();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [searchQ, setSearchQ] = useState("");
   const [now, setNow] = useState<Date>(() => new Date());
-  const router = useRouter();
-  const { mode, toggleMode } = useThemeContext();
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -86,15 +98,16 @@ export default function SiteNav() {
     };
   }, []);
 
-  const handleCart = () => {
-    window.dispatchEvent(new CustomEvent("open-cart"));
-  };
+  const openLogin = () => window.dispatchEvent(new CustomEvent("open-login"));
+  const openCart = () => window.dispatchEvent(new CustomEvent("open-cart"));
 
   const submitSearch = () => {
     const q = searchQ.trim();
     setSearchQ("");
     router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
+
+  const dateTime = `${now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} · ${now.toLocaleTimeString("tr-TR")}`;
 
   return (
     <>
@@ -110,6 +123,7 @@ export default function SiteNav() {
           height: 95,
           bgcolor: "background.default",
           boxShadow: "none",
+          border: "none",
           zIndex: 1100,
           display: "flex",
           alignItems: "center",
@@ -118,6 +132,7 @@ export default function SiteNav() {
       >
         <Logo />
 
+        {/* Menü linkleri */}
         <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mx: "auto" }}>
           {navLinks.map((l) => {
             const active = l.href === pathname;
@@ -127,15 +142,13 @@ export default function SiteNav() {
                 component={Link}
                 href={l.href}
                 startIcon={l.icon}
+                disableRipple
                 sx={{
                   color: active ? "primary.main" : "text.primary",
                   fontWeight: active ? 700 : 500,
                   fontSize: 17,
-                  bgcolor: active
-                    ? (theme) => alpha(theme.palette.secondary.main, 0.5)
-                    : "transparent",
+                  bgcolor: active ? (theme) => alpha(theme.palette.secondary.main, 0.5) : "transparent",
                   whiteSpace: "nowrap",
-                  "&:hover": { bgcolor: "transparent" },
                 }}
               >
                 {l.label}
@@ -144,9 +157,10 @@ export default function SiteNav() {
           })}
         </Box>
 
+        {/* Arama kutusu (placeholder: canlı tarih/saat) */}
         <TextField
           size="small"
-          placeholder={`${now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} · ${now.toLocaleTimeString("tr-TR")}`}
+          placeholder={dateTime}
           value={searchQ}
           onChange={(e) => setSearchQ(e.target.value)}
           onKeyDown={(e) => {
@@ -170,63 +184,55 @@ export default function SiteNav() {
         />
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 3 } }}>
-          <IconButton
-            aria-label={mode === "dark" ? "Aydınlık moda geç" : "Karanlık moda geç"}
-            size="large"
-            onClick={toggleMode}
-            sx={{
-              color: mode === "dark" ? "#FFB300" : "primary.main",
-              "&:hover": { bgcolor: "transparent" },
-            }}
-          >
+          {/* Gece/gündüz */}
+          <IconButton aria-label="Gece/gündüz modu" size="large" disableRipple onClick={toggleMode} sx={{ color: mode === "dark" ? "#FFB300" : "primary.main" }}>
             {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
           </IconButton>
-          <IconButton
-            aria-label={`Sepet (${count} ürün)`}
-            size="large"
-            onClick={handleCart}
-            sx={{
-              color: "primary.main",
-              borderRadius: "16px",
-              "&:hover": { bgcolor: "transparent" },
-            }}
-          >
+
+          {/* Sepet */}
+          <IconButton aria-label={`Sepet (${count} ürün)`} size="large" disableRipple onClick={openCart} sx={{ color: "primary.main" }}>
             <Badge badgeContent={count} color="primary" max={99}>
               <ShoppingCartRoundedIcon />
             </Badge>
           </IconButton>
 
+          {/* Oturum: isim + çıkış / giriş + kayıt */}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
-            <AuthCTA variant="nav" />
-            {user && (
-              <IconButton
-                aria-label="Çıkış yap"
-                size="large"
-                onClick={logout}
-                sx={{
-                  color: "primary.main",
-                  borderRadius: 0,
-                  "&:hover": { bgcolor: "transparent" },
-                }}
-              >
-                <PowerSettingsNewRoundedIcon sx={{ fontSize: 30 }} />
-              </IconButton>
+            {user ? (
+              <>
+                <Button component={Link} href="/dashboard" disableRipple sx={{ color: "primary.main", whiteSpace: "nowrap", fontWeight: 800, fontSize: 17 }}>
+                  {user.name.toLocaleUpperCase("tr-TR")}
+                </Button>
+                <IconButton aria-label="Çıkış yap" size="large" disableRipple onClick={logout} sx={{ color: "primary.main" }}>
+                  <PowerSettingsNewRoundedIcon sx={{ fontSize: 30 }} />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                <Button onClick={openLogin} disableRipple sx={{ color: "primary.main", fontWeight: 700 }}>
+                  Giriş
+                </Button>
+                <Button component={Link} href="/register" variant="contained" disableRipple sx={{ fontWeight: 700 }}>
+                  Kayıt Ol
+                </Button>
+              </>
             )}
           </Box>
 
+          {/* Mobil menü */}
           <IconButton
             aria-label={drawerOpen ? "Menüyü kapat" : "Menüyü aç"}
-            aria-expanded={drawerOpen}
-            aria-controls="site-menu-drawer"
-            onClick={() => setDrawerOpen(true)}
             size="large"
-            sx={{ display: { xs: "inline-flex", md: "none" } }}
+            disableRipple
+            onClick={() => setDrawerOpen(true)}
+            sx={{ display: { xs: "inline-flex", md: "none" }, color: "primary.main" }}
           >
             <MenuRoundedIcon />
           </IconButton>
         </Box>
       </Box>
 
+      {/* Mobil çekmece */}
       <Drawer
         id="site-menu-drawer"
         anchor="right"
@@ -244,25 +250,20 @@ export default function SiteNav() {
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
             <Logo />
-            <IconButton
-              aria-label={`Sepet (${count} ürün)`}
-              onClick={handleCart}
-              sx={{ color: "primary.main" }}
-            >
-              <Badge badgeContent={count} color="primary" max={99}>
-                <ShoppingCartRoundedIcon />
-              </Badge>
+            <IconButton aria-label="Kapat" size="large" disableRipple onClick={() => setDrawerOpen(false)}>
+              <MenuRoundedIcon />
             </IconButton>
           </Box>
 
-          <List sx={{ mt: 2 }}>
+          <List sx={{ mt: 1 }}>
             {navLinks.map((l) => (
               <ListItemButton
                 key={l.href}
                 component={Link}
                 href={l.href}
+                disableRipple
                 onClick={() => setDrawerOpen(false)}
                 sx={{ borderRadius: "16px" }}
               >
@@ -273,17 +274,24 @@ export default function SiteNav() {
           </List>
 
           <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1, pb: 2 }}>
-            <AuthCTA variant="nav" fullWidth />
-            {user && (
-              <Button
-                fullWidth
-                variant="outlined"
-                color="primary"
-                startIcon={<PowerSettingsNewRoundedIcon />}
-                onClick={logout}
-              >
-                Çıkış Yap
-              </Button>
+            {user ? (
+              <>
+                <Button component={Link} href="/dashboard" fullWidth variant="contained" disableRipple onClick={() => setDrawerOpen(false)}>
+                  {user.name.toLocaleUpperCase("tr-TR")}
+                </Button>
+                <Button fullWidth variant="outlined" color="primary" disableRipple startIcon={<PowerSettingsNewRoundedIcon />} onClick={logout}>
+                  Çıkış Yap
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button fullWidth variant="contained" disableRipple onClick={() => { setDrawerOpen(false); openLogin(); }}>
+                  Giriş
+                </Button>
+                <Button component={Link} href="/register" fullWidth variant="outlined" disableRipple onClick={() => setDrawerOpen(false)}>
+                  Kayıt Ol
+                </Button>
+              </>
             )}
           </Box>
         </Box>
