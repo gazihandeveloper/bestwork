@@ -170,7 +170,7 @@ function ShopContent() {
                         selected={active}
                         onClick={() => setCategory(c.key)}
                         sx={{
-                          borderRadius: 3,
+                          borderRadius: 2.1,
                           mb: 0.5,
                           "&.Mui-selected": {
                             bgcolor: "primary.main",

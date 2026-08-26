@@ -98,7 +98,7 @@ export default function ProductPage() {
           Ürünlere Dön
         </Button>
 
-        <Card sx={{ borderRadius: "24px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
+        <Card sx={{ borderRadius: "17px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
           <Grid container>
             {/* Görsel */}
             <Grid size={{ xs: 12, md: 6 }}>
@@ -182,7 +182,7 @@ export default function ProductPage() {
                       gap: 0.5,
                       border: "1px solid",
                       borderColor: "divider",
-                      borderRadius: "28px",
+                      borderRadius: "20px",
                       px: 0.5,
                       py: 0.25,
                     }}

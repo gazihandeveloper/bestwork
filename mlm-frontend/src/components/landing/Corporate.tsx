@@ -102,7 +102,7 @@ export default function Corporate() {
                       p: 3,
                       border: "1px solid",
                       borderColor: "divider",
-                      borderRadius: "20px",
+                      borderRadius: "14px",
                       boxShadow: ELEVATION.l1,
                       transition: `box-shadow 250ms ${MOTION.standard}, transform 250ms ${MOTION.standard}`,
                       "&:hover": { boxShadow: ELEVATION.l2, transform: "translateY(-4px)" },

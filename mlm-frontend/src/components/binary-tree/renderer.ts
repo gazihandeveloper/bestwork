@@ -256,7 +256,7 @@ export class BinaryTreeRenderer {
       .attr("y", -CARD_H / 2)
       .attr("width", CARD_W)
       .attr("height", CARD_H)
-      .attr("rx", 16)
+      .attr("rx", 11)
       .attr("fill", this.colors.card)
       .attr("stroke", this.colors.divider)
       .attr("stroke-width", 1)
@@ -311,7 +311,7 @@ export class BinaryTreeRenderer {
         .attr("y", top + 28)
         .attr("width", posW)
         .attr("height", 13)
-        .attr("rx", 6.5)
+        .attr("rx", 4.5)
         .attr("fill", accent)
         .attr("fill-opacity", 0.14);
       g.append("text")
@@ -342,7 +342,7 @@ export class BinaryTreeRenderer {
           .attr("y", top + 28)
           .attr("width", pw)
           .attr("height", 13)
-          .attr("rx", 6.5)
+          .attr("rx", 4.5)
           .attr("fill", accent)
           .attr("fill-opacity", 0.08);
         g.append("text")
@@ -408,14 +408,14 @@ export class BinaryTreeRenderer {
         .attr("y", by)
         .attr("width", bw)
         .attr("height", 5)
-        .attr("rx", 2.5)
+        .attr("rx", 1.8)
         .attr("fill", this.colors.divider);
       g.append("rect")
         .attr("x", l)
         .attr("y", by)
         .attr("width", (bw * pctL) / 100)
         .attr("height", 5)
-        .attr("rx", 2.5)
+        .attr("rx", 1.8)
         .attr("fill", this.colors.legLeft);
     });
   }
@@ -435,7 +435,7 @@ export class BinaryTreeRenderer {
         .attr("y", sy)
         .attr("width", sw)
         .attr("height", sh)
-        .attr("rx", 8)
+        .attr("rx", 5.6)
         .attr("fill", this.colors.card)
         .attr("stroke", this.colors.divider)
         .attr("stroke-width", 0.8);
@@ -600,7 +600,7 @@ export class BinaryTreeRenderer {
       .attr("y", -PLACEHOLDER_H / 2)
       .attr("width", PLACEHOLDER_W)
       .attr("height", PLACEHOLDER_H)
-      .attr("rx", 12)
+      .attr("rx", 8.4)
       .attr("fill", "#F4F3F6")
       .attr("stroke", (d) => (d.data.position === "R" ? this.colors.right : this.colors.left))
       .attr("stroke-width", 1.4)
@@ -650,7 +650,7 @@ export class BinaryTreeRenderer {
         .attr("y", -11)
         .attr("width", w)
         .attr("height", 22)
-        .attr("rx", 11)
+        .attr("rx", 7.7)
         .attr("fill", n.boundary || n.collapsed ? this.colors.right : this.colors.left)
         .attr("stroke", "#fff")
         .attr("stroke-width", 2);

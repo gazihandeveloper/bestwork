@@ -73,7 +73,7 @@ export default function LoginDialog() {
       slotProps={{
         paper: {
           sx: {
-            borderRadius: "28px",
+            borderRadius: "20px",
             overflow: "hidden",
             boxShadow: ELEVATION.l3,
           },

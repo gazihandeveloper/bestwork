@@ -89,7 +89,7 @@ function CommissionsContent() {
           <Grid size={{ xs: 6, sm: 3 }} key={s.label}>
             <Card
               sx={{
-                borderRadius: "18px",
+                borderRadius: "13px",
                 border: "1px solid",
                 borderColor: "divider",
                 background: s.highlight
@@ -151,7 +151,7 @@ function CommissionsContent() {
           </CardContent>
         </Card>
       ) : (
-        <Card sx={{ borderRadius: "20px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
+        <Card sx={{ borderRadius: "14px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
           <TableContainer>
             <Table sx={{ minWidth: 560 }}>
               <TableHead>

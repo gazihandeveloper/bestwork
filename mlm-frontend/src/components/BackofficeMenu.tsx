@@ -142,7 +142,7 @@ export default function BackofficeMenu() {
         overflowX: "auto",
         p: 1,
         mb: 2,
-        borderRadius: "20px",
+        borderRadius: "14px",
         border: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",
@@ -158,7 +158,7 @@ export default function BackofficeMenu() {
         sx={{
           flexShrink: 0,
           whiteSpace: "nowrap",
-          borderRadius: "10px",
+          borderRadius: "7px",
           px: 2,
           bgcolor: pathname === "/dashboard" ? "primary.main" : "transparent",
           color: pathname === "/dashboard" ? "common.white" : "text.primary",
@@ -185,7 +185,7 @@ export default function BackofficeMenu() {
               sx={{
                 flexShrink: 0,
                 whiteSpace: "nowrap",
-                borderRadius: "10px",
+                borderRadius: "7px",
                 px: 2,
                 bgcolor: active ? "primary.main" : "transparent",
                 color: active ? "common.white" : "text.primary",
@@ -204,7 +204,7 @@ export default function BackofficeMenu() {
               anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
               transformOrigin={{ vertical: "top", horizontal: "left" }}
               slotProps={{
-                paper: { sx: { borderRadius: "12px", minWidth: 240, mt: 0.5 } },
+                paper: { sx: { borderRadius: "8.4px", minWidth: 240, mt: 0.5 } },
               }}
             >
               {g.items.map((item) => {
@@ -215,7 +215,7 @@ export default function BackofficeMenu() {
                     key={item.path}
                     selected={selected}
                     onClick={() => handleNav(item.path)}
-                    sx={{ borderRadius: "8px", mx: 0.5 }}
+                    sx={{ borderRadius: "5.6px", mx: 0.5 }}
                   >
                     <ListItemIcon sx={{ minWidth: 34 }}>{item.icon}</ListItemIcon>
                     <ListItemText

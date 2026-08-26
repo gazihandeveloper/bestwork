@@ -29,7 +29,7 @@ const theme = createTheme({
     success: { main: "#2E7D32" }, // semantik, değişmez
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 11,
   },
   typography: {
     fontFamily:
@@ -44,7 +44,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: "none",
-          borderRadius: 28,
+          borderRadius: 20,
           paddingInline: 20,
         },
       },
@@ -52,7 +52,7 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 11,
           boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         },
       },

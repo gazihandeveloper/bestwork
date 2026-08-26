@@ -74,7 +74,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
       sx={{
         height: "100%",
         cursor: onClick ? "pointer" : "default",
-        borderRadius: "20px",
+        borderRadius: "14px",
         border: "1px solid",
         borderColor: "divider",
         background: highlight
@@ -151,7 +151,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
           sx={{
             width: 38,
             height: 38,
-            borderRadius: "12px",
+            borderRadius: "8.4px",
             bgcolor: highlight ? "rgba(255,255,255,0.2)" : "secondary.main",
             color: highlight ? "common.white" : "primary.dark",
             display: "flex",
@@ -195,7 +195,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
                   sx={{
                     flexGrow: 1,
                     height: 8,
-                    borderRadius: 4,
+                    borderRadius: 2.8,
                     bgcolor: filled
                       ? highlight
                         ? "#D8F0DC"
@@ -226,7 +226,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
                   gap: 0.5,
                   border: "1px solid",
                   borderColor: "primary.main",
-                  borderRadius: "8px",
+                  borderRadius: "5.6px",
                   px: 0.75,
                   py: 0.1,
                   textAlign: "center",
@@ -281,12 +281,12 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
               variant="determinate"
               value={progress}
               sx={{
-                borderRadius: 4,
+                borderRadius: 2.8,
                 height: 7,
                 bgcolor: highlight ? "rgba(255,255,255,0.25)" : "secondary.light",
                 "& .MuiLinearProgress-bar": {
                   bgcolor: highlight ? "#D8F0DC" : "primary.main",
-                  borderRadius: 4,
+                  borderRadius: 2.8,
                 },
               }}
             />
@@ -311,7 +311,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
               textAlign: "center",
               p: 2.5,
               gap: 1,
-              borderRadius: "20px",
+              borderRadius: "14px",
               background: highlight
                 ? (theme) =>
                     `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.light})`
@@ -339,7 +339,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
                 borderColor: "primary.main",
                 bgcolor: "background.paper",
                 color: "primary.dark",
-                borderRadius: "28px",
+                borderRadius: "20px",
                 px: 2,
                 py: 0.75,
                 fontSize: 13,
@@ -498,7 +498,7 @@ function DashboardContent() {
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
-                borderRadius: "24px",
+                borderRadius: "17px",
                 overflow: "hidden",
                 background: (theme) =>
                   `linear-gradient(165deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 55%, ${theme.palette.secondary.dark} 100%)`,
@@ -529,7 +529,7 @@ function DashboardContent() {
                         objectFit: "cover",
                         objectPosition: "center",
                         display: "block",
-                        borderRadius: "14px",
+                        borderRadius: "9.8px",
                       }}
                     />
                   ) : (
@@ -551,7 +551,7 @@ function DashboardContent() {
                     sx={{
                       width: 40,
                       height: 40,
-                      borderRadius: "12px",
+                      borderRadius: "8.4px",
                       bgcolor: "common.white",
                       color: "primary.dark",
                       display: "flex",
@@ -578,7 +578,7 @@ function DashboardContent() {
                     alignItems: "center",
                     gap: 1,
                     bgcolor: "common.white",
-                    borderRadius: "28px",
+                    borderRadius: "20px",
                     px: 2,
                     py: 0.75,
                     boxShadow: 2,
@@ -635,7 +635,7 @@ function DashboardContent() {
                   sx={{
                     bgcolor: "common.white",
                     color: "primary.dark",
-                    borderRadius: "28px",
+                    borderRadius: "20px",
                     px: 2.5,
                     fontWeight: 800,
                     "&:hover": { bgcolor: "#D8F0DC" },
@@ -660,7 +660,7 @@ function DashboardContent() {
                     gap: 1,
                     bgcolor: "rgba(255,255,255,0.12)",
                     border: "1px solid rgba(255,255,255,0.25)",
-                    borderRadius: 3,
+                    borderRadius: 2.1,
                     px: 1.5,
                     py: 1,
                   }}

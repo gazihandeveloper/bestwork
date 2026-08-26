@@ -227,7 +227,7 @@ function AdminHeroSlidesContent() {
                           width: "100%",
                           height: 140,
                           objectFit: "cover",
-                          borderRadius: 12,
+                          borderRadius: 8.4,
                           display: "block",
                         }}
                       />
@@ -284,10 +284,10 @@ function AdminHeroSlidesContent() {
                       p: 1.5,
                       border: "1px solid",
                       borderColor: "divider",
-                      borderRadius: 3,
+                      borderRadius: 2.1,
                     }}
                   >
-                    <Box sx={{ width: 120, height: 64, flexShrink: 0, borderRadius: 2, overflow: "hidden" }}>
+                    <Box sx={{ width: 120, height: 64, flexShrink: 0, borderRadius: 1.4, overflow: "hidden" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={fileUrl(s.image_path) ?? ""}

@@ -84,7 +84,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         divider: isDark ? "#33463A" : "#C6CCC6",
         success: { main: isDark ? "#4CAF7D" : "#2E7D32" },
       },
-      shape: { borderRadius: 16 },
+      shape: { borderRadius: 11 },
       typography: {
         fontFamily:
           "var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
@@ -105,7 +105,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           styleOverrides: {
             root: {
               textTransform: "none",
-              borderRadius: 28,
+              borderRadius: 20,
               paddingInline: 20,
             },
           },
@@ -113,7 +113,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         MuiCard: {
           styleOverrides: {
             root: {
-              borderRadius: 16,
+              borderRadius: 11,
               boxShadow: isDark ? "0 2px 10px rgba(0,0,0,0.45)" : "0 2px 10px rgba(0,0,0,0.08)",
             },
           },

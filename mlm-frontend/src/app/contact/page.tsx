@@ -72,7 +72,7 @@ function ContactContent() {
           <Box
             sx={{
               p: 3,
-              borderRadius: "24px",
+              borderRadius: "17px",
               background: (theme) =>
                 `linear-gradient(165deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
               color: "common.white",
@@ -110,7 +110,7 @@ function ContactContent() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 7 }}>
-          <Card sx={{ borderRadius: "24px", border: "1px solid", borderColor: "divider" }}>
+          <Card sx={{ borderRadius: "17px", border: "1px solid", borderColor: "divider" }}>
             <CardContent sx={{ p: 3 }}>
               {success && (
                 <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircleRoundedIcon />}>

@@ -224,7 +224,7 @@ export default function CartDrawer() {
                       sx={{
                         width: 56,
                         height: 56,
-                        borderRadius: 2,
+                        borderRadius: 1.4,
                         overflow: "hidden",
                         bgcolor: "secondary.main",
                         flexShrink: 0,
@@ -339,7 +339,7 @@ export default function CartDrawer() {
                       sx={{
                         mt: 1.5,
                         p: 1.5,
-                        borderRadius: 2.5,
+                        borderRadius: 1.8,
                         bgcolor: "primary.main",
                         color: "#fff",
                         textAlign: "center",
@@ -435,7 +435,7 @@ export default function CartDrawer() {
                 width: 8,
                 height: 14,
                 bgcolor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-                borderRadius: "2px",
+                borderRadius: "1.4px",
                 animation: `bw-fall ${2.4 + (i % 5) * 0.5}s ${(i % 9) * 0.08}s linear forwards`,
                 transform: `rotate(${(i * 29) % 360}deg)`,
               }}

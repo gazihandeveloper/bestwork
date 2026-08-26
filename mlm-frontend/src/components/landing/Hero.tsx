@@ -67,7 +67,7 @@ export default function Hero() {
     return (
       <Box component="section" id="anasayfa" sx={{ bgcolor: "background.default" }}>
         <Container maxWidth={false} sx={{ pt: { xs: 13, md: 14 }, pb: { xs: 6, md: 8 } }}>
-          <Skeleton variant="rounded" sx={{ height: { xs: 320, md: 646 }, borderRadius: "28px", maxWidth: 1782, mx: "auto" }} />
+          <Skeleton variant="rounded" sx={{ height: { xs: 320, md: 646 }, borderRadius: "20px", maxWidth: 1782, mx: "auto" }} />
         </Container>
       </Box>
     );
@@ -99,7 +99,7 @@ export default function Hero() {
             maxWidth: 1782,
             mx: "auto",
             height: { xs: 320, sm: 480, md: 646 },
-            borderRadius: "28px",
+            borderRadius: "20px",
             overflow: "hidden",
             boxShadow: ELEVATION.l2,
             bgcolor: "background.paper",
@@ -251,7 +251,7 @@ export default function Hero() {
                         sx={{
                           width: isActive ? 24 : 8,
                           height: 8,
-                          borderRadius: 4,
+                          borderRadius: 2.8,
                           bgcolor: isActive ? "common.white" : "rgba(255,255,255,0.5)",
                           transition: "all 250ms ease",
                         }}

@@ -166,14 +166,14 @@ function CompareCard({
   const delta = prev > 0 ? ((now - prev) / prev) * 100 : now > 0 ? 100 : 0;
   const up = delta >= 0;
   return (
-    <Card sx={{ height: "100%", borderRadius: "20px", border: "1px solid", borderColor: "divider" }}>
+    <Card sx={{ height: "100%", borderRadius: "14px", border: "1px solid", borderColor: "divider" }}>
       <CardContent sx={{ p: 2.5 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
           <Box
             sx={{
               width: 38,
               height: 38,
-              borderRadius: "12px",
+              borderRadius: "8.4px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -273,7 +273,7 @@ function CareerTimeline({ ranks, career }: { ranks: Rank[]; career: CareerProgre
               sx={{
                 width: 14,
                 height: 2.5,
-                borderRadius: 2,
+                borderRadius: 1.4,
                 mt: 2.6,
                 bgcolor: (cards[i + 1].achieved || cards[i + 1].active) ? "success.main" : "divider",
                 flexShrink: 0,
@@ -375,7 +375,7 @@ function ReportContent() {
           sx={{
             width: 52,
             height: 52,
-            borderRadius: "16px",
+            borderRadius: "11px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -411,7 +411,7 @@ function ReportContent() {
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <Card sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", height: "100%" }}>
+          <Card sx={{ borderRadius: "14px", border: "1px solid", borderColor: "divider", height: "100%" }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>
                 📈 Aylık Kazanç Grafiği
@@ -424,18 +424,18 @@ function ReportContent() {
           </Card>
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <Card sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider", height: "100%" }}>
+          <Card sx={{ borderRadius: "14px", border: "1px solid", borderColor: "divider", height: "100%" }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>
                 📊 CV & PV Grafiği
               </Typography>
               <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Box sx={{ width: 14, height: 14, borderRadius: "4px", bgcolor: "#1565C0" }} />
+                  <Box sx={{ width: 14, height: 14, borderRadius: "2.8px", bgcolor: "#1565C0" }} />
                   <Typography variant="caption" sx={{ fontWeight: 700 }}>PV</Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Box sx={{ width: 14, height: 14, borderRadius: "4px", bgcolor: "#8A2BE2" }} />
+                  <Box sx={{ width: 14, height: 14, borderRadius: "2.8px", bgcolor: "#8A2BE2" }} />
                   <Typography variant="caption" sx={{ fontWeight: 700 }}>CV</Typography>
                 </Box>
               </Box>
@@ -444,7 +444,7 @@ function ReportContent() {
           </Card>
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <Card sx={{ borderRadius: "20px", border: "1px solid", borderColor: "divider" }}>
+          <Card sx={{ borderRadius: "14px", border: "1px solid", borderColor: "divider" }}>
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5 }}>
                 🏆 Kariyer Grafiği

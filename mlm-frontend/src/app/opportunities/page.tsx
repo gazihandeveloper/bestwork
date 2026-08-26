@@ -48,7 +48,7 @@ function OpportunitiesContent() {
   return (
     <Container maxWidth={false} sx={{ py: 4 }}>
       {/* Hero */}
-      <Box sx={{ textAlign: "center", py: 5, borderRadius: 4, bgcolor: "#16331B", color: "#fff", mb: 4 }}>
+      <Box sx={{ textAlign: "center", py: 5, borderRadius: 2.8, bgcolor: "#16331B", color: "#fff", mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
           İş Fırsatları
         </Typography>

@@ -216,7 +216,7 @@ export default function SponsorTreeD3({ data, depth }: SponsorTreeD3Props) {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         Düğüme tıklayarak alt ağacı aç/kapat, sürükleyerek taşı, tekerlekle zoom yap.
       </Typography>
-      <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 3, overflow: "hidden", bgcolor: "#FDFEFD" }}>
+      <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2.1, overflow: "hidden", bgcolor: "#FDFEFD" }}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${WIDTH} ${height}`}
@@ -232,7 +232,7 @@ export default function SponsorTreeD3({ data, depth }: SponsorTreeD3Props) {
           pointerEvents: "none",
           background: "#1B3A1E",
           color: "#fff",
-          borderRadius: 12,
+          borderRadius: 8.4,
           padding: "8px 12px",
           fontSize: 12,
           boxShadow: "0 4px 16px rgba(0,0,0,0.3)",

@@ -115,7 +115,7 @@ function CareerContent() {
       )}
 
       {/* Kariyer seviyeleri — Stitch paneli: yatay kaydırılabilir rütbe kartları */}
-      <Card sx={{ mb: 4, borderRadius: "24px", border: "1px solid", borderColor: "divider" }}>
+      <Card sx={{ mb: 4, borderRadius: "17px", border: "1px solid", borderColor: "divider" }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <EmojiEventsRoundedIcon sx={{ color: "primary.main" }} />
@@ -164,7 +164,7 @@ function CareerContent() {
                     flex: "1 1 0",
                     minWidth: { xs: 120, md: 56 },
                     height: 100,
-                    borderRadius: "16px",
+                    borderRadius: "11px",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -264,7 +264,7 @@ function CareerContent() {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  borderRadius: "20px",
+                  borderRadius: "14px",
                   border: "2px solid",
                   borderColor: s.isAchieved ? "warning.main" : s.next ? "primary.main" : "divider",
                   bgcolor: s.next
@@ -287,7 +287,7 @@ function CareerContent() {
                       sx={{
                         width: 44,
                         height: 44,
-                        borderRadius: "14px",
+                        borderRadius: "9.8px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -354,12 +354,12 @@ function CareerContent() {
                       variant="determinate"
                       value={pct}
                       sx={{
-                        borderRadius: 4,
+                        borderRadius: 2.8,
                         height: 8,
                         bgcolor: "secondary.light",
                         "& .MuiLinearProgress-bar": {
                           bgcolor: s.isAchieved ? "warning.main" : s.next ? "primary.main" : "divider",
-                          borderRadius: 4,
+                          borderRadius: 2.8,
                         },
                       }}
                     />

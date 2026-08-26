@@ -308,7 +308,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       sx={{
         border: "1px solid",
         borderColor: "divider",
-        borderRadius: 3,
+        borderRadius: 2.1,
         overflow: "hidden",
         bgcolor: "#FFFFFF",
         backgroundImage: "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
@@ -424,7 +424,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
                     setSelectedUserId(u.id);
                     setPlaceError("");
                   }}
-                  sx={{ borderRadius: 2 }}
+                  sx={{ borderRadius: 1.4 }}
                 >
                   <ListItemText
                     primary={u.name}
@@ -571,7 +571,7 @@ function MemberInfoTable({ card }: { card: UserInfoCard }) {
       <Stack
         direction="row"
         spacing={1.5}
-        sx={{ alignItems: "center", justifyContent: "center", py: 1.25, mb: 2, borderRadius: 2, bgcolor: "action.hover" }}
+        sx={{ alignItems: "center", justifyContent: "center", py: 1.25, mb: 2, borderRadius: 1.4, bgcolor: "action.hover" }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: "#2E7D32" }} />

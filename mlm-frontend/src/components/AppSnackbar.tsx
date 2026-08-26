@@ -19,7 +19,7 @@ export default function AppSnackbar({ open, message, severity = "success", onClo
       onClose={onClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
     >
-      <Alert severity={severity} variant="filled" onClose={onClose} sx={{ width: "100%", borderRadius: 3 }}>
+      <Alert severity={severity} variant="filled" onClose={onClose} sx={{ width: "100%", borderRadius: 2.1 }}>
         {message}
       </Alert>
     </Snackbar>

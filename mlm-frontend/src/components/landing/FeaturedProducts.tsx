@@ -196,7 +196,7 @@ export default function FeaturedProducts() {
                         display: "flex",
                         flexDirection: "column",
                         overflow: "hidden",
-                        borderRadius: "24px",
+                        borderRadius: "17px",
                         boxShadow: ELEVATION.l1,
                         border: "1px solid",
                         borderColor: "divider",
@@ -244,7 +244,7 @@ export default function FeaturedProducts() {
                             zIndex: 2,
                             bgcolor: "rgba(255,255,255,0.92)",
                             color: soldOut ? "error.main" : "success.main",
-                            borderRadius: "28px",
+                            borderRadius: "20px",
                             "& .MuiChip-label": { fontSize: 11, fontWeight: 700 },
                           }}
                         />
@@ -259,7 +259,7 @@ export default function FeaturedProducts() {
                               zIndex: 2,
                               bgcolor: (theme) => theme.palette.primary.dark,
                               color: "common.white",
-                              borderRadius: "28px",
+                              borderRadius: "20px",
                               "& .MuiChip-label": { fontSize: 11, fontWeight: 700 },
                             }}
                           />
@@ -340,7 +340,7 @@ export default function FeaturedProducts() {
                               gap: 0.5,
                               border: "1px solid",
                               borderColor: "divider",
-                              borderRadius: "28px",
+                              borderRadius: "20px",
                               px: 0.5,
                               py: 0.25,
                             }}

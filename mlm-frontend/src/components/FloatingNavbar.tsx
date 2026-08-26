@@ -32,7 +32,7 @@ export default function FloatingNavbar() {
         left: "50%",
         transform: "translateX(-50%)",
         width: "min(92%, 460px)",
-        borderRadius: 28,
+        borderRadius: 20,
         bgcolor: "#16331B", // her iki modda da koyu bar (primary.dark'a bağımlı değil)
         zIndex: 1100,
         display: { xs: "block", md: "none" },
@@ -46,7 +46,7 @@ export default function FloatingNavbar() {
         sx={{
           bgcolor: "transparent",
           height: 64,
-          "& .MuiBottomNavigationAction-root": { color: "rgba(255,255,255,0.6)", borderRadius: 24 },
+          "& .MuiBottomNavigationAction-root": { color: "rgba(255,255,255,0.6)", borderRadius: 17 },
           "& .Mui-selected": {
             color: "#A5D6A7",
             "& .MuiBottomNavigationAction-label": { fontSize: 11, fontWeight: 600 },

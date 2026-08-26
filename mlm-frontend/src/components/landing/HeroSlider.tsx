@@ -150,7 +150,7 @@ export default function HeroSlider() {
   };
 
   if (loading) {
-    return <Skeleton variant="rounded" sx={{ height: { xs: 340, md: 400 }, borderRadius: "28px" }} />;
+    return <Skeleton variant="rounded" sx={{ height: { xs: 340, md: 400 }, borderRadius: "20px" }} />;
   }
 
   const duration = reduceMotion ? 0 : 450;
@@ -170,7 +170,7 @@ export default function HeroSlider() {
         position: "relative",
         height: { xs: 340, md: 400 },
         overflow: "hidden",
-        borderRadius: "28px",
+        borderRadius: "20px",
       }}
     >
       {slides.map((s, i) => {
@@ -187,7 +187,7 @@ export default function HeroSlider() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: "28px",
+              borderRadius: "20px",
               background: (theme) => mediaGradient(theme, i),
               boxShadow: ELEVATION.l2,
               opacity: isActive ? 1 : 0,
@@ -346,7 +346,7 @@ export default function HeroSlider() {
                 sx={{
                   width: isActive ? 24 : 8,
                   height: 8,
-                  borderRadius: 4,
+                  borderRadius: 2.8,
                   bgcolor: isActive
                     ? "primary.main"
                     : (theme) => alpha(theme.palette.primary.main, 0.3),

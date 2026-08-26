@@ -260,7 +260,7 @@ export default function SiteNav() {
                 href={l.href}
                 disableRipple
                 onClick={() => setDrawerOpen(false)}
-                sx={{ borderRadius: "16px" }}
+                sx={{ borderRadius: "11px" }}
               >
                 <ListItemText primary={l.label} />
               </ListItemButton>

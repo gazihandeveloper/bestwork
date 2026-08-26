@@ -84,7 +84,7 @@ function ProfileContent() {
                 size="medium"
                 variant="contained"
                 startIcon={<BarChartRoundedIcon />}
-                sx={{ mb: 2, borderRadius: "28px", fontWeight: 800, px: 3, boxShadow: 2 }}
+                sx={{ mb: 2, borderRadius: "20px", fontWeight: 800, px: 3, boxShadow: 2 }}
               >
                 🏅 Başarı Raporu
               </Button>
@@ -92,7 +92,7 @@ function ProfileContent() {
               <Grid container spacing={1.5}>
                 {infoItems.map((item) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={item.label}>
-                    <Box sx={{ bgcolor: "background.default", borderRadius: 3, p: 1.5 }}>
+                    <Box sx={{ bgcolor: "background.default", borderRadius: 2.1, p: 1.5 }}>
                       <Typography variant="caption" color="text.secondary">
                         {item.label}
                       </Typography>

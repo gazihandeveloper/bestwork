@@ -254,7 +254,7 @@ function RegisterContent() {
       <Container maxWidth={stage === "sponsor" ? "sm" : "lg"}>
         <Card
           sx={{
-            borderRadius: "28px",
+            borderRadius: "20px",
             overflow: "hidden",
             boxShadow: ELEVATION.l3,
           }}
@@ -313,7 +313,7 @@ function RegisterContent() {
                 sx={{
                   border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 3,
+                  borderRadius: 2.1,
                   p: 3,
                   bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.12),
                   display: "flex",
