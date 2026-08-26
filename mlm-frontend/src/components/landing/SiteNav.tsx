@@ -111,8 +111,8 @@ export default function SiteNav() {
           left: 0,
           right: 0,
           marginInline: "auto",
-          width: "100%",
-          maxWidth: 1350,
+          width: "80%",
+
           height: 95,
           bgcolor: "background.default",
           boxShadow: "none",
