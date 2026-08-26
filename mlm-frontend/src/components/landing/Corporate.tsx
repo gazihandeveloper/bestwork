@@ -13,8 +13,7 @@ import MailRoundedIcon from "@mui/icons-material/MailRounded";
 import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
 import { getSettings } from "@/services/api";
 import Reveal from "./Reveal";
-import { ELEVATION, MOTION } from "./tokens";
-import { alpha } from "@mui/material/styles";
+import { ELEVATION } from "./tokens";
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   corporate_title: "Kurumsal",
@@ -69,11 +68,7 @@ export default function Corporate() {
       sx={{
         py: 8,
         scrollMarginTop: "112px",
-        background: (theme) =>
-          `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${alpha(
-            theme.palette.secondary.main,
-            0.3,
-          )} 100%)`,
+        bgcolor: "background.default",
       }}
     >
       <Container maxWidth={false}>
@@ -104,8 +99,6 @@ export default function Corporate() {
                       borderColor: "divider",
                       borderRadius: "14px",
                       boxShadow: ELEVATION.l1,
-                      transition: `box-shadow 250ms ${MOTION.standard}, transform 250ms ${MOTION.standard}`,
-                      "&:hover": { boxShadow: ELEVATION.l2, transform: "translateY(-4px)" },
                     }}
                   >
                     <Box
