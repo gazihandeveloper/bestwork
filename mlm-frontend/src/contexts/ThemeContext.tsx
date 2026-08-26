@@ -70,18 +70,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           contrastText: "#ffffff",
         },
         secondary: {
-          main: isDark ? mix(palette.primary, 0, 0.28) : palette.secondary,
-          light: isDark ? mix(palette.primary, 255, 0.72) : palette.secondaryLight,
-          dark: isDark ? mix(palette.primary, 0, 0.5) : palette.secondaryDark,
-          contrastText: isDark ? "#E4F0E0" : "#1A3A16",
+          main: isDark ? "#2A2A2E" : palette.secondary,
+          light: isDark ? "#3A3A3E" : palette.secondaryLight,
+          dark: isDark ? "#1E1E20" : palette.secondaryDark,
+          contrastText: isDark ? "#f9f9f9" : "#1A3A16",
         },
         background: isDark
-          ? { default: "#121A10", paper: "#1B2519" }
+          ? { default: "#09090b", paper: "#09090b" }
           : { default: "#FFFFFF", paper: "#FFFFFF" },
         text: isDark
-          ? { primary: "#EEF4EC", secondary: "#AABBA7" }
+          ? { primary: "#f9f9f9", secondary: "#b8bcc4" }
           : { primary: "#1F1F1F", secondary: "#625D63" },
-        divider: isDark ? "#33463A" : "#C6CCC6",
+        divider: isDark ? "#26262a" : "#C6CCC6",
         success: { main: isDark ? "#4CAF7D" : "#2E7D32" },
       },
       shape: { borderRadius: 11 },

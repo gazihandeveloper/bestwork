@@ -14,6 +14,8 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import { alpha } from "@mui/material/styles";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
@@ -70,17 +72,12 @@ function Logo() {
 export default function SiteNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const { mode, toggleMode } = useThemeContext();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [count, setCount] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
-  const [now, setNow] = useState<Date>(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     const refresh = () => setCount(cartCount());
@@ -98,11 +95,10 @@ export default function SiteNav() {
 
   const submitSearch = () => {
     const q = searchQ.trim();
+    setSearchOpen(false);
     setSearchQ("");
     router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
-
-  const dateTime = `${now.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} · ${now.toLocaleTimeString("tr-TR")}`;
 
   return (
     <>
@@ -112,10 +108,8 @@ export default function SiteNav() {
         sx={{
           position: "fixed",
           top: 0,
-          left: "50%",
-
-          width: "70%",
-          transform: "translateX(-50%)",
+          left: 0,
+          width: "100%",
           height: 95,
           bgcolor: "background.default",
           boxShadow: "none",
@@ -128,8 +122,8 @@ export default function SiteNav() {
       >
         <Logo />
 
-        {/* Menü linkleri — sola yaslı, ikonsuz */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 10 }}>
+        {/* Menü linkleri */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 8 }}>
           {navLinks.map((l) => {
             const active = l.href === pathname;
             return (
@@ -154,32 +148,12 @@ export default function SiteNav() {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Arama kutusu (placeholder: canlı tarih/saat) */}
-        <TextField
-          size="small"
-          placeholder={dateTime}
-          value={searchQ}
-          onChange={(e) => setSearchQ(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submitSearch();
-          }}
-          sx={{
-            display: { xs: "none", sm: "inline-flex" },
-            width: { sm: 280 },
-            "& .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
-          }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon sx={{ fontSize: 18 }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Arama ikonu → ortada blur popup */}
+          <IconButton aria-label="Ara" size="large" disableRipple onClick={() => setSearchOpen(true)} sx={{ color: "primary.main" }}>
+            <SearchRoundedIcon />
+          </IconButton>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           {/* Gece/gündüz */}
           <IconButton aria-label="Gece/gündüz modu" size="large" disableRipple onClick={toggleMode} sx={{ color: mode === "dark" ? "#FFB300" : "primary.main" }}>
             {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
@@ -192,9 +166,11 @@ export default function SiteNav() {
             </Badge>
           </IconButton>
 
-          {/* Oturum: isim + çıkış / giriş + kayıt */}
+          {/* Oturum */}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
-            {user ? (
+            {loading ? (
+              <Box sx={{ width: 90, height: 36, borderRadius: "999px", bgcolor: "secondary.main", opacity: 0.5 }} />
+            ) : user ? (
               <>
                 <Button component={Link} href="/dashboard" disableRipple sx={{ color: "primary.main", whiteSpace: "nowrap", fontWeight: 800, fontSize: 17 }}>
                   {user.name.toLocaleUpperCase("tr-TR")}
@@ -204,20 +180,15 @@ export default function SiteNav() {
                 </IconButton>
               </>
             ) : (
-              <>
-                <Button onClick={openLogin} disableRipple sx={{ color: "primary.main", fontWeight: 700 }}>
-                  Giriş
-                </Button>
-                <Button component={Link} href="/register" variant="contained" disableRipple sx={{ fontWeight: 700 }}>
-                  Kayıt Ol
-                </Button>
-              </>
+              <Button onClick={openLogin} disableRipple variant="contained" sx={{ fontWeight: 800, color: "#fff" }}>
+                Oturum Aç
+              </Button>
             )}
           </Box>
 
           {/* Mobil menü */}
           <IconButton
-            aria-label={drawerOpen ? "Menüyü kapat" : "Menüyü aç"}
+            aria-label="Menü"
             size="large"
             disableRipple
             onClick={() => setDrawerOpen(true)}
@@ -227,6 +198,42 @@ export default function SiteNav() {
           </IconButton>
         </Box>
       </Box>
+
+      {/* Arama popup — ortada, blur arka plan */}
+      <Dialog
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          backdrop: { sx: { backdropFilter: "blur(8px)", bgcolor: "rgba(0,0,0,0.55)" } },
+          paper: { sx: { borderRadius: "24px", p: 2, bgcolor: "background.paper" } },
+        }}
+      >
+        <DialogContent sx={{ p: "8px !important" }}>
+          <TextField
+            autoFocus
+            fullWidth
+            placeholder="Ürün ara..."
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitSearch();
+              if (e.key === "Escape") setSearchOpen(false);
+            }}
+            sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ fontSize: 22 }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Mobil çekmece */}
       <Drawer
@@ -261,7 +268,7 @@ export default function SiteNav() {
                 href={l.href}
                 disableRipple
                 onClick={() => setDrawerOpen(false)}
-                sx={{ borderRadius: "11px" }}
+                sx={{ borderRadius: "16px" }}
               >
                 <ListItemText primary={l.label} />
               </ListItemButton>
@@ -269,7 +276,9 @@ export default function SiteNav() {
           </List>
 
           <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1, pb: 2 }}>
-            {user ? (
+            {loading ? (
+              <Box sx={{ height: 44, borderRadius: "28px", bgcolor: "secondary.main", opacity: 0.5 }} />
+            ) : user ? (
               <>
                 <Button component={Link} href="/dashboard" fullWidth variant="contained" disableRipple onClick={() => setDrawerOpen(false)}>
                   {user.name.toLocaleUpperCase("tr-TR")}
@@ -279,14 +288,9 @@ export default function SiteNav() {
                 </Button>
               </>
             ) : (
-              <>
-                <Button fullWidth variant="contained" disableRipple onClick={() => { setDrawerOpen(false); openLogin(); }}>
-                  Giriş
-                </Button>
-                <Button component={Link} href="/register" fullWidth variant="outlined" disableRipple onClick={() => setDrawerOpen(false)}>
-                  Kayıt Ol
-                </Button>
-              </>
+              <Button fullWidth variant="contained" disableRipple onClick={() => { setDrawerOpen(false); openLogin(); }}>
+                Oturum Aç
+              </Button>
             )}
           </Box>
         </Box>
