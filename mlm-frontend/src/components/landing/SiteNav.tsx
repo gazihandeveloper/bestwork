@@ -128,7 +128,7 @@ export default function SiteNav() {
         <Logo />
 
         {/* Menü linkleri — sola yaslı, ikonsuz */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 2 }}>
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 10 }}>
           {navLinks.map((l) => {
             const active = l.href === pathname;
             return (
