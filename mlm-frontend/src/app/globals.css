@@ -21,7 +21,7 @@ body {
 
 /* İçerik her ekranda %50 genişlikte, ortalanmış */
 main {
-  width: 50%;
+  width: 65%;
   margin-inline: auto;
 }
 
