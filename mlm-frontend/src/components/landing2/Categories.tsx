@@ -28,7 +28,7 @@ export default function Categories() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
         {categories.map(({ name, icon: Icon }) => (
           <Link
             key={name}

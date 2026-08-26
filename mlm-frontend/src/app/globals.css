@@ -109,10 +109,18 @@
     color: var(--foreground);
   }
 
-  /* İçerik her ekranda %75 genişlikte, ortalanmış */
+  /* İçerik: mobil/tablette tam genişlik + güvenli kenar boşluğu, masaüstünde (1024px+) %75 ortalanmış */
   main {
-    width: 75%;
+    width: 100%;
+    padding-inline: 1rem;
     margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    main {
+      width: 75%;
+      padding-inline: 0;
+    }
   }
 
   a {

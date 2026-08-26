@@ -173,7 +173,7 @@ export default function Hero() {
                     <Button
                       asChild
                       size="lg"
-                      className="bg-white px-7 text-primary-dark shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-[1.03] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0"
+                      className="bg-white px-5! text-primary-dark shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-[1.03] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
                     >
                       <Link href={primaryHref}>Alışverişe Başla</Link>
                     </Button>
@@ -181,7 +181,7 @@ export default function Hero() {
                       asChild
                       size="lg"
                       variant="outline"
-                      className="border-white/60 bg-white/10 px-7 text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0"
+                      className="border-white/60 bg-white/10 px-5! text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
                     >
                       <Link href={secondaryHref}>Üye Ol</Link>
                     </Button>
@@ -213,7 +213,7 @@ export default function Hero() {
 
               {/* Alt kontrol çubuğu: noktalar + sayaç */}
               <div className="absolute right-4 bottom-5 left-4 z-20 flex items-center justify-between md:right-6 md:left-6">
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                   {slides.map((s, i) => {
                     const isActive = i === activeIndex;
                     return (

@@ -28,9 +28,9 @@ function Logo() {
       className="inline-flex items-center leading-none no-underline text-inherit"
     >
       <span className="flex flex-col items-start leading-tight">
-        <span className="text-primary inline-flex items-start text-[34px] font-black tracking-tight">
+        <span className="text-primary inline-flex items-start text-[30px] font-black tracking-tight sm:text-[34px]">
           BestWork
-          <span aria-label="Registered" className="mt-[0.3em] text-[20px] leading-none font-black">
+          <span aria-label="Registered" className="mt-[0.3em] text-[18px] leading-none font-black sm:text-[20px]">
             <sup>®</sup>
           </span>
         </span>
@@ -81,7 +81,7 @@ export default function SiteNav() {
   };
 
   const iconBtn =
-    "relative inline-flex size-10 cursor-pointer items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary";
+    "relative inline-flex size-9 md:size-10 cursor-pointer items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary";
 
   const linkActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
@@ -97,7 +97,7 @@ export default function SiteNav() {
             : "border-transparent"
         )}
       >
-        <nav className="mx-auto flex h-[95px] w-[75%] items-center justify-between gap-4 px-2.5">
+        <nav className="mx-auto flex h-[95px] w-full items-center justify-between gap-2 px-4 md:gap-4 lg:w-[75%] lg:px-2.5">
           <Logo />
 
           {/* Masaüstü linkler */}
@@ -109,7 +109,7 @@ export default function SiteNav() {
                   key={l.href}
                   href={l.href}
                   className={cn(
-                    "relative px-3.5 py-2 text-[15px] font-semibold tracking-tight transition-colors duration-200",
+                    "relative px-3 py-2 text-[15px] font-semibold tracking-tight transition-colors duration-200",
                     active
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
