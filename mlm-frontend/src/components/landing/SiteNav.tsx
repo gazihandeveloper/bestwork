@@ -11,15 +11,10 @@ import Badge from "@mui/material/Badge";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import { alpha } from "@mui/material/styles";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
-import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
-import MailRoundedIcon from "@mui/icons-material/MailRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -31,10 +26,10 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { cartCount } from "@/lib/cart";
 
 const navLinks = [
-  { href: "/", label: "Anasayfa", icon: <HomeRoundedIcon /> },
-  { href: "/shop", label: "Ürünler", icon: <ShoppingBagRoundedIcon /> },
-  { href: "/#kurumsal", label: "Kurumsal", icon: <BusinessRoundedIcon /> },
-  { href: "/#iletisim", label: "İletişim", icon: <MailRoundedIcon /> },
+  { href: "/", label: "Anasayfa" },
+  { href: "/shop", label: "Ürünler" },
+  { href: "/#kurumsal", label: "Kurumsal" },
+  { href: "/#iletisim", label: "İletişim" },
 ];
 
 function Logo() {
@@ -132,8 +127,8 @@ export default function SiteNav() {
       >
         <Logo />
 
-        {/* Menü linkleri */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 0.5, mx: "auto" }}>
+        {/* Menü linkleri — sola yaslı, ikonsuz */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, ml: 2 }}>
           {navLinks.map((l) => {
             const active = l.href === pathname;
             return (
@@ -141,7 +136,6 @@ export default function SiteNav() {
                 key={l.href}
                 component={Link}
                 href={l.href}
-                startIcon={l.icon}
                 disableRipple
                 sx={{
                   color: active ? "primary.main" : "text.primary",
@@ -157,6 +151,8 @@ export default function SiteNav() {
           })}
         </Box>
 
+        <Box sx={{ flexGrow: 1 }} />
+
         {/* Arama kutusu (placeholder: canlı tarih/saat) */}
         <TextField
           size="small"
@@ -168,7 +164,6 @@ export default function SiteNav() {
           }}
           sx={{
             display: { xs: "none", sm: "inline-flex" },
-            ml: { xs: 0, md: 2 },
             width: { sm: 280 },
             "& .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
           }}
@@ -183,7 +178,7 @@ export default function SiteNav() {
           }}
         />
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: "auto", md: 3 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
           {/* Gece/gündüz */}
           <IconButton aria-label="Gece/gündüz modu" size="large" disableRipple onClick={toggleMode} sx={{ color: mode === "dark" ? "#FFB300" : "primary.main" }}>
             {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
@@ -267,7 +262,6 @@ export default function SiteNav() {
                 onClick={() => setDrawerOpen(false)}
                 sx={{ borderRadius: "16px" }}
               >
-                <ListItemIcon sx={{ color: "text.primary", minWidth: 40 }}>{l.icon}</ListItemIcon>
                 <ListItemText primary={l.label} />
               </ListItemButton>
             ))}
