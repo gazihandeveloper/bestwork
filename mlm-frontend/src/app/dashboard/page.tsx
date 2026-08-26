@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { formatMemberName } from "@/lib/name";
 import Container from "@mui/material/Container";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -570,7 +569,7 @@ function DashboardContent() {
               {/* İçerik */}
               <Box sx={{ p: 3, pt: 2, display: "flex", flexDirection: "column", gap: 1.25, alignItems: "center", textAlign: "center" }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.25 }}>
-                  {formatMemberName(contextUser?.name ?? "")}
+                  {contextUser?.name.toLocaleUpperCase("tr-TR")}
                 </Typography>
 
                 <Box

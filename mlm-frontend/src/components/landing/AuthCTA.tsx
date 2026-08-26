@@ -5,7 +5,6 @@ import Button from "@mui/material/Button";
 import { alpha } from "@mui/material/styles";
 import { useAuth } from "@/hooks/useAuth";
 import { ELEVATION, MOTION } from "./tokens";
-import { formatMemberName } from "@/lib/name";
 
 interface AuthCTAProps {
   variant?: "nav" | "hero" | "cta" | "shop";
@@ -38,7 +37,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
             "&:hover": { bgcolor: "transparent" },
           }}
         >
-          {formatMemberName(user.name)}
+          {user.name.toLocaleUpperCase("tr-TR")}
         </Button>
       );
     }
