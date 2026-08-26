@@ -22,6 +22,7 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
+import { formatMemberName } from "@/lib/name";
 import { api } from "@/lib/api";
 import {
   listBinaryTransactions,
@@ -391,7 +392,7 @@ function ReportContent() {
             Başarı Raporu
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user?.name.toLocaleUpperCase("tr-TR")} · {user?.member_code}
+            {formatMemberName(user?.name ?? "")} · {user?.member_code}
           </Typography>
         </Box>
       </Box>

@@ -135,7 +135,7 @@ export default function SiteNav() {
                     ? (theme) => alpha(theme.palette.secondary.main, 0.5)
                     : "transparent",
                   whiteSpace: "nowrap",
-                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+                  "&:hover": { bgcolor: "transparent" },
                 }}
               >
                 {l.label}
@@ -152,7 +152,12 @@ export default function SiteNav() {
           onKeyDown={(e) => {
             if (e.key === "Enter") submitSearch();
           }}
-          sx={{ display: { xs: "none", sm: "inline-flex" }, ml: { xs: 0, md: 2 }, width: { sm: 280 } }}
+          sx={{
+            display: { xs: "none", sm: "inline-flex" },
+            ml: { xs: 0, md: 2 },
+            width: { sm: 280 },
+            "& .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
+          }}
           slotProps={{
             input: {
               startAdornment: (
@@ -183,7 +188,7 @@ export default function SiteNav() {
             sx={{
               color: "primary.main",
               borderRadius: "16px",
-              "&:hover": { bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.4) },
+              "&:hover": { bgcolor: "transparent" },
             }}
           >
             <Badge badgeContent={count} color="primary" max={99}>

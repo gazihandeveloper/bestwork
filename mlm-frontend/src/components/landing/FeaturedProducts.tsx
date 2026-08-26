@@ -116,7 +116,7 @@ export default function FeaturedProducts() {
     <Box
       component="section"
       id="urunler"
-      sx={{ py: 8, bgcolor: "background.paper", scrollMarginTop: "102px" }}
+      sx={{ py: 8, bgcolor: "background.paper", scrollMarginTop: "112px" }}
     >
       <Container maxWidth={false}>
         <Reveal>

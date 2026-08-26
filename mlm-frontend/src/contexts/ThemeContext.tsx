@@ -87,12 +87,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       shape: { borderRadius: 16 },
       typography: {
         fontFamily:
-          "var(--font-roboto), Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+          "var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
         h4: { fontWeight: 700 },
         h5: { fontWeight: 700 },
         h6: { fontWeight: 600 },
       },
       components: {
+        MuiButtonBase: {
+          styleOverrides: {
+            root: {
+              "&:hover": { backgroundColor: "transparent" },
+            },
+          },
+        },
         MuiButton: {
           defaultProps: { disableElevation: true },
           styleOverrides: {

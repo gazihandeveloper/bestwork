@@ -3,7 +3,9 @@
 import Link from "next/link";
 import Button from "@mui/material/Button";
 import { alpha } from "@mui/material/styles";
-import { useAuth } from "@/hooks/useAuth";import { ELEVATION, MOTION } from "./tokens";
+import { useAuth } from "@/hooks/useAuth";
+import { ELEVATION, MOTION } from "./tokens";
+import { formatMemberName } from "@/lib/name";
 
 interface AuthCTAProps {
   variant?: "nav" | "hero" | "cta" | "shop";
@@ -33,10 +35,10 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
             whiteSpace: "nowrap",
             fontWeight: 800,
             fontSize: 17,
-            "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
+            "&:hover": { bgcolor: "transparent" },
           }}
         >
-          {user.name.toLocaleUpperCase("tr-TR")}
+          {formatMemberName(user.name)}
         </Button>
       );
     }
