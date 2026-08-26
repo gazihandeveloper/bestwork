@@ -200,10 +200,11 @@ export default function SiteNav() {
                 onClick={logout}
                 sx={{
                   color: "primary.main",
-                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1) },
+                  borderRadius: 0,
+                  "&:hover": { bgcolor: "transparent" },
                 }}
               >
-                <PowerSettingsNewRoundedIcon />
+                <PowerSettingsNewRoundedIcon sx={{ fontSize: 30 }} />
               </IconButton>
             )}
           </Box>
