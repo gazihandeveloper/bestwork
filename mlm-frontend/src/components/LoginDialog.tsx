@@ -16,9 +16,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { useAuth } from "@/hooks/useAuth";
-import { useThemeContext } from "@/contexts/ThemeContext";
 import { BASE_PATH } from "@/lib/api";
-import { getThemeByLogin } from "@/services/api";
 import { getErrorMessage } from "@/lib/api";
 import { PASTELS, ELEVATION } from "@/components/landing/tokens";
 
@@ -28,7 +26,6 @@ const NEXT_KEY = "bestwork_login_next";
 export default function LoginDialog() {
   const { login } = useAuth();
   const router = useRouter();
-  const { setPreviewColor } = useThemeContext();
   const [open, setOpen] = useState(false);
   const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");
@@ -46,24 +43,6 @@ export default function LoginDialog() {
     return () => window.removeEventListener("open-login", openHandler);
   }, []);
 
-  // ID/e-posta yazıldıkça o kullanıcının DB'deki rengini çek ve önizle.
-  useEffect(() => {
-    const code = loginValue.trim();
-    if (!code || !open) return;
-    const id = setTimeout(() => {
-      getThemeByLogin(code)
-        .then((res) => {
-          if (res.theme_color && /^#[0-9a-fA-F]{6}$/.test(res.theme_color)) {
-            setPreviewColor(res.theme_color);
-          } else {
-            setPreviewColor(null);
-          }
-        })
-        .catch(() => {});
-    }, 400);
-    return () => clearTimeout(id);
-  }, [loginValue, open, setPreviewColor]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -71,7 +50,6 @@ export default function LoginDialog() {
     try {
       await login(loginValue, password);
       setOpen(false);
-      setPreviewColor(null);
       const next = window.localStorage.getItem(NEXT_KEY);
       window.localStorage.removeItem(NEXT_KEY);
       if (next && next.startsWith("/")) {
