@@ -23,9 +23,10 @@ export const metadata: Metadata = {
     "Binary MLM komisyon sistemi ile e-ticareti birleştiren modern platform. Kayıt olun, sipariş verin, ekibinizi kurun ve kazanın.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Sunucu tarafında cookie'den seçili rengi oku (SSR bile doğru renkle çizilir → yeşil flaş yok)
-  const initialColor = cookies().get("bw_color")?.value ?? null;
+  const cookieStore = await cookies();
+  const initialColor = cookieStore.get("bw_color")?.value ?? null;
   return (
     <html lang="tr">
       <head>
