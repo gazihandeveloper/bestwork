@@ -54,8 +54,17 @@ export function useThemeContext() {
   return ctx;
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<"light" | "dark">(initialMode);
+export function ThemeProvider({
+  children,
+  initialMode: initialModeProp,
+}: {
+  children: ReactNode;
+  initialMode?: "light" | "dark" | null;
+}) {
+  // Sunucudan (cookie) gelen mod önceliklidir → SSR bile doğru modla çizilir (beyaz flaş yok).
+  const [mode, setMode] = useState<"light" | "dark">(
+    () => (initialModeProp === "light" || initialModeProp === "dark" ? initialModeProp : initialMode()),
+  );
 
   // Sabit marka rengi #476F16 — gece/gündüz moduna göre yalnızca zemin metni değişir
   const theme = useMemo(() => {
@@ -133,6 +142,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           const next = m === "dark" ? "light" : "dark";
           try {
             window.localStorage.setItem(MODE_KEY, next);
+            document.cookie = `bw_mode=${next}; max-age=31536000; path=/; SameSite=Lax`;
           } catch {
             /* yoksay */
           }

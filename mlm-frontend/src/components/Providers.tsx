@@ -6,10 +6,16 @@ import type { ReactNode } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider, useThemeContext } from "@/contexts/ThemeContext";
 
-export default function Providers({ children }: { children: ReactNode }) {
+export default function Providers({
+  children,
+  initialMode,
+}: {
+  children: ReactNode;
+  initialMode?: "light" | "dark" | null;
+}) {
   return (
     <AuthProvider>
-      <ThemeProvider>
+      <ThemeProvider initialMode={initialMode}>
         <ThemeContent>{children}</ThemeContent>
       </ThemeProvider>
     </AuthProvider>
