@@ -19,9 +19,9 @@ body {
   font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-/* İçerik her ekranda %90 genişlikte, ortalanmış */
+/* İçerik her ekranda %50 genişlikte, ortalanmış */
 main {
-  width: 90%;
+  width: 50%;
   margin-inline: auto;
 }
 
