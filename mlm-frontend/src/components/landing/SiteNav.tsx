@@ -111,7 +111,7 @@ export default function SiteNav() {
           left: 0,
           right: 0,
           marginInline: "auto",
-          width: "80%",
+          width: "75%",
 
           height: 95,
           bgcolor: "background.default",
