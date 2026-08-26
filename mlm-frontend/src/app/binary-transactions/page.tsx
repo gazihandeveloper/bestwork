@@ -19,10 +19,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TablePagination from "@mui/material/TablePagination";
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
-import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
-import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import { Network, RefreshCcw, TrendingDown, TrendingUp } from "lucide-react";
 import { listBinaryTransactions, getErrorMessage } from "@/services/api";
 import type { BinaryTransactionsResponse } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
@@ -32,9 +29,9 @@ const TYPE_META: Record<
   string,
   { label: string; color: "success" | "error" | "warning"; icon: React.ReactElement }
 > = {
-  add: { label: "Ekleme", color: "success", icon: <TrendingUpRoundedIcon /> },
-  deduct: { label: "Eşleşme Düşümü", color: "error", icon: <TrendingDownRoundedIcon /> },
-  reset: { label: "Sıfırlama", color: "warning", icon: <RestartAltRoundedIcon /> },
+  add: { label: "Ekleme", color: "success", icon: <TrendingUp size={15} /> },
+  deduct: { label: "Eşleşme Düşümü", color: "error", icon: <TrendingDown size={15} /> },
+  reset: { label: "Sıfırlama", color: "warning", icon: <RefreshCcw size={15} /> },
 };
 
 function BinaryTransactionsContent() {
@@ -157,7 +154,7 @@ function BinaryTransactionsContent() {
       ) : data && data.transactions.length === 0 ? (
         <Card>
           <CardContent>
-            <EmptyState icon={<AccountTreeRoundedIcon />} message="Henüz binary hareketi yok." />
+            <EmptyState icon={<Network size={48} />} message="Henüz binary hareketi yok." />
           </CardContent>
         </Card>
       ) : (
@@ -184,7 +181,7 @@ function BinaryTransactionsContent() {
                   const meta = TYPE_META[t.transaction_type] ?? {
                     label: t.transaction_type,
                     color: "default" as const,
-                    icon: <AccountTreeRoundedIcon />,
+                    icon: <Network size={15} />,
                   };
                   return (
                     <TableRow

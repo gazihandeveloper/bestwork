@@ -11,16 +11,18 @@ import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import LinearProgress from "@mui/material/LinearProgress";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import LockRoundedIcon from "@mui/icons-material/LockRounded";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import PentagonRoundedIcon from "@mui/icons-material/PentagonRounded";
-import CircleRoundedIcon from "@mui/icons-material/CircleRounded";
-import HexagonRoundedIcon from "@mui/icons-material/HexagonRounded";
-import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
-import SquareRoundedIcon from "@mui/icons-material/SquareRounded";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import {
+  CheckCircle2,
+  Lock,
+  Star,
+  Trophy,
+  Pentagon,
+  Circle,
+  Hexagon,
+  Diamond,
+  Square,
+  User,
+} from "lucide-react";
 import { alpha } from "@mui/material/styles";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,23 +38,23 @@ const RANK_DISPLAY: Record<string, string> = {
 };
 
 // Stitch panelindeki gibi her rütbeye özel ikon + renk (+ elmas yıldızları)
-function rankMeta(name: string): { icon: typeof DiamondRoundedIcon; color: string; stars: number } {
+function rankMeta(name: string): { icon: typeof Diamond; color: string; stars: number } {
   const n = name.toLocaleLowerCase("tr-TR");
-  const map: Record<string, { icon: typeof DiamondRoundedIcon; color: string; stars: number }> = {
-    jade: { icon: PentagonRoundedIcon, color: "#2e7d32", stars: 0 },
-    pearl: { icon: CircleRoundedIcon, color: "#9e9e9e", stars: 0 },
-    safir: { icon: HexagonRoundedIcon, color: "#1565c0", stars: 0 },
-    ruby: { icon: DiamondRoundedIcon, color: "#c62828", stars: 0 },
-    zümrüt: { icon: SquareRoundedIcon, color: "#43a047", stars: 0 },
-    diamond: { icon: DiamondRoundedIcon, color: "#90caf9", stars: 0 },
-    "blue diamond": { icon: DiamondRoundedIcon, color: "#1e88e5", stars: 0 },
-    "green diamond": { icon: DiamondRoundedIcon, color: "#43a047", stars: 0 },
-    "red diamond": { icon: DiamondRoundedIcon, color: "#e53935", stars: 0 },
-    "black diamond": { icon: DiamondRoundedIcon, color: "#212121", stars: 0 },
-    president: { icon: DiamondRoundedIcon, color: "#ffd700", stars: 2 },
-    ambassador: { icon: DiamondRoundedIcon, color: "#ffd700", stars: 3 },
+  const map: Record<string, { icon: typeof Diamond; color: string; stars: number }> = {
+    jade: { icon: Pentagon, color: "#2e7d32", stars: 0 },
+    pearl: { icon: Circle, color: "#9e9e9e", stars: 0 },
+    safir: { icon: Hexagon, color: "#1565c0", stars: 0 },
+    ruby: { icon: Diamond, color: "#c62828", stars: 0 },
+    zümrüt: { icon: Square, color: "#43a047", stars: 0 },
+    diamond: { icon: Diamond, color: "#90caf9", stars: 0 },
+    "blue diamond": { icon: Diamond, color: "#1e88e5", stars: 0 },
+    "green diamond": { icon: Diamond, color: "#43a047", stars: 0 },
+    "red diamond": { icon: Diamond, color: "#e53935", stars: 0 },
+    "black diamond": { icon: Diamond, color: "#212121", stars: 0 },
+    president: { icon: Diamond, color: "#ffd700", stars: 2 },
+    ambassador: { icon: Diamond, color: "#ffd700", stars: 3 },
   };
-  return map[n] ?? { icon: DiamondRoundedIcon, color: "#90caf9", stars: 0 };
+  return map[n] ?? { icon: Diamond, color: "#90caf9", stars: 0 };
 }
 
 function CareerContent() {
@@ -118,7 +120,7 @@ function CareerContent() {
       <Card sx={{ mb: 4, borderRadius: "17px", border: "1px solid", borderColor: "divider" }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <EmojiEventsRoundedIcon sx={{ color: "primary.main" }} />
+            <Trophy className="text-primary" />
             <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.5, color: "text.secondary" }}>
               KARİYER SEVİYELERİ
             </Typography>
@@ -145,7 +147,7 @@ function CareerContent() {
                 isActive: activeID == null,
                 isAchieved: true,
                 isNext: false,
-                meta: { icon: PersonRoundedIcon, color: "#004786", stars: 0 },
+                meta: { icon: User, color: "#004786", stars: 0 },
               },
               ...steps.map((s) => ({
                 id: s.rank.id,
@@ -192,26 +194,19 @@ function CareerContent() {
                   }}
                 >
                   <Box sx={{ position: "relative" }}>
-                    <Icon sx={{ fontSize: { xs: 40, md: 32 }, color: c.isActive ? "#fff" : c.meta.color }} />
+                    <Icon
+                      className="size-10 md:size-8"
+                      color={c.isActive ? "#fff" : c.meta.color}
+                    />
                     {c.isAchieved && (
-                      <CheckCircleRoundedIcon
-                        sx={{
-                          position: "absolute",
-                          top: -2,
-                          left: -18,
-                          fontSize: 18,
-                          color: "success.main",
-                          bgcolor: "background.paper",
-                          borderRadius: "50%",
-                        }}
-                      />
+                      <CheckCircle2 className="absolute -top-0.5 -left-[18px] size-[18px] rounded-full bg-background text-[#2E7D32]" />
                     )}
                     {c.meta.stars > 0 && (
                       <Box sx={{ position: "absolute", top: -7, right: -12, display: "flex", gap: 0.25 }}>
                         {Array.from({ length: c.meta.stars }).map((_, k) => (
-                          <StarRoundedIcon
+                          <Star
                             key={k}
-                            sx={{ fontSize: 13, color: "#ffd700", bgcolor: "background.paper", borderRadius: "50%" }}
+                            className="size-[13px] rounded-full bg-background text-[#ffd700]"
                           />
                         ))}
                       </Box>
@@ -300,11 +295,11 @@ function CareerContent() {
                       }}
                     >
                       {s.isAchieved ? (
-                        <CheckCircleRoundedIcon sx={{ fontSize: 26 }} />
+                        <CheckCircle2 className="size-[26px]" />
                       ) : s.next ? (
-                        <StarRoundedIcon sx={{ fontSize: 24 }} />
+                        <Star className="size-6" />
                       ) : (
-                        <LockRoundedIcon sx={{ fontSize: 22 }} />
+                        <Lock className="size-[22px]" />
                       )}
                     </Box>
                     {s.isActive && (
@@ -312,7 +307,7 @@ function CareerContent() {
                         size="small"
                         label="Güncel Rütbeniz"
                         color="success"
-                        icon={<EmojiEventsRoundedIcon />}
+                        icon={<Trophy className="size-[14px]" />}
                         sx={{ fontWeight: 700, "& .MuiChip-icon": { fontSize: 14 } }}
                       />
                     )}
@@ -321,7 +316,7 @@ function CareerContent() {
                         size="small"
                         label="Sonraki"
                         color="primary"
-                        icon={<StarRoundedIcon />}
+                        icon={<Star className="size-[14px]" />}
                         sx={{ fontWeight: 700, "& .MuiChip-icon": { fontSize: 14 } }}
                       />
                     )}
@@ -403,7 +398,7 @@ function CareerContent() {
                         boxShadow: 4,
                       }}
                     >
-                      <CheckCircleRoundedIcon sx={{ fontSize: 38 }} />
+                      <CheckCircle2 className="size-[38px]" />
                     </Box>
                     <Typography variant="caption" sx={{ fontWeight: 800, color: "warning.dark" }}>
                       GEÇİLDİ

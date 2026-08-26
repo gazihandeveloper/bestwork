@@ -3,26 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import CircularProgress from "@mui/material/CircularProgress";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { BASE_PATH } from "@/lib/api";
-import { getErrorMessage } from "@/lib/api";
-import { PASTELS, ELEVATION } from "@/components/landing/tokens";
+import { BASE_PATH, getErrorMessage } from "@/lib/api";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const NEXT_KEY = "bestwork_login_next";
 
 // Global giriş modalı — "open-login" olayıyla her sayfada açılır.
+// Sade ve düz tasarım: gradyan yok, gölge yok, köşeli (rounded-sm).
 export default function LoginDialog() {
   const { login } = useAuth();
   const router = useRouter();
@@ -65,125 +57,61 @@ export default function LoginDialog() {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={() => setOpen(false)}
-      maxWidth="xs"
-      fullWidth
-      slotProps={{
-        paper: {
-          sx: {
-            borderRadius: "20px",
-            overflow: "hidden",
-            boxShadow: ELEVATION.l3,
-          },
-        },
-      }}
-    >
-      <Box
-        sx={{
-          position: "relative",
-          px: 3,
-          py: 4,
-          textAlign: "center",
-          background: (theme) =>
-            `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-          color: "common.white",
-        }}
-      >
-        <Box
-          aria-hidden
-          sx={{
-            position: "absolute",
-            top: -50,
-            right: -40,
-            width: 160,
-            height: 160,
-            borderRadius: "50%",
-            bgcolor: PASTELS.mint,
-            opacity: 0.25,
-          }}
-        />
-        <IconButton
-          aria-label="Kapat"
-          onClick={() => setOpen(false)}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            color: "rgba(255,255,255,0.9)",
-            "&:hover": { bgcolor: "rgba(255,255,255,0.15)" },
-          }}
-        >
-          <CloseRoundedIcon />
-        </IconButton>
-        <Box
-          sx={{
-            width: 64,
-            height: 64,
-            borderRadius: "50%",
-            bgcolor: PASTELS.mint,
-            color: "primary.dark",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mx: "auto",
-            mb: 1.5,
-          }}
-        >
-          <PersonRoundedIcon sx={{ fontSize: 34 }} />
-        </Box>
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>
-          Giriş Yap
-        </Typography>
-        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-sm p-6">
+        <DialogTitle className="text-center text-xl font-bold">Giriş Yap</DialogTitle>
+        <p className="text-muted-foreground text-center text-sm">
           E-posta adresiniz, üye numaranız veya telefon numaranızla devam edin.
-        </Typography>
-      </Box>
+        </p>
 
-      <DialogContent sx={{ pt: 3, pb: 3 }}>
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              label="E-posta, Üye Numarası veya Telefon"
-              placeholder="ornek@mail.com · TR90123456 · 05xx xxx xx xx"
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {error && (
+            <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-sm border px-3 py-2 text-sm font-medium">
+              {error}
+            </div>
+          )}
+          <div>
+            <Input
+              autoFocus
+              placeholder="E-posta · üye no · telefon"
               value={loginValue}
               onChange={(e) => setLoginValue(e.target.value)}
-              fullWidth
               required
-              autoFocus
+              autoComplete="username"
             />
-            <TextField
-              label="Şifre"
+          </div>
+          <div>
+            <Input
               type="password"
+              placeholder="Şifre"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              fullWidth
               required
+              autoComplete="current-password"
             />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={submitting}
-              sx={{ boxShadow: ELEVATION.l1 }}
-            >
-              {submitting ? <CircularProgress size={22} color="inherit" /> : "Giriş Yap"}
-            </Button>
-          </Stack>
-        </Box>
+          </div>
+          <Button type="submit" size="lg" disabled={submitting} className="w-full">
+            {submitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Giriş yapılıyor...
+              </>
+            ) : (
+              "Giriş Yap"
+            )}
+          </Button>
+        </form>
 
-        <Typography variant="body2" sx={{ mt: 2.5, textAlign: "center" }}>
+        <p className="mt-2 text-center text-sm">
           Hesabınız yok mu?{" "}
           <Link
             href="/register"
             onClick={() => setOpen(false)}
-            style={{ color: "#2E7D32", fontWeight: 700 }}
+            className={cn("font-bold text-[#2E7D32]")}
           >
             Kayıt olun
           </Link>
-        </Typography>
+        </p>
       </DialogContent>
     </Dialog>
   );

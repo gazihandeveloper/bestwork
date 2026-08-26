@@ -8,24 +8,24 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
-import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
-import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded";
-import GroupsRoundedIcon from "@mui/icons-material/GroupRounded";
-import LockRoundedIcon from "@mui/icons-material/LockRounded";
-import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
-import MilitaryTechRoundedIcon from "@mui/icons-material/MilitaryTechRounded";
-import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
-import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
-import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
-import RedeemRoundedIcon from "@mui/icons-material/RedeemRounded";
-import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
-import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import MailRoundedIcon from "@mui/icons-material/MailRounded";
-import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import {
+  User,
+  Landmark,
+  Users,
+  Lock,
+  Receipt,
+  Medal,
+  Network,
+  ShoppingCart,
+  Package,
+  Image,
+  Gift,
+  Building2,
+  ShieldCheck,
+  Home,
+  Mail,
+  ChevronDown,
+} from "lucide-react";
 import { alpha } from "@mui/material/styles";
 import { useAuth } from "@/hooks/useAuth";
 import { ELEVATION } from "@/components/landing/tokens";
@@ -46,58 +46,59 @@ interface MenuGroup {
 const groups: MenuGroup[] = [
   {
     title: "Kişisel",
-    icon: <PersonRoundedIcon />,
+    icon: <User />,
     items: [
-      { path: "/profile", label: "Üyelik Bilgilerim", icon: <PersonRoundedIcon /> },
-      { path: "/beneficiary", label: "Varis Bilgileri", icon: <FamilyRestroomRoundedIcon /> },
-      { path: "/bank", label: "Banka Bilgilerim", icon: <AccountBalanceRoundedIcon /> },
-      { path: "/sponsored", label: "Sponsor Olduklarım", icon: <GroupsRoundedIcon /> },
-      { path: "/change-password", label: "Şifre Değiştir", icon: <LockRoundedIcon /> },
+      { path: "/profile", label: "Üyelik Bilgilerim", icon: <User /> },
+      { path: "/beneficiary", label: "Varis Bilgileri", icon: <Users /> },
+      { path: "/bank", label: "Banka Bilgilerim", icon: <Landmark /> },
+      { path: "/sponsored", label: "Sponsor Olduklarım", icon: <Users /> },
+      { path: "/change-password", label: "Şifre Değiştir", icon: <Lock /> },
     ],
   },
   {
     title: "Prim",
-    icon: <ReceiptLongRoundedIcon />,
+    icon: <Receipt />,
     items: [
-      { path: "/commissions", label: "Prim Detayları", icon: <ReceiptLongRoundedIcon /> },
-      { path: "/commissions?type=referral", label: "Referans Bonusu", icon: <GroupsRoundedIcon /> },
-      { path: "/leadership-bonus", label: "Liderlik Primi", icon: <MilitaryTechRoundedIcon /> },
-      { path: "/binary-transactions", label: "Binary Hareketleri", icon: <AccountTreeRoundedIcon /> },
-      { path: "/career", label: "Kariyer Takibi", icon: <MilitaryTechRoundedIcon /> },
-      { path: "/tree", label: "Binary Ağacı", icon: <AccountTreeRoundedIcon /> },
-      { path: "/sponsor-tree", label: "Referans ve Ekip Ağacı", icon: <GroupsRoundedIcon /> },
-      { path: "/pending", label: "Yerleşim Bekleyenler", icon: <GroupRoundedIcon /> },
+      { path: "/commissions", label: "Prim Detayları", icon: <Receipt /> },
+      { path: "/commissions?type=referral", label: "Referans Bonusu", icon: <Users /> },
+      { path: "/leadership-bonus", label: "Liderlik Primi", icon: <Medal /> },
+      { path: "/binary-transactions", label: "Binary Hareketleri", icon: <Network /> },
+      { path: "/career", label: "Kariyer Takibi", icon: <Medal /> },
+      { path: "/tree", label: "Binary Ağacı", icon: <Network /> },
+      { path: "/sponsor-tree", label: "Referans ve Ekip Ağacı", icon: <Users /> },
+      { path: "/pending", label: "Yerleşim Bekleyenler", icon: <Users /> },
     ],
   },
   {
     title: "İşlemlerim",
-    icon: <ShoppingCartRoundedIcon />,
+    icon: <ShoppingCart />,
     items: [
-      { path: "/shop", label: "Alışveriş", icon: <ShoppingCartRoundedIcon /> },
-      { path: "/orders", label: "Siparişlerim", icon: <InventoryRoundedIcon /> },
-      { path: "/payment-notifications", label: "EFT/HAVALE Bildirimleri", icon: <AccountBalanceRoundedIcon /> },
-      { path: "/retail-earnings", label: "Müşteri Kazancı", icon: <ReceiptLongRoundedIcon /> },
-      { path: "/opportunities", label: "İş Fırsatları", icon: <MilitaryTechRoundedIcon /> },
+      { path: "/shop", label: "Alışveriş", icon: <ShoppingCart /> },
+      { path: "/orders", label: "Siparişlerim", icon: <Package /> },
+      { path: "/payment-notifications", label: "EFT/HAVALE Bildirimleri", icon: <Landmark /> },
+      { path: "/retail-earnings", label: "Müşteri Kazancı", icon: <Receipt /> },
+      { path: "/opportunities", label: "İş Fırsatları", icon: <Medal /> },
     ],
   },
   {
     title: "İletişim",
-    icon: <MailRoundedIcon />,
-    items: [{ path: "/contact", label: "Destek / İletişim", icon: <MailRoundedIcon /> }],
+    icon: <Mail />,
+    items: [{ path: "/contact", label: "Destek / İletişim", icon: <Mail /> }],
   },
   {
     title: "Admin",
-    icon: <AdminPanelSettingsRoundedIcon />,
+    icon: <ShieldCheck />,
     adminOnly: true,
     items: [
-      { path: "/admin/dashboard", label: "Admin Panel", icon: <AdminPanelSettingsRoundedIcon /> },
-      { path: "/admin/pending", label: "Bekleyenler Yönetimi", icon: <GroupRoundedIcon /> },
-      { path: "/admin/products", label: "Ürün Yönetimi", icon: <InventoryRoundedIcon /> },
-      { path: "/admin/hero-slides", label: "Hero Slider", icon: <ImageRoundedIcon /> },
-      { path: "/admin/benefits", label: "Avantaj Kartları", icon: <RedeemRoundedIcon /> },
-      { path: "/admin/corporate", label: "Kurumsal İçerik", icon: <BusinessRoundedIcon /> },
-      { path: "/admin/withdrawals", label: "Çekim Talepleri", icon: <ReceiptLongRoundedIcon /> },
-      { path: "/admin/payment-notifications", label: "Ödeme Bildirimleri", icon: <AccountBalanceRoundedIcon /> },
+      { path: "/admin/dashboard", label: "Admin Panel", icon: <ShieldCheck /> },
+      { path: "/admin/pending", label: "Bekleyenler Yönetimi", icon: <Users /> },
+      { path: "/admin/products", label: "Ürün Yönetimi", icon: <Package /> },
+      // eslint-disable-next-line jsx-a11y/alt-text -- lucide dekoratif ikon, <img> değil
+      { path: "/admin/hero-slides", label: "Hero Slider", icon: <Image /> },
+      { path: "/admin/benefits", label: "Avantaj Kartları", icon: <Gift /> },
+      { path: "/admin/corporate", label: "Kurumsal İçerik", icon: <Building2 /> },
+      { path: "/admin/withdrawals", label: "Çekim Talepleri", icon: <Receipt /> },
+      { path: "/admin/payment-notifications", label: "Ödeme Bildirimleri", icon: <Landmark /> },
     ],
   },
 ];
@@ -154,7 +155,7 @@ export default function BackofficeMenu() {
       {/* Anasayfa — düz buton, dropdown'suz */}
       <Button
         onClick={() => router.push("/dashboard")}
-        startIcon={<HomeRoundedIcon />}
+        startIcon={<Home />}
         sx={{
           flexShrink: 0,
           whiteSpace: "nowrap",
@@ -181,7 +182,7 @@ export default function BackofficeMenu() {
             <Button
               onClick={(e) => handleOpen(g.title, e)}
               startIcon={g.icon}
-              endIcon={<ExpandMoreRoundedIcon />}
+              endIcon={<ChevronDown />}
               sx={{
                 flexShrink: 0,
                 whiteSpace: "nowrap",

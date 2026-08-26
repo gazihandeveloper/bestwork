@@ -11,8 +11,7 @@ import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
-import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
+import { BarChart3, Copy } from "lucide-react";
 import Link from "next/link";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
@@ -72,7 +71,7 @@ function ProfileContent() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
                 <Chip label={`Üye Numaranız: ${user?.member_code}`} color="primary" variant="outlined" />
                 <IconButton size="small" onClick={copyMemberCode} aria-label="üye kodunu kopyala">
-                  <ContentCopyRoundedIcon fontSize="small" />
+                  <Copy className="size-4" />
                 </IconButton>
                 <Chip label={user?.role === "admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"} color="secondary" />
               </Box>
@@ -83,7 +82,7 @@ function ProfileContent() {
                 href="/success-report"
                 size="medium"
                 variant="contained"
-                startIcon={<BarChartRoundedIcon />}
+                startIcon={<BarChart3 />}
                 sx={{ mb: 2, borderRadius: "20px", fontWeight: 800, px: 3, boxShadow: 2 }}
               >
                 🏅 Başarı Raporu

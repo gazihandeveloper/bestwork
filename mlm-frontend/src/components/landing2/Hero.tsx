@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { listHeroSlides, fileUrl } from "@/services/api";
 import type { HeroSlide } from "@/services/api";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
+const AUTOPLAY_MS = 5000;
+
 // Hero (anasayfa) — premium e-ticaret slider.
-// Sol tarafta slayt başlığı + CTA'lar, arka planda tam kaplayan kampanya görseli.
+// Sol tarafta rozet + başlık + CTA'lar, arka planda tam kaplayan kampanya görseli.
 // Slayt yoksa bölüm hiç render edilmez; yüklenirken Skeleton gösterilir.
 export default function Hero() {
   const reduceMotion = usePrefersReducedMotion();
@@ -44,7 +46,7 @@ export default function Hero() {
     const id = setInterval(() => {
       setDirection(1);
       setActiveIndex((i) => (i + 1) % slides.length);
-    }, 5000);
+    }, AUTOPLAY_MS);
     return () => clearInterval(id);
   }, [paused, reduceMotion, slides]);
 
@@ -65,7 +67,7 @@ export default function Hero() {
     return (
       <section aria-label="Kampanyalar yükleniyor" className="bg-background">
         <div className="pt-[112px] pb-8 md:pt-[128px] md:pb-10">
-          <Skeleton className="h-[360px] w-full rounded-3xl md:h-[520px]" />
+          <Skeleton className="h-[400px] w-full rounded-sm sm:h-[480px] md:h-[580px]" />
         </div>
       </section>
     );
@@ -76,7 +78,8 @@ export default function Hero() {
     return null;
   }
 
-  const duration = reduceMotion ? 0 : 450;
+  const duration = reduceMotion ? 0 : 500;
+  const slideCount = slides.length;
 
   return (
     <section aria-label="Öne çıkan kampanyalar" className="bg-background">
@@ -91,12 +94,12 @@ export default function Hero() {
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
           }}
-          className="bg-secondary-dark relative h-[360px] w-full overflow-hidden rounded-3xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.45),0_2px_8px_rgba(0,0,0,0.08)] md:h-[520px]"
+          className="group relative h-[400px] w-full overflow-hidden rounded-sm bg-secondary-dark shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5),0_2px_10px_rgba(0,0,0,0.08)] sm:h-[480px] md:h-[580px]"
         >
+          {/* Slaytlar */}
           {slides.map((s, i) => {
             const isActive = i === activeIndex;
             const image = fileUrl(s.image_path);
-            // Slaytta link tanımlıysa CTA'lar o linke gider; yoksa varsayılan rotalar.
             const primaryHref = s.link ?? "/shop";
             const secondaryHref = s.link ?? "/register";
 
@@ -104,16 +107,15 @@ export default function Hero() {
               <div
                 key={s.id}
                 aria-hidden={!isActive}
-                // inert: pasif slaytlar klavyeyle odaklanamaz / etkileşim alamaz.
                 inert={!isActive}
                 style={{
                   opacity: isActive ? 1 : 0,
                   transform: isActive
                     ? "scale(1)"
                     : direction > 0
-                      ? "scale(1.04) translateX(28px)"
-                      : "scale(1.04) translateX(-28px)",
-                  transition: `opacity ${duration}ms cubic-bezier(0.2,0,0,1), transform ${duration}ms cubic-bezier(0.2,0,0,1)`,
+                      ? "scale(1.05) translateX(36px)"
+                      : "scale(1.05) translateX(-36px)",
+                  transition: `opacity ${duration}ms cubic-bezier(0.22,1,0.36,1), transform ${duration}ms cubic-bezier(0.22,1,0.36,1)`,
                 }}
                 className={cn(
                   "absolute inset-0",
@@ -128,12 +130,10 @@ export default function Hero() {
                     loading={i === 0 ? "eager" : "lazy"}
                     className="block h-full w-full object-cover object-center"
                     style={{
-                      // Görselden maksimum netlik + hafif canlılık
-                      filter: "saturate(1.1) contrast(1.03)",
+                      filter: "saturate(1.12) contrast(1.05)",
                     }}
                   />
                 ) : (
-                  // Görsel yoksa marka tonlarında gradyan zemin
                   <div className="h-full w-full bg-gradient-to-br from-primary-dark via-primary to-secondary-dark" />
                 )}
 
@@ -143,25 +143,29 @@ export default function Hero() {
                   className="absolute inset-0"
                   style={{
                     background:
-                      "linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.5) 42%, rgba(0,0,0,0.16) 74%, rgba(0,0,0,0.04) 100%)",
+                      "linear-gradient(100deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.18) 72%, rgba(0,0,0,0.05) 100%)",
                   }}
                 />
                 <div
                   aria-hidden
-                  className="absolute inset-x-0 bottom-0 h-28"
+                  className="absolute inset-x-0 bottom-0 h-36"
                   style={{
                     background:
-                      "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%)",
+                      "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)",
                   }}
                 />
 
-                {/* Sol içerik: başlık + alt başlık + CTA'lar */}
+                {/* Sol içerik: rozet + başlık + alt yazı + CTA'lar */}
                 <div className="absolute inset-y-0 left-0 z-10 flex w-full max-w-2xl flex-col items-start justify-center px-6 sm:px-10 md:px-14 lg:px-20">
-                  <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] sm:text-4xl md:text-5xl lg:text-[3.4rem] lg:leading-[1.08]">
+                  <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.14em] text-white uppercase backdrop-blur-md sm:text-xs">
+                    <Sparkles className="size-3.5" />
+                    BestWork Fırsatları
+                  </span>
+                  <h2 className="text-[2rem] leading-[1.1] font-black tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.6)] sm:text-4xl md:text-5xl lg:text-[3.5rem]">
                     {s.title}
                   </h2>
                   {s.subtitle ? (
-                    <p className="mt-3 max-w-xl text-sm font-medium text-white/90 sm:text-base md:mt-4 md:text-lg">
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed font-medium text-white/90 sm:text-base md:mt-4 md:text-lg">
                       {s.subtitle}
                     </p>
                   ) : null}
@@ -169,7 +173,7 @@ export default function Hero() {
                     <Button
                       asChild
                       size="lg"
-                      className="bg-white text-primary-dark shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0"
+                      className="bg-white px-7 text-primary-dark shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-[1.03] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0"
                     >
                       <Link href={primaryHref}>Alışverişe Başla</Link>
                     </Button>
@@ -177,7 +181,7 @@ export default function Hero() {
                       asChild
                       size="lg"
                       variant="outline"
-                      className="border-white/60 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0"
+                      className="border-white/60 bg-white/10 px-7 text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0"
                     >
                       <Link href={secondaryHref}>Üye Ol</Link>
                     </Button>
@@ -187,58 +191,95 @@ export default function Hero() {
             );
           })}
 
-          {slides.length > 1 && (
+          {/* Kontroller — hover'da belirginleşir */}
+          {slideCount > 1 && (
             <>
-              {/* Önceki / Sonraki ok butonları */}
               <button
                 type="button"
                 aria-label="Önceki slayt"
                 onClick={goPrev}
-                className="absolute top-1/2 left-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/25 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-white/40 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:left-6"
+                className="absolute top-1/2 left-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/35 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:left-6 md:size-12"
               >
-                <ChevronLeft className="size-6" />
+                <ChevronLeft className="size-6 md:size-7" />
               </button>
               <button
                 type="button"
                 aria-label="Sonraki slayt"
                 onClick={goNext}
-                className="absolute top-1/2 right-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/25 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-white/40 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:right-6"
+                className="absolute top-1/2 right-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/35 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:right-6 md:size-12"
               >
-                <ChevronRight className="size-6" />
+                <ChevronRight className="size-6 md:size-7" />
               </button>
 
-              {/* Nokta göstergeleri — aktif olan geniş beyaz çubuk */}
-              <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1">
-                {slides.map((s, i) => {
-                  const isActive = i === activeIndex;
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      aria-label={`Slayt ${i + 1} göster`}
-                      aria-current={isActive ? "true" : undefined}
-                      onClick={() => {
-                        setDirection(i > activeIndex ? 1 : -1);
-                        setActiveIndex(i);
-                      }}
-                      className="flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center border-none bg-transparent p-1.5"
-                    >
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "h-2 rounded-full transition-all duration-300",
-                          isActive
-                            ? "w-7 bg-white shadow-[0_0_10px_rgba(255,255,255,0.55)]"
-                            : "w-2 bg-white/50 hover:bg-white/75"
-                        )}
-                      />
-                    </button>
-                  );
-                })}
+              {/* Alt kontrol çubuğu: noktalar + sayaç */}
+              <div className="absolute right-4 bottom-5 left-4 z-20 flex items-center justify-between md:right-6 md:left-6">
+                <div className="flex items-center gap-1">
+                  {slides.map((s, i) => {
+                    const isActive = i === activeIndex;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        aria-label={`Slayt ${i + 1} göster`}
+                        aria-current={isActive ? "true" : undefined}
+                        onClick={() => {
+                          setDirection(i > activeIndex ? 1 : -1);
+                          setActiveIndex(i);
+                        }}
+                        className="flex min-h-[40px] min-w-[36px] cursor-pointer items-center justify-center border-none bg-transparent p-1.5"
+                      >
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "h-1.5 rounded-full transition-all duration-300",
+                            isActive
+                              ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+                              : "w-2 bg-white/45 hover:bg-white/70"
+                          )}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <span className="hidden items-center gap-1 rounded-full bg-black/30 px-3 py-1 text-xs font-bold tracking-widest text-white backdrop-blur-md sm:flex">
+                  <span className="text-base">0{activeIndex + 1}</span>
+                  <span className="text-white/50">/</span>
+                  <span className="text-white/70">0{slideCount}</span>
+                </span>
               </div>
+
+              {/* Autoplay ilerleme çubuğu */}
+              {!reduceMotion && (
+                <div
+                  aria-hidden
+                  className="absolute right-0 bottom-0 left-0 z-20 h-[3px] bg-white/10"
+                >
+                  <div
+                    key={activeIndex}
+                    className="bg-white/80 h-full"
+                    style={{
+                      animation: paused
+                        ? "none"
+                        : `heroProgress ${AUTOPLAY_MS}ms linear forwards`,
+                    }}
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
+
+        <style jsx>{`
+          @keyframes heroProgress {
+            from {
+              width: 0%;
+            }
+            to {
+              width: 100%;
+            }
+          }
+        `}</style>
       </div>
     </section>
   );

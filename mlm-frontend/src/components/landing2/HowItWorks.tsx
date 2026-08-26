@@ -34,7 +34,7 @@ const steps: Step[] = [
 export default function HowItWorks() {
   return (
     <section id="nasil-calisir" className="bg-background py-10 scroll-mt-[112px]">
-      <div className="bg-muted rounded-2xl px-4 py-10 sm:px-8 md:px-12 md:py-14">
+      <div className="bg-muted rounded-[10px] px-4 py-10 sm:px-8 md:px-12 md:py-14">
         <div className="mx-auto mb-10 max-w-[720px] text-center">
           <span className="text-primary dark:text-primary-dark text-xs font-bold tracking-[0.22em] uppercase">
             3 Basit Adım
@@ -63,7 +63,7 @@ export default function HowItWorks() {
                 {number}
               </span>
 
-              <div className="bg-secondary text-primary-dark relative z-10 flex size-16 items-center justify-center rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
+              <div className="bg-secondary text-primary-dark relative z-10 flex size-16 items-center justify-center rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
                 <Icon className="size-7" />
               </div>
 

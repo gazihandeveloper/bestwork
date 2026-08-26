@@ -7,8 +7,16 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
+import {
+  FoldVertical,
+  Maximize,
+  Search,
+  UnfoldVertical,
+  UserPlus,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import Avatar from "@mui/material/Avatar";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -27,12 +35,6 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import ZoomInRoundedIcon from "@mui/icons-material/ZoomInRounded";
-import ZoomOutRoundedIcon from "@mui/icons-material/ZoomOutRounded";
-import FitScreenRoundedIcon from "@mui/icons-material/FitScreenRounded";
-import UnfoldMoreRoundedIcon from "@mui/icons-material/UnfoldMoreRounded";
-import UnfoldLessRoundedIcon from "@mui/icons-material/UnfoldLessRounded";
 import { useTheme, type Theme } from "@mui/material/styles";
 import {
   fileUrl,
@@ -346,7 +348,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ fontSize: 18 }} />
+                    <Search className="size-[18px]" />
                   </InputAdornment>
                 ),
               },
@@ -359,19 +361,19 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
           </Box>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton size="small" title="Tümünü aç" aria-label="Tümünü aç" onClick={() => toggleAll(false)}>
-            <UnfoldMoreRoundedIcon />
+            <UnfoldVertical />
           </IconButton>
           <IconButton size="small" title="Tümünü kapat" aria-label="Tümünü kapat" onClick={() => toggleAll(true)}>
-            <UnfoldLessRoundedIcon />
+            <FoldVertical />
           </IconButton>
           <IconButton size="small" title="Yaklaş" aria-label="Yaklaş" onClick={() => rendererRef.current?.zoomBy(1.3)}>
-            <ZoomInRoundedIcon />
+            <ZoomIn />
           </IconButton>
           <IconButton size="small" title="Uzaklaş" aria-label="Uzaklaş" onClick={() => rendererRef.current?.zoomBy(0.77)}>
-            <ZoomOutRoundedIcon />
+            <ZoomOut />
           </IconButton>
           <IconButton size="small" title="Sığdır" aria-label="Sığdır" onClick={() => rendererRef.current?.fit()}>
-            <FitScreenRoundedIcon />
+            <Maximize />
           </IconButton>
         </Stack>
       </Box>
@@ -387,11 +389,11 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       {/* Boş bacağa kodla yerleştirme */}
       <Dialog open={!!placeTarget} onClose={() => setPlaceTarget(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 800 }}>
-          <PersonAddAltRoundedIcon sx={{ color: "primary.main" }} />
+          <UserPlus className="text-primary" />
           {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
           <Box sx={{ flexGrow: 1 }} />
           <IconButton size="small" aria-label="Kapat" onClick={() => setPlaceTarget(null)}>
-            <CloseRoundedIcon />
+            <X />
           </IconButton>
         </DialogTitle>
         <DialogContent>
@@ -470,7 +472,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
           )}
           <Box sx={{ flexGrow: 1 }} />
           <IconButton size="small" aria-label="Kapat" onClick={() => setInfoNode(null)}>
-            <CloseRoundedIcon />
+            <X />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>

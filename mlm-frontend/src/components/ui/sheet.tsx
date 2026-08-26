@@ -64,7 +64,7 @@ function SheetCloseButton() {
   return (
     <DialogPrimitive.Close
       aria-label="Kapat"
-      className="text-muted-foreground hover:text-foreground flex size-9 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-accent"
+      className="text-muted-foreground hover:text-foreground flex size-9 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-accent"
     >
       <X className="size-5" />
     </DialogPrimitive.Close>

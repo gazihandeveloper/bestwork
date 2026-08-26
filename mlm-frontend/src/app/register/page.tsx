@@ -232,7 +232,7 @@ function RegisterContent() {
       }}
     >
       <div className={cn("mx-auto w-full", stage === "sponsor" ? "max-w-sm" : "max-w-4xl")}>
-        <div className="border-border bg-card overflow-hidden rounded-[20px] shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)]">
+        <div className="border-border bg-card overflow-hidden rounded-sm shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)]">
           <div
             className="relative px-4 py-3.5 text-center text-white"
             style={{

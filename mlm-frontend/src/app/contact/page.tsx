@@ -15,8 +15,7 @@ import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
-import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { CheckCircle2, Headphones } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createTicket, getErrorMessage } from "@/services/api";
 
@@ -98,7 +97,7 @@ function ContactContent() {
                 mb: 1,
               }}
             >
-              <SupportAgentRoundedIcon sx={{ fontSize: 36 }} />
+              <Headphones className="size-[36px]" />
             </Box>
             <Typography variant="h5" sx={{ fontWeight: 800 }}>
               Size Nasıl Yardımcı Olabiliriz?
@@ -113,7 +112,7 @@ function ContactContent() {
           <Card sx={{ borderRadius: "17px", border: "1px solid", borderColor: "divider" }}>
             <CardContent sx={{ p: 3 }}>
               {success && (
-                <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircleRoundedIcon />}>
+                <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircle2 />}>
                   {success}
                 </Alert>
               )}

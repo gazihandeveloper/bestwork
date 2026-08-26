@@ -19,9 +19,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
+import { Landmark, Pencil, Trash2 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
 import EmptyState from "@/components/EmptyState";
@@ -141,7 +139,7 @@ function BankContent() {
                 Hesaplarım ({accounts.length})
               </Typography>
               {accounts.length === 0 && (
-                <EmptyState icon={<AccountBalanceRoundedIcon />} message="Henüz banka hesabı eklemediniz." />
+                <EmptyState icon={<Landmark size={48} />} message="Henüz banka hesabı eklemediniz." />
               )}
               {accounts.map((a) => (
                 <Box key={a.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
@@ -155,10 +153,10 @@ function BankContent() {
                   </Box>
                   <Box>
                     <IconButton color="primary" onClick={() => openEdit(a)} aria-label="düzenle">
-                      <EditRoundedIcon />
+                      <Pencil />
                     </IconButton>
                     <IconButton color="error" onClick={() => onDelete(a.id)} aria-label="sil">
-                      <DeleteRoundedIcon />
+                      <Trash2 />
                     </IconButton>
                   </Box>
                 </Box>

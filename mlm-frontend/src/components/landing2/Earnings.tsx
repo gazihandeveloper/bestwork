@@ -46,12 +46,12 @@ export default function Earnings() {
         {plans.map(({ title, description, icon: Icon }) => (
           <div
             key={title}
-            className="border-border bg-card relative flex h-full flex-col overflow-hidden rounded-2xl border border-t-2 border-t-primary p-6 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)]"
+            className="border-border bg-card relative flex h-full flex-col overflow-hidden rounded-[10px] border border-t-2 border-t-primary p-6 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)]"
           >
             {/* Dekoratif köşe parıltısı */}
             <div aria-hidden className="bg-primary/5 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full" />
 
-            <div className="bg-primary text-primary-foreground relative flex size-12 items-center justify-center rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
+            <div className="bg-primary text-primary-foreground relative flex size-12 items-center justify-center rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
               <Icon className="size-6" />
             </div>
 

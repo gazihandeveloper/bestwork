@@ -11,7 +11,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
-import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
+import { AlertTriangle } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { listPendingUsers, placePendingUser, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
@@ -95,7 +95,7 @@ function PendingContent() {
               <Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="h6">{u.name}</Typography>
-                  {overdue && <WarningRoundedIcon color="error" fontSize="small" />}
+                  {overdue && <AlertTriangle className="size-4 text-destructive" />}
                 </Box>
                 <Typography variant="body2" color="text.secondary">
                   {u.email} · {u.member_code}

@@ -15,10 +15,9 @@ import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import { Trash2, Users } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
-import FamilyRestroomRoundedIcon from "@mui/icons-material/FamilyRestroomRounded";
 import { listBeneficiaries, createBeneficiary, deleteBeneficiary, getErrorMessage } from "@/services/api";
 import type { Beneficiary } from "@/services/api";
 
@@ -115,7 +114,7 @@ function BeneficiaryContent() {
                 Varislerim ({items.length})
               </Typography>
               {items.length === 0 && (
-                <EmptyState icon={<FamilyRestroomRoundedIcon />} message="Henüz varis eklemediniz." />
+                <EmptyState icon={<Users size={48} />} message="Henüz varis eklemediniz." />
               )}
               {items.map((b) => (
                 <Box key={b.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
@@ -128,7 +127,7 @@ function BeneficiaryContent() {
                     </Typography>
                   </Box>
                   <IconButton color="error" onClick={() => handleDelete(b.id)} aria-label="sil">
-                    <DeleteRoundedIcon />
+                    <Trash2 />
                   </IconButton>
                 </Box>
               ))}

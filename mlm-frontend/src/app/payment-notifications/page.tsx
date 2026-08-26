@@ -18,7 +18,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
-import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
+import { Receipt } from "lucide-react";
 import {
   getOrders,
   createPaymentNotification,
@@ -190,7 +190,7 @@ function PaymentNotificationsContent() {
                 Bildirimlerim ({notifications.length})
               </Typography>
               {notifications.length === 0 && (
-                <EmptyState icon={<ReceiptLongRoundedIcon />} message="Henüz ödeme bildiriminiz yok." />
+                <EmptyState icon={<Receipt size={48} />} message="Henüz ödeme bildiriminiz yok." />
               )}
               {notifications.map((pn) => (
                 <Box key={pn.id} sx={{ py: 1, borderBottom: "1px solid", borderColor: "divider", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>

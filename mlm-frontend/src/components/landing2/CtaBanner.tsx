@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export default function CtaBanner() {
   return (
     <section className="bg-background py-10">
-      <div className="bg-primary relative overflow-hidden rounded-3xl px-6 py-10 text-center md:py-14">
+      <div className="bg-primary relative overflow-hidden rounded-[10px] px-6 py-10 text-center md:py-14">
         {/* 135° yönlü yeşil→koyu yeşil geçişi */}
         <div
           aria-hidden

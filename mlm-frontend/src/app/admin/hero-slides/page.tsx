@@ -16,10 +16,7 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
-import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import UploadRoundedIcon from "@mui/icons-material/UploadRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import { Image as ImageIcon, Pencil, Trash2, Upload } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import {
   listAdminHeroSlides,
@@ -210,7 +207,7 @@ function AdminHeroSlidesContent() {
                   />
                   <Button
                     variant="outlined"
-                    startIcon={uploading ? <CircularProgress size={18} /> : <UploadRoundedIcon />}
+                    startIcon={uploading ? <CircularProgress size={18} /> : <Upload />}
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading}
                     fullWidth
@@ -311,16 +308,16 @@ function AdminHeroSlidesContent() {
                       />
                     </Box>
                     <IconButton aria-label="düzenle" onClick={() => startEdit(s)}>
-                      <EditRoundedIcon />
+                      <Pencil />
                     </IconButton>
                     <IconButton aria-label="sil" color="error" onClick={() => handleDelete(s.id)}>
-                      <DeleteRoundedIcon />
+                      <Trash2 />
                     </IconButton>
                   </Box>
                 ))}
                 {!loading && slides.length === 0 && (
                   <Box sx={{ textAlign: "center", py: 6, color: "text.secondary" }}>
-                    <ImageOutlinedIcon sx={{ fontSize: 48, mb: 1 }} />
+                    <ImageIcon className="size-[48px] mb-2" />
                     <Typography variant="body1">Henüz slider eklenmemiş.</Typography>
                   </Box>
                 )}

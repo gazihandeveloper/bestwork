@@ -4,23 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Coffee,
-  Zap,
-  CupSoda,
-  Flower2,
-  ShoppingBag,
   ShoppingCart,
   ArrowRight,
   Plus,
   Minus,
   Check,
   PackageSearch,
+  Eye,
 } from "lucide-react";
 import { listPopularProducts, listProducts, fileUrl } from "@/services/api";
 import type { PopularProduct } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
 import { Reveal } from "../landing/Reveal";
-import { PASTELS } from "../landing/tokens";
+import { BASE_PATH } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,27 +30,22 @@ const formatPrice = (v: number) =>
     maximumFractionDigits: 2,
   }).format(v);
 
-function productIcon(name: string, size = 64) {
-  const n = name.toLowerCase();
-  if (n.includes("kahve") || n.includes("coffee")) return <Coffee style={{ width: size, height: size }} />;
-  if (n.includes("enerji") || n.includes("energy")) return <Zap style={{ width: size, height: size }} />;
-  if (n.includes("su") || n.includes("drink") || n.includes("çay")) return <CupSoda style={{ width: size, height: size }} />;
-  if (n.includes("krem") || n.includes("bakım") || n.includes("beauty") || n.includes("cilt"))
-    return <Flower2 style={{ width: size, height: size }} />;
-  return <ShoppingBag style={{ width: size, height: size }} />;
-}
-
-// PASTELS + secondary tonlarında döngülü gradyanlar (kart görsel zemini).
-const mediaGradient = (index: number) => {
-  const gradients = [
-    `linear-gradient(135deg, ${PASTELS.mint}, var(--secondary-light))`,
-    `linear-gradient(135deg, var(--secondary), var(--secondary-light))`,
-    `linear-gradient(135deg, ${PASTELS.peach}, var(--secondary-light))`,
-  ];
-  return gradients[index % 3];
+// Görseli olmayan ürünler için kategori bazlı görsel fallback (public/kategoriler/).
+const CATEGORY_IMAGE: Record<string, string> = {
+  icecek: `${BASE_PATH}/kategoriler/icecek.jpg`,
+  enerji: `${BASE_PATH}/kategoriler/enerji.jpg`,
+  bakim: `${BASE_PATH}/kategoriler/bakim.jpg`,
+  ev: `${BASE_PATH}/kategoriler/ev.jpg`,
+  diger: `${BASE_PATH}/kategoriler/diger.jpg`,
 };
 
-// Ürünlerimiz bölümü — hafta içinde en çok satın alınan 3 ürün.
+// Ürün görselini çözer: DB görseli yoksa kategori görseline düşer.
+function resolveImage(p: PopularProduct): string | null {
+  if (p.image_path) return fileUrl(p.image_path);
+  return CATEGORY_IMAGE[(p.category ?? "diger")] ?? CATEGORY_IMAGE.diger;
+}
+
+// Ürünlerimiz bölümü — hafta içinde en çok satın alınan ürünler (stokta olanlar öncelikli).
 // Kartlarda adet seçimi + Sepete Ekle; tıklayınca ürün detay sayfası açılır.
 export default function Products() {
   const router = useRouter();
@@ -64,11 +55,25 @@ export default function Products() {
   const [snackbar, setSnackbar] = useState("");
 
   const load = () => {
-    listPopularProducts(3, 7)
+    listPopularProducts(6, 7)
       .then((ps) => {
         if (ps.length > 0) {
-          // Stok durumu ne olursa olsun en çok satılan 3 ürünü göster.
-          setProducts(ps.slice(0, 3));
+          // Önce stokta olanları al (tükenen ürünler gri görünmesin); 3'ten fazla yoksa stoktakilerle tamamla.
+          const inStock = ps.filter((p) => p.stock > 0);
+          const picked = inStock.slice(0, 3);
+          if (picked.length < 3) {
+            listProducts()
+              .then((all) => {
+                const rest = all
+                  .filter((p) => p.stock > 0 && !picked.some((x) => x.id === p.id))
+                  .slice(0, 3 - picked.length)
+                  .map((p) => ({ ...p, sold_quantity: 0 }));
+                setProducts([...picked, ...rest].slice(0, 3));
+              })
+              .catch(() => setProducts(picked.slice(0, 3)));
+          } else {
+            setProducts(picked.slice(0, 3));
+          }
         } else {
           // Henüz satış yoksa stoktaki ilk 3 ürünü göster.
           listProducts().then((all) =>
@@ -106,15 +111,22 @@ export default function Products() {
   };
 
   return (
-    <section id="urunler" className="bg-card py-8 scroll-mt-[112px]">
+    <section id="urunler" className="bg-card py-10 scroll-mt-[112px] md:py-14">
+      {/* Başlık */}
       <Reveal>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3 md:mb-8">
           <div>
-            <p className="text-primary text-xs font-bold tracking-[2px] uppercase">ÇOK SATANLAR</p>
-            <h2 className="text-primary-dark text-3xl font-bold">Ürünlerimiz</h2>
-            <p className="text-muted-foreground">Hafta içinde en çok satın alınan 3 ürün.</p>
+            <span className="text-primary dark:text-primary-dark text-xs font-bold tracking-[0.22em] uppercase">
+              Çok Satanlar
+            </span>
+            <h2 className="text-primary-dark mt-2 text-3xl font-bold md:text-4xl">
+              Ürünlerimiz
+            </h2>
+            <p className="text-muted-foreground mt-1.5 text-sm md:text-base">
+              En çok tercih edilen ürünler — PV/CV puan kazanın, seviye atlayın.
+            </p>
           </div>
-          <Button asChild variant="ghost" className="text-primary">
+          <Button asChild variant="outline" className="text-primary border-primary/40 rounded-sm hover:bg-primary/5">
             <Link href="/shop">
               Tümünü Gör
               <ArrowRight className="size-4" />
@@ -123,15 +135,16 @@ export default function Products() {
         </div>
       </Reveal>
 
+      {/* Yükleniyor */}
       {products === null && !error ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-[420px]" />
+            <Skeleton key={i} className="h-[330px]" />
           ))}
         </div>
       ) : error ? (
-        <div className="text-muted-foreground py-8 text-center">
-          <PackageSearch className="text-muted-foreground mx-auto mb-1 size-12" />
+        <div className="text-muted-foreground py-10 text-center">
+          <PackageSearch className="text-muted-foreground mx-auto mb-2 size-12" />
           <p>Ürünler yüklenemedi. Lütfen tekrar deneyin.</p>
           <Button
             variant="default"
@@ -140,97 +153,113 @@ export default function Products() {
               setError(false);
               void load();
             }}
-            className="mt-2"
+            className="mt-3"
           >
             Tekrar Dene
           </Button>
         </div>
       ) : products && products.length === 0 ? (
-        <div className="text-muted-foreground py-8 text-center">
-          <PackageSearch className="text-muted-foreground mx-auto mb-1 size-12" />
+        <div className="text-muted-foreground py-10 text-center">
+          <PackageSearch className="text-muted-foreground mx-auto mb-2 size-12" />
           <p>Henüz ürün eklenmemiş.</p>
-          <Button asChild className="mt-2">
+          <Button asChild className="mt-3">
             <Link href="/shop">Alışverişe Başla</Link>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {products?.map((p, index) => {
             const qty = quantityOf(p.id);
             const soldOut = p.stock <= 0;
+            const image = resolveImage(p);
             return (
               <Reveal key={p.id} delay={(index % 3) * 80} className="h-full">
                 <div
-                  className="border-border bg-card group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                  className="group border-border bg-background relative flex h-full cursor-pointer flex-col overflow-hidden rounded-sm border shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.22)]"
                   onClick={() => router.push(`/product/${p.id}`)}
                 >
-                  <div
-                    className="relative flex h-[180px] items-center justify-center overflow-hidden"
-                    style={{ background: mediaGradient(index) }}
-                  >
-                    <div
-                      aria-hidden
-                      className="absolute -top-10 -right-10 size-[140px] rounded-full bg-white/25"
-                    />
-                    <div
-                      aria-hidden
-                      className="absolute -bottom-9 -left-9 size-[120px] rounded-full bg-white/15"
-                    />
-                    <Badge
-                      className={cn(
-                        "absolute top-2.5 left-2.5 z-[2] bg-white/92",
-                        soldOut ? "text-destructive" : "text-[#2E7D32]"
-                      )}
-                    >
-                      <PackageSearch className="size-3.5" />
-                      {soldOut ? "Stokta Yok" : "Stokta"}
-                    </Badge>
-                    {p.sold_quantity > 0 && (
-                      <Badge className="bg-primary absolute top-2.5 right-2.5 z-[2] text-white">
-                        Bu hafta {p.sold_quantity} adet
-                      </Badge>
-                    )}
-                    {p.image_path ? (
+                  {/* Görsel */}
+                  <div className="relative h-[160px] overflow-hidden">
+                    {image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={fileUrl(p.image_path) ?? ""}
+                        src={image}
                         alt={p.name}
                         loading={index === 0 ? "eager" : "lazy"}
-                        className="block h-full w-full object-cover transition-transform duration-350 group-hover:scale-105"
+                        className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         style={{
-                          filter: soldOut ? "grayscale(1) opacity(0.55)" : "saturate(1.1)",
+                          filter: soldOut ? "grayscale(1) opacity(0.5)" : "saturate(1.08)",
                         }}
                       />
                     ) : (
-                      <div
-                        className="text-primary-dark transition-transform duration-350 group-hover:scale-105"
-                        style={{ filter: soldOut ? "grayscale(1) opacity(0.55)" : "none" }}
-                      >
-                        {productIcon(p.name)}
+                      <div className="bg-gradient-to-br from-secondary-light to-secondary flex h-full w-full items-center justify-center">
+                        <PackageSearch className="text-primary-dark size-12" />
                       </div>
                     )}
+
+                    {/* Rozetler */}
+                    <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
+                      <Badge
+                        className={cn(
+                          "border-0 shadow-sm",
+                          soldOut
+                            ? "bg-destructive text-white"
+                            : "bg-white/90 text-[#2E7D32] backdrop-blur-sm"
+                        )}
+                      >
+                        <span className={cn("size-1.5 rounded-full", soldOut ? "bg-white" : "bg-[#2E7D32]")} />
+                        {soldOut ? "Stokta Yok" : "Stokta"}
+                      </Badge>
+                    </div>
+                    {p.sold_quantity > 0 && !soldOut && (
+                      <Badge className="bg-primary absolute top-2.5 right-2.5 border-0 text-white shadow-sm">
+                        Bu hafta {p.sold_quantity} adet
+                      </Badge>
+                    )}
+
+                    {/* Hover inceleme */}
+                    <div className="bg-black/25 absolute inset-0 flex items-center justify-center opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
+                      <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-primary-dark shadow-lg">
+                        <Eye className="size-4" />
+                        İncele
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-3">
-                    <h3 className="truncate text-[1.05rem] leading-[1.35] font-bold">
-                      {p.name}
-                    </h3>
+                  {/* İçerik */}
+                  <div className="flex flex-1 flex-col p-3.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="line-clamp-1 flex-1 text-[0.92rem] leading-snug font-bold text-foreground">
+                        {p.name}
+                      </h3>
+                    </div>
                     {p.description ? (
-                      <p className="text-muted-foreground mt-0.5 line-clamp-2 text-sm">
+                      <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[0.78rem]">
                         {p.description}
                       </p>
                     ) : null}
 
-                    <div className="mt-1">
-                      <p className="text-primary-dark text-lg font-extrabold">
+                    {/* PV/CV rozeti */}
+                    <div className="mt-2 flex flex-wrap items-center gap-1">
+                      <Badge variant="secondary" className="bg-secondary/70 px-1.5 py-0 text-[9.5px] font-bold text-primary-dark">
+                        +{p.pv} PV
+                      </Badge>
+                      <Badge variant="secondary" className="bg-secondary/70 px-1.5 py-0 text-[9.5px] font-bold text-primary-dark">
+                        +{p.cv} CV
+                      </Badge>
+                    </div>
+
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <p className="text-primary-dark text-lg font-black tracking-tight">
                         {formatPrice(p.price)}
                       </p>
                     </div>
 
-                    <div className="border-border my-1.5 h-px w-full" />
+                    <div className="border-border my-2.5 h-px w-full" />
 
-                    <div className="mt-auto flex items-center gap-1.5">
-                      <div className="border-border bg-muted/40 flex items-center gap-1 rounded-full border px-1 py-1">
+                    {/* Aksiyonlar */}
+                    <div className="mt-auto flex items-center gap-2">
+                      <div className="border-border bg-muted/50 flex shrink-0 items-center gap-1 rounded-sm border px-1 py-1">
                         <button
                           type="button"
                           aria-label="Adedi azalt"
@@ -239,11 +268,11 @@ export default function Products() {
                             e.stopPropagation();
                             changeQuantity(p.id, -1, p.stock);
                           }}
-                          className="flex size-8 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                          className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-[7px] transition-colors disabled:pointer-events-none disabled:opacity-40"
                         >
-                          <Minus className="size-4" />
+                          <Minus className="size-3.5" />
                         </button>
-                        <span className="min-w-[22px] text-center text-sm font-bold">{qty}</span>
+                        <span className="min-w-[20px] text-center text-sm font-bold">{qty}</span>
                         <button
                           type="button"
                           aria-label="Adedi artır"
@@ -252,20 +281,21 @@ export default function Products() {
                             e.stopPropagation();
                             changeQuantity(p.id, 1, p.stock);
                           }}
-                          className="flex size-8 cursor-pointer items-center justify-center rounded-full text-primary transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                          className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-[7px] transition-colors disabled:pointer-events-none disabled:opacity-40"
                         >
-                          <Plus className="size-4" />
+                          <Plus className="size-3.5" />
                         </button>
                       </div>
                       <Button
-                        className="h-10 flex-1"
+                        size="sm"
+                        className="h-8 flex-1 text-[13px]"
                         disabled={soldOut}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleAddToCart(p, quantityOf(p.id));
                         }}
                       >
-                        <ShoppingCart className="size-4" />
+                        <ShoppingCart className="size-3.5" />
                         Sepete Ekle
                       </Button>
                     </div>
@@ -280,7 +310,7 @@ export default function Products() {
       {/* Sepete ekleme bildirimi */}
       {snackbar && (
         <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
-          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-sm px-5 py-3 text-sm font-semibold">
             <Check className="size-5 shrink-0" />
             <span className="flex-1 truncate">{snackbar}</span>
             <button

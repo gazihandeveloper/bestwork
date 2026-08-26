@@ -4,18 +4,14 @@ import { usePathname, useRouter } from "next/navigation";
 import Paper from "@mui/material/Paper";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
-import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
+import { LayoutDashboard, ShoppingCart, Network, Users, User } from "lucide-react";
 
 const tabs = [
-  { path: "/dashboard", label: "Panel", icon: <DashboardRoundedIcon /> },
-  { path: "/shop", label: "Alışveriş", icon: <ShoppingCartRoundedIcon /> },
-  { path: "/tree", label: "Ağaç", icon: <AccountTreeRoundedIcon /> },
-  { path: "/pending", label: "Bekleyenler", icon: <GroupRoundedIcon /> },
-  { path: "/profile", label: "Profil", icon: <PersonRoundedIcon /> },
+  { path: "/dashboard", label: "Panel", icon: <LayoutDashboard /> },
+  { path: "/shop", label: "Alışveriş", icon: <ShoppingCart /> },
+  { path: "/tree", label: "Ağaç", icon: <Network /> },
+  { path: "/pending", label: "Bekleyenler", icon: <Users /> },
+  { path: "/profile", label: "Profil", icon: <User /> },
 ];
 
 // MD3 yüzen alt navigasyon (mobil). Masaüstünde gizlenir (üst bar kullanılır).

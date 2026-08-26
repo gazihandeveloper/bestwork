@@ -17,12 +17,7 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
-import RedeemRoundedIcon from "@mui/icons-material/RedeemRounded";
-import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import { Gift, Headphones, Pencil, ShieldCheck, Trash2, Truck } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import {
   listAdminBenefits,
@@ -34,10 +29,10 @@ import {
 import type { Benefit } from "@/services/api";
 
 const ICON_OPTIONS = [
-  { value: "shipping", label: "Kargo", icon: <LocalShippingRoundedIcon /> },
-  { value: "payment", label: "Güvenli Ödeme", icon: <VerifiedUserRoundedIcon /> },
-  { value: "pv", label: "Puan", icon: <RedeemRoundedIcon /> },
-  { value: "support", label: "Destek", icon: <SupportAgentRoundedIcon /> },
+  { value: "shipping", label: "Kargo", icon: <Truck /> },
+  { value: "payment", label: "Güvenli Ödeme", icon: <ShieldCheck /> },
+  { value: "pv", label: "Puan", icon: <Gift /> },
+  { value: "support", label: "Destek", icon: <Headphones /> },
 ];
 
 interface FormState {
@@ -253,7 +248,7 @@ function AdminBenefitsContent() {
                       }}
                     >
                       {ICON_OPTIONS.find((o) => o.value === b.icon)?.icon ?? (
-                        <LocalShippingRoundedIcon />
+                        <Truck />
                       )}
                     </Box>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -271,10 +266,10 @@ function AdminBenefitsContent() {
                       />
                     </Box>
                     <IconButton aria-label="düzenle" onClick={() => startEdit(b)}>
-                      <EditRoundedIcon />
+                      <Pencil />
                     </IconButton>
                     <IconButton aria-label="sil" color="error" onClick={() => handleDelete(b.id)}>
-                      <DeleteRoundedIcon />
+                      <Trash2 />
                     </IconButton>
                   </Box>
                 ))}

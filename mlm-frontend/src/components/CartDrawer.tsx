@@ -10,10 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Drawer from "@mui/material/Drawer";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import RemoveRoundedIcon from "@mui/icons-material/RemoveRounded";
-import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
+import { X, Plus, Minus, ShoppingBag } from "lucide-react";
 import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/cart";
 import { createOrder, getErrorMessage, getMe, fileUrl as apiFileUrl } from "@/services/api";
@@ -180,7 +177,7 @@ export default function CartDrawer() {
               Sepetim{items.length > 0 ? ` (${items.reduce((s, c) => s + c.quantity, 0)} ürün)` : ""}
             </Typography>
             <IconButton aria-label="Sepeti kapat" onClick={() => setOpen(false)}>
-              <CloseRoundedIcon />
+              <X />
             </IconButton>
           </Box>
 
@@ -192,7 +189,7 @@ export default function CartDrawer() {
 
           {items.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
-              <ShoppingBagRoundedIcon sx={{ fontSize: 48, mb: 1 }} />
+              <ShoppingBag className="size-[48px] mb-2" />
               <Typography variant="body1">Sepetiniz boş.</Typography>
               <Button
                 variant="outlined"
@@ -241,7 +238,7 @@ export default function CartDrawer() {
                           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                         />
                       ) : (
-                        <ShoppingBagRoundedIcon sx={{ color: "primary.dark" }} />
+                        <ShoppingBag className="text-primary-dark" />
                       )}
                     </Box>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -254,7 +251,7 @@ export default function CartDrawer() {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <IconButton size="small" onClick={() => setItems(decrementCart(c.product.id))}>
-                        <RemoveRoundedIcon fontSize="small" />
+                        <Minus className="size-4" />
                       </IconButton>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>
                         {c.quantity}
@@ -264,7 +261,7 @@ export default function CartDrawer() {
                         onClick={() => setItems(addToCartStorage(c.product, 1))}
                         disabled={c.quantity >= c.product.stock}
                       >
-                        <AddRoundedIcon fontSize="small" />
+                        <Plus className="size-4" />
                       </IconButton>
                     </Box>
                   </Box>

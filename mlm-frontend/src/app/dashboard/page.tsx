@@ -23,23 +23,24 @@ import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@mui/material/Snackbar";
-import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
-import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
-import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
 import LinearProgress from "@mui/material/LinearProgress";
-import MilitaryTechRoundedIcon from "@mui/icons-material/MilitaryTechRounded";
-import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
-import GroupAddRoundedIcon from "@mui/icons-material/GroupAddRounded";
-import SignalCellularAltRoundedIcon from "@mui/icons-material/SignalCellularAltRounded";
-import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
-import BalanceRoundedIcon from "@mui/icons-material/BalanceRounded";
-
-import ShowChartRoundedIcon from "@mui/icons-material/ShowChartRounded";
-import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
-import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
-import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import {
+  Copy,
+  Link as LinkIcon,
+  BarChart3,
+  Camera,
+  Medal,
+  BadgeCheck,
+  UserPlus,
+  SignalHigh,
+  Users,
+  Scale,
+  ChartLine,
+  Info,
+  Wallet,
+  Clock,
+  X,
+} from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
@@ -137,13 +138,10 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
               justifyContent: "center",
             }}
           >
-            <InfoRoundedIcon
-              sx={{
-                fontSize: 28,
-                color: highlight ? "rgba(255,255,255,0.9)" : "primary.main",
-                transition: "color 200ms ease, transform 200ms ease",
-                "&:hover": { transform: "scale(1.15)" },
-              }}
+            <Info
+              className={`size-[28px] transition duration-200 hover:scale-[1.15] ${
+                highlight ? "text-white/90" : "text-primary"
+              }`}
             />
           </Box>
         </Box>
@@ -319,7 +317,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, hig
               color: "primary.dark",
             }}
           >
-            <InfoRoundedIcon sx={{ fontSize: 30 }} />
+            <Info className="size-[30px]" />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
               {value}
             </Typography>
@@ -561,7 +559,7 @@ function DashboardContent() {
                       "&:hover": { bgcolor: "#D8F0DC" },
                     }}
                   >
-                    {uploading ? <CircularProgress size={18} /> : <CameraAltRoundedIcon sx={{ fontSize: 20 }} />}
+                    {uploading ? <CircularProgress size={18} /> : <Camera className="size-5" />}
                   </Box>
                 </Box>
               </Box>
@@ -609,7 +607,7 @@ function DashboardContent() {
                     "&:hover": { bgcolor: "rgba(255,255,255,0.28)" },
                   }}
                   onClick={() => copyText(me?.member_code ?? "", "üye-id")}
-                  deleteIcon={<ContentCopyRoundedIcon sx={{ color: "common.white", fontSize: 16 }} />}
+                  deleteIcon={<Copy className="size-4 text-white" />}
                   onDelete={() => copyText(me?.member_code ?? "", "üye-id")}
                 />
                 {d.user.rank && (
@@ -631,7 +629,7 @@ function DashboardContent() {
                   href="/success-report"
                   size="small"
                   variant="contained"
-                  startIcon={<BarChartRoundedIcon />}
+                  startIcon={<BarChart3 />}
                   sx={{
                     bgcolor: "common.white",
                     color: "primary.dark",
@@ -665,7 +663,7 @@ function DashboardContent() {
                     py: 1,
                   }}
                 >
-                  <LinkRoundedIcon sx={{ color: "common.white", fontSize: 18, flexShrink: 0 }} />
+                  <LinkIcon className="size-[18px] shrink-0 text-white" />
                   <Typography
                     variant="body2"
                     noWrap
@@ -676,7 +674,7 @@ function DashboardContent() {
                   <Button
                     size="small"
                     variant="contained"
-                    startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 16 }} />}
+                    startIcon={<Copy className="size-4" />}
                     onClick={() => copyText(referralLink, "link")}
                     sx={{ flexShrink: 0, fontSize: 11, py: 0.5 }}
                   >
@@ -696,7 +694,7 @@ function DashboardContent() {
             label="Ünvan"
             value={currentRankName}
             steps={{ filled: rankIndex + 1, total: 12 }}
-            icon={<MilitaryTechRoundedIcon />}
+            icon={<Medal />}
             highlight
             info={`${currentRankName} — Sistemdeki en yüksek kariyer unvanınız.`}
             flipped={flippedCard === "Ünvan"}
@@ -708,7 +706,7 @@ function DashboardContent() {
           <StatBlock
             label="Güncel Kariyeriniz"
             value={currentRankName}
-            icon={<WorkspacePremiumRoundedIcon />}
+            icon={<BadgeCheck />}
             info="Bu ayki güncel kariyeriniz."
             flipped={flippedCard === "Güncel Kariyeriniz"}
             onFlip={() => flip("Güncel Kariyeriniz")}
@@ -719,7 +717,7 @@ function DashboardContent() {
           <StatBlock
             label="Seviyeniz"
             value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
-            icon={<SignalCellularAltRoundedIcon />}
+            icon={<SignalHigh />}
             info="Kazanç oranlarınızı belirleyen paketiniz."
             flipped={flippedCard === "Seviyeniz"}
             onFlip={() => flip("Seviyeniz")}
@@ -729,7 +727,7 @@ function DashboardContent() {
           <StatBlock
             label="Sponsor Olduklarım"
             value={String(sponsoredCount)}
-            icon={<GroupAddRoundedIcon />}
+            icon={<UserPlus />}
             info="Doğrudan kaydettiğiniz 1. hat üyeleriniz."
             flipped={flippedCard === "Sponsor Olduklarım"}
             onFlip={() => flip("Sponsor Olduklarım")}
@@ -746,7 +744,7 @@ function DashboardContent() {
               left: fmt(d.left_team_count),
               right: fmt(d.right_team_count),
             }}
-            icon={<GroupRoundedIcon />}
+            icon={<Users />}
             info="Binary ağacınızdaki toplam üye sayısı."
             flipped={flippedCard === "Ekibim"}
             onFlip={() => flip("Ekibim")}
@@ -761,7 +759,7 @@ function DashboardContent() {
               left: fmt(d.leg_cv_left_total),
               right: fmt(d.leg_cv_right_total),
             }}
-            icon={<BalanceRoundedIcon />}
+            icon={<Scale />}
             info="Kısa kol ile eşleşen puanınız."
             flipped={flippedCard === "Anlık Eşleşme"}
             onFlip={() => flip("Anlık Eşleşme")}
@@ -772,7 +770,7 @@ function DashboardContent() {
           <StatBlock
             label="Kişisel Toplam Kazanç"
             value={`${fmt2(d.wallet.total_earned)} ₺`}
-            icon={<ShowChartRoundedIcon />}
+            icon={<ChartLine />}
             info="Sisteme katılımınızdan beri toplam kazancınız."
             flipped={flippedCard === "Kişisel Toplam Kazanç"}
             onFlip={() => flip("Kişisel Toplam Kazanç")}
@@ -783,7 +781,7 @@ function DashboardContent() {
           <StatBlock
             label="Yerleşim Bekleyen"
             value={String(pendingCount)}
-            icon={<PendingActionsRoundedIcon />}
+            icon={<Clock />}
             info="Ağaca yerleştirilmeyi bekleyen üyeler."
             flipped={flippedCard === "Yerleşim Bekleyen"}
             onFlip={() => flip("Yerleşim Bekleyen")}
@@ -794,7 +792,7 @@ function DashboardContent() {
           <StatBlock
             label="Anlık Kazanç"
             value={`${fmt2(d.monthly_earned)} ₺`}
-            icon={<AccountBalanceWalletRoundedIcon />}
+            icon={<Wallet />}
             info="Bu cari dönemde oluşan güncel hakedişiniz."
             flipped={flippedCard === "Anlık Kazanç"}
             onFlip={() => flip("Anlık Kazanç")}
@@ -812,7 +810,7 @@ function DashboardContent() {
               Yerleşim Bekleyen Üyeler
             </Typography>
             <IconButton aria-label="Kapat" onClick={() => setPendingOpen(false)}>
-              <CloseRoundedIcon />
+              <X />
             </IconButton>
           </Box>
           {pendingLoading ? (

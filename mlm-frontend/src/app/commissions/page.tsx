@@ -20,10 +20,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TablePagination from "@mui/material/TablePagination";
-import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
-import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
-import MilitaryTechRoundedIcon from "@mui/icons-material/MilitaryTechRounded";
-import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
+import { Medal, Network, Receipt, Users } from "lucide-react";
 import { api, getErrorMessage } from "@/lib/api";
 import { getDashboard } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
@@ -34,9 +31,9 @@ const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
 
 const TYPE_META: Record<string, { label: string; color: "success" | "info" | "warning" | "default"; icon: React.ReactElement }> = {
-  referral: { label: "Referans", color: "success", icon: <GroupsRoundedIcon /> },
-  binary: { label: "Binary", color: "info", icon: <AccountTreeRoundedIcon /> },
-  matching: { label: "Matching", color: "warning", icon: <MilitaryTechRoundedIcon /> },
+  referral: { label: "Referans", color: "success", icon: <Users size={15} /> },
+  binary: { label: "Binary", color: "info", icon: <Network size={15} /> },
+  matching: { label: "Matching", color: "warning", icon: <Medal size={15} /> },
 };
 
 function CommissionsContent() {
@@ -147,7 +144,7 @@ function CommissionsContent() {
       ) : commissions.length === 0 ? (
         <Card>
           <CardContent>
-            <EmptyState icon={<ReceiptLongRoundedIcon />} message="Bu filtrede komisyon kaydı yok." />
+            <EmptyState icon={<Receipt size={48} />} message="Bu filtrede komisyon kaydı yok." />
           </CardContent>
         </Card>
       ) : (
@@ -172,7 +169,7 @@ function CommissionsContent() {
                   const meta = TYPE_META[c.type] ?? {
                     label: c.type,
                     color: "default" as const,
-                    icon: <ReceiptLongRoundedIcon />,
+                    icon: <Receipt size={15} />,
                   };
                   return (
                     <TableRow

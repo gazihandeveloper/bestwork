@@ -12,14 +12,15 @@ import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
-import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import LockRoundedIcon from "@mui/icons-material/LockRounded";
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
-import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
+import {
+  TrendingUp,
+  TrendingDown,
+  Trophy,
+  ArrowLeft,
+  CheckCircle2,
+  Lock,
+  Diamond,
+} from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
@@ -197,7 +198,7 @@ function CompareCard({
         </Typography>
         <Chip
           size="small"
-          icon={up ? <TrendingUpRoundedIcon /> : <TrendingDownRoundedIcon />}
+          icon={up ? <TrendingUp /> : <TrendingDown />}
           label={`${up ? "+" : ""}${delta.toFixed(0)}%`}
           color={up ? "success" : "error"}
           variant="filled"
@@ -242,11 +243,11 @@ function CareerTimeline({ ranks, career }: { ranks: Rank[]; career: CareerProgre
               }}
             >
               {c.achieved ? (
-                <CheckCircleRoundedIcon sx={{ fontSize: 22 }} />
+                <CheckCircle2 className="size-[22px]" />
               ) : c.active ? (
-                <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />
+                <Trophy className="size-5" />
               ) : (
-                <LockRoundedIcon sx={{ fontSize: 18 }} />
+                <Lock className="size-[18px]" />
               )}
             </Box>
             <Typography
@@ -367,7 +368,7 @@ function ReportContent() {
 
   return (
     <Container maxWidth={false} sx={{ py: 3 }}>
-      <Button component={Link} href="/profile" startIcon={<ArrowBackRoundedIcon />} size="small" sx={{ mb: 1 }}>
+      <Button component={Link} href="/profile" startIcon={<ArrowLeft />} size="small" sx={{ mb: 1 }}>
         Profilime Dön
       </Button>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
@@ -384,7 +385,7 @@ function ReportContent() {
             boxShadow: 3,
           }}
         >
-          <EmojiEventsRoundedIcon sx={{ fontSize: 30 }} />
+          <Trophy className="size-[30px]" />
         </Box>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 900, color: "primary.dark" }}>
@@ -399,13 +400,13 @@ function ReportContent() {
       {/* Geçen aya göre kıyaslama */}
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="AYLIK KAZANÇ" icon={<TrendingUpRoundedIcon />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
+          <CompareCard title="AYLIK KAZANÇ" icon={<TrendingUp />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="TOPLAM PV" icon={<DiamondRoundedIcon />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" />
+          <CompareCard title="TOPLAM PV" icon={<Diamond />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="TOPLAM CV" icon={<DiamondRoundedIcon />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" />
+          <CompareCard title="TOPLAM CV" icon={<Diamond />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" />
         </Grid>
       </Grid>
 
