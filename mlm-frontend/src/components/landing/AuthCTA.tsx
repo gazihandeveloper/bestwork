@@ -28,7 +28,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
         <Button
           component={Link}
           href="/dashboard"
-          startIcon={<AccountCircleRoundedIcon sx={{ fontSize: 24 }} />}
+          startIcon={<AccountCircleRoundedIcon sx={{ fontSize: 20 }} />}
           fullWidth={fullWidth}
           sx={{
             color: "primary.main",
