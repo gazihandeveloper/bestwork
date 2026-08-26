@@ -5,31 +5,23 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import MenuItem from "@mui/material/MenuItem";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import CircularProgress from "@mui/material/CircularProgress";
-import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
-import HandshakeRoundedIcon from "@mui/icons-material/HandshakeRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import { alpha } from "@mui/material/styles";
+import {
+  UserPlus,
+  Handshake,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/api";
 import { checkReferral } from "@/services/api";
-import { PASTELS, ELEVATION } from "@/components/landing/tokens";
 import { ILLER } from "@/data/iller";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const PROVINCES = [
   "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
@@ -82,29 +74,18 @@ const years = Array.from({ length: 100 }, (_, i) => String(new Date().getFullYea
 
 function SectionHeader({ number, title }: { number: number; title: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mt: 1 }}>
-      <Box
-        sx={{
-          width: 26,
-          height: 26,
-          borderRadius: "50%",
-          bgcolor: "primary.main",
-          color: "common.white",
-          fontSize: 14,
-          fontWeight: 800,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
+    <div className="mt-1 flex items-center gap-1.25">
+      <span className="bg-primary flex size-[26px] shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white">
         {number}
-      </Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: "primary.dark", fontSize: "1.05rem" }}>
-        {title}
-      </Typography>
-    </Box>
+      </span>
+      <h2 className="text-primary-dark text-[1.05rem] font-bold">{title}</h2>
+    </div>
   );
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-destructive mt-1 text-xs font-medium">{message}</p>;
 }
 
 export default function RegisterPage() {
@@ -239,439 +220,348 @@ function RegisterContent() {
     }
   };
 
+  const inputCls = (hasError?: boolean) =>
+    cn(hasError && "border-destructive focus-visible:ring-destructive/40");
+
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        pt: { xs: 13, md: 11 },
-        pb: 6,
-        background: (theme) =>
-          `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${theme.palette.secondary.light} 100%)`,
+    <div
+      className="flex min-h-screen items-center px-0 pt-[104px] pb-6 md:pt-[88px]"
+      style={{
+        background:
+          "linear-gradient(180deg, var(--background) 0%, var(--secondary-light) 100%)",
       }}
     >
-      <Container maxWidth={stage === "sponsor" ? "sm" : "lg"}>
-        <Card
-          sx={{
-            borderRadius: "20px",
-            overflow: "hidden",
-            boxShadow: ELEVATION.l3,
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              px: 3,
-              py: 3.5,
-              textAlign: "center",
-              background: (theme) =>
-                `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-              color: "common.white",
+      <div className={cn("mx-auto w-full", stage === "sponsor" ? "max-w-sm" : "max-w-4xl")}>
+        <div className="border-border bg-card overflow-hidden rounded-[20px] shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)]">
+          <div
+            className="relative px-4 py-3.5 text-center text-white"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--primary-dark), var(--secondary-dark))",
             }}
           >
-            <Box
+            <div
               aria-hidden
-              sx={{
-                position: "absolute",
-                top: -50,
-                right: -40,
-                width: 180,
-                height: 180,
-                borderRadius: "50%",
-                bgcolor: PASTELS.mint,
-                opacity: 0.25,
-              }}
+              className="absolute -top-[50px] -right-10 size-[180px] rounded-full bg-[#D8F0DC] opacity-25"
             />
-            <Box
-              sx={{
-                width: 60,
-                height: 60,
-                borderRadius: "50%",
-                bgcolor: PASTELS.mint,
-                color: "primary.dark",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mx: "auto",
-                mb: 1,
-              }}
+            <div
+              className="bg-[#D8F0DC] text-primary-dark mx-auto mb-1 flex size-[60px] items-center justify-center rounded-full"
             >
-              <PersonAddAltRoundedIcon sx={{ fontSize: 32 }} />
-            </Box>
-            <Typography variant="h4" sx={{ fontWeight: 800 }}>
-              Kayıt Ol
-            </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
+              <UserPlus className="size-8" />
+            </div>
+            <h1 className="text-2xl font-extrabold">Kayıt Ol</h1>
+            <p className="mt-0.5 text-sm text-white/85">
               Üye ol, ağını kur, kazanmaya başla. Üye Numaranız otomatik oluşturulur.
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
-          <CardContent sx={{ px: { xs: 3, md: 6 }, pt: 3, pb: 4 }}>
+          <div className="px-4 pt-3 pb-4 md:px-6">
             {stage === "sponsor" ? (
-              <Box
-                sx={{
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 2.1,
-                  p: 3,
-                  bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.12),
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1.5,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <HandshakeRoundedIcon sx={{ color: "primary.main" }} />
-                  <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                    Sponsor Üye Numarası
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
+              <div className="border-border bg-secondary/10 flex flex-col gap-1.5 rounded-[17px] border p-4">
+                <div className="flex items-center gap-1">
+                  <Handshake className="text-primary size-5" />
+                  <p className="text-base font-bold">Sponsor Üye Numarası</p>
+                </div>
+                <p className="text-muted-foreground text-sm">
                   Sizi BestWork&apos;e davet eden üyenin numarasını girin
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                  <TextField
-                    placeholder="Referans Numaranızı Girin"
-                    fullWidth
-                    value={refCode}
-                    onChange={(e) => setRefCode(e.target.value)}
-                    error={refStatus === "notfound"}
-                    helperText={refStatus === "notfound" ? "Bu referans kodu bulunamadı." : undefined}
-                    slotProps={{
-                      input: {
-                        endAdornment:
-                          refStatus === "checking" ? <CircularProgress size={16} /> : undefined,
-                      },
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={searchRef}
-                    disabled={refStatus === "checking"}
-                    sx={{ flexShrink: 0, px: 3, height: 40 }}
-                  >
-                    Ara
+                </p>
+                <div className="flex items-start gap-1.5">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Referans Numaranızı Girin"
+                      value={refCode}
+                      onChange={(e) => setRefCode(e.target.value)}
+                      className={cn(
+                        refStatus === "notfound" &&
+                          "border-destructive focus-visible:ring-destructive/40"
+                      )}
+                    />
+                    {refStatus === "notfound" && (
+                      <p className="text-destructive mt-1 text-xs">
+                        Bu referans kodu bulunamadı.
+                      </p>
+                    )}
+                  </div>
+                  <Button onClick={searchRef} disabled={refStatus === "checking"} className="h-10 shrink-0 px-4">
+                    {refStatus === "checking" ? <Loader2 className="size-4 animate-spin" /> : "Ara"}
                   </Button>
-                </Box>
+                </div>
 
                 {refStatus === "found" && (
-                  <Alert
-                    icon={<CheckCircleRoundedIcon />}
-                    severity="success"
-                    sx={{ "& .MuiAlert-icon": { color: "success.main" } }}
-                  >
-                    Sponsor Üyeniz: <strong>{refOwner}</strong>
-                  </Alert>
+                  <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+                    <CheckCircle2 className="size-5 shrink-0" />
+                    <span>
+                      Sponsor Üyeniz: <strong>{refOwner}</strong>
+                    </span>
+                  </div>
                 )}
                 {refStatus === "notfound" && (
-                  <Alert
-                    icon={<ErrorRoundedIcon />}
-                    severity="error"
-                    sx={{ "& .MuiAlert-icon": { color: "error.main" } }}
-                  >
+                  <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+                    <AlertCircle className="size-5 shrink-0" />
                     Bu referans kodu sistemde bulunamadı. Lütfen kontrol edin.
-                  </Alert>
+                  </div>
                 )}
 
-                <Button
-                  variant="contained"
-                  fullWidth
-                  disabled={refStatus !== "found"}
-                  onClick={continueWithRef}
-                  sx={{ mt: 0.5 }}
-                >
+                <Button className="mt-0.5 w-full" disabled={refStatus !== "found"} onClick={continueWithRef}>
                   Devam Et
                 </Button>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  color="success"
-                  onClick={continueWithout}
-                  sx={{ borderColor: "success.main", color: "success.main" }}
-                >
+                <Button variant="outline" className="border-[#2E7D32] text-[#2E7D32] w-full hover:bg-[#2E7D32]/5" onClick={continueWithout}>
                   SPONSORUM YOK
                 </Button>
-              </Box>
+              </div>
             ) : (
-              <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-                <Stack spacing={2.5}>
-                  <Button
-                    variant="text"
-                    startIcon={<ArrowForwardRoundedIcon sx={{ transform: "rotate(180deg)" }} />}
-                    onClick={() => setStage("sponsor")}
-                    sx={{ alignSelf: "flex-start", textTransform: "none", fontWeight: 600, ml: -1 }}
-                  >
-                    Sponsoru değiştir
-                  </Button>
+              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2.5">
+                <Button
+                  variant="ghost"
+                  onClick={() => setStage("sponsor")}
+                  className="text-foreground ml-[-4px] self-start font-semibold"
+                >
+                  <ArrowRight className="size-4 rotate-180" />
+                  Sponsoru değiştir
+                </Button>
 
-                  {noSponsor ? (
-                    <Alert
-                      severity="info"
-                      action={
-                        <Button color="inherit" size="small" onClick={() => setStage("sponsor")}>
-                          Referans Belirt
-                        </Button>
-                      }
-                    >
-                      Sponsorsuz kayıt oluyorsunuz. Üye Numaranız otomatik oluşturulacak.
-                    </Alert>
-                  ) : (
-                    <Alert
-                      icon={<CheckCircleRoundedIcon />}
-                      severity="success"
-                      sx={{ "& .MuiAlert-icon": { color: "success.main" } }}
-                    >
+                {noSponsor ? (
+                  <div className="border-[#0288D1]/50 bg-[#0288D1]/10 text-[#0277BD] flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
+                    <span>Sponsorsuz kayıt oluyorsunuz. Üye Numaranız otomatik oluşturulacak.</span>
+                    <Button variant="ghost" className="h-7 px-2 text-xs" onClick={() => setStage("sponsor")}>
+                      Referans Belirt
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+                    <CheckCircle2 className="size-5 shrink-0" />
+                    <span>
                       Sponsor Üyeniz: <strong>{refOwner}</strong>
-                    </Alert>
-                  )}
+                    </span>
+                  </div>
+                )}
 
-                  {error && <Alert severity="error">{error}</Alert>}
+                {error && (
+                  <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm font-medium">
+                    {error}
+                  </div>
+                )}
 
-                  {/* 1. Kişisel Bilgiler */}
-                  <SectionHeader number={1} title="Kişisel Bilgileriniz" />
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Adınız *"
-                        placeholder="Adınızı yazın"
-                        fullWidth
-                        {...registerField("ad")}
-                        error={!!errors.ad}
-                        helperText={errors.ad?.message}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Soyadınız *"
-                        placeholder="Soyadınızı yazın"
-                        fullWidth
-                        {...registerField("soyad")}
-                        error={!!errors.soyad}
-                        helperText={errors.soyad?.message}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField select label="Doğum Günü" fullWidth {...registerField("birthDay")}>
-                        <MenuItem value="">Gün</MenuItem>
-                        {days.map((d) => (
-                          <MenuItem key={d} value={d}>{d}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField select label="Doğum Ayı" fullWidth {...registerField("birthMonth")}>
-                        <MenuItem value="">Ay</MenuItem>
-                        {months.map((m, i) => (
-                          <MenuItem key={m} value={String(i + 1)}>{m}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField select label="Doğum Yılı" fullWidth {...registerField("birthYear")}>
-                        <MenuItem value="">Yıl</MenuItem>
-                        {years.map((y) => (
-                          <MenuItem key={y} value={y}>{y}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField select label="Cinsiyetiniz" fullWidth {...registerField("gender")}>
-                        <MenuItem value="">Seçiniz</MenuItem>
-                        <MenuItem value="Kadın">Kadın</MenuItem>
-                        <MenuItem value="Erkek">Erkek</MenuItem>
-                        <MenuItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</MenuItem>
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="TC Kimlik No"
-                        placeholder="11 haneli T.C. kimlik numaranız"
-                        fullWidth
-                        {...registerField("tcNo")}
-                        error={!!errors.tcNo}
-                        helperText={errors.tcNo?.message}
-                      />
-                      <FormControlLabel
-                        control={<Checkbox {...registerField("notTurkish")} />}
-                        label="T.C. uyruklu değilim."
-                        sx={{ mt: 0.5 }}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  {/* 2. İletişim Bilgileri */}
-                  <SectionHeader number={2} title="İletişim Bilgileriniz" />
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Cep Telefonunuz *"
-                        placeholder="05XX XXX XX XX"
-                        fullWidth
-                        {...registerField("phone")}
-                        error={!!errors.phone}
-                        helperText={errors.phone?.message ?? "Şifre sıfırlama ve bildirimler bu numaraya gönderilir"}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="E-posta Adresiniz *"
-                        placeholder="ornek@eposta.com"
-                        fullWidth
-                        {...registerField("email")}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  {/* 3. Şifre */}
-                  <SectionHeader number={3} title="Şifrenizi Belirleyin" />
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Şifreniz *"
-                        type="password"
-                        placeholder="En az 8 karakter"
-                        fullWidth
-                        {...registerField("password")}
-                        error={!!errors.password}
-                        helperText={errors.password?.message ?? "En az 8 karakter olmalıdır"}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <TextField
-                        label="Şifreniz (Tekrar) *"
-                        type="password"
-                        placeholder="Şifrenizi tekrar yazın"
-                        fullWidth
-                        {...registerField("passwordRepeat")}
-                        error={!!errors.passwordRepeat}
-                        helperText={errors.passwordRepeat?.message}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  {/* 4. Adres Bilgileri */}
-                  <SectionHeader number={4} title="Adres Bilgileriniz" />
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField select label="Üyelik Türü" fullWidth {...registerField("memberType")}>
-                        <MenuItem value="Bireysel">Bireysel</MenuItem>
-                        <MenuItem value="Kurumsal">Kurumsal</MenuItem>
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField select label="Ülke *" fullWidth {...registerField("country")}>
-                        <MenuItem value="Türkiye">Türkiye</MenuItem>
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField
-                        select
-                        label="Şehir *"
-                        fullWidth
-                        {...registerField("city")}
-                        error={!!errors.city}
-                        helperText={errors.city?.message}
-                      >
-                        <MenuItem value="">İl seçiniz</MenuItem>
-                        {PROVINCES.map((p) => (
-                          <MenuItem key={p} value={p}>{p}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField
-                        select
-                        label="İlçe *"
-                        fullWidth
-                        {...registerField("district")}
-                        error={!!errors.district}
-                        helperText={errors.district?.message}
-                        disabled={!selectedCity || !ILLER[selectedCity]?.length}
-                      >
-                        <MenuItem value="">
-                          {ILLER[selectedCity]?.length ? "İlçe seçiniz" : "Önce il seçin"}
-                        </MenuItem>
-                        {(ILLER[selectedCity] ?? []).map((d) => (
-                          <MenuItem key={d} value={d}>{d}</MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField
-                        label="Mahalle/Köy"
-                        placeholder="Önce ilçe seçin"
-                        fullWidth
-                        {...registerField("neighborhood")}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField label="Vergi Dairesi" fullWidth {...registerField("taxOffice")} />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField label="Vergi Numarası" fullWidth {...registerField("taxNo")} />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <TextField label="Posta Kodu" fullWidth {...registerField("postalCode")} />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        label="Adres"
-                        placeholder="Açık adresinizi yazın"
-                        fullWidth
-                        multiline
-                        minRows={2}
-                        {...registerField("address")}
-                      />
-                    </Grid>
-                  </Grid>
-
-                  {/* 5. Sözleşmeler */}
-                  <SectionHeader number={5} title="Sözleşmeler" />
-                  <Stack spacing={0.5}>
-                    <FormControlLabel
-                      control={<Checkbox {...registerField("agreeContract")} />}
-                      label="BestWork Bağımsız Girişimci Sözleşmesi'ni Okudum Kabul Ediyorum"
+                {/* 1. Kişisel Bilgiler */}
+                <SectionHeader number={1} title="Kişisel Bilgileriniz" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <Input placeholder="Adınızı yazın" className={inputCls(!!errors.ad)} {...registerField("ad")} />
+                    <FieldError message={errors.ad?.message} />
+                  </div>
+                  <div>
+                    <Input placeholder="Soyadınızı yazın" className={inputCls(!!errors.soyad)} {...registerField("soyad")} />
+                    <FieldError message={errors.soyad?.message} />
+                  </div>
+                  <div>
+                    <Select {...registerField("birthDay")} defaultValue="">
+                      <option value="">Gün</option>
+                      {days.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Select {...registerField("birthMonth")} defaultValue="">
+                      <option value="">Ay</option>
+                      {months.map((m, i) => (
+                        <option key={m} value={String(i + 1)}>{m}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Select {...registerField("birthYear")} defaultValue="">
+                      <option value="">Yıl</option>
+                      {years.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Select {...registerField("gender")} defaultValue="">
+                      <option value="">Seçiniz</option>
+                      <option value="Kadın">Kadın</option>
+                      <option value="Erkek">Erkek</option>
+                      <option value="Belirtmek istemiyorum">Belirtmek istemiyorum</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Input
+                      placeholder="11 haneli T.C. kimlik numaranız"
+                      className={inputCls(!!errors.tcNo)}
+                      {...registerField("tcNo")}
                     />
-                    <FormControlLabel
-                      control={<Checkbox {...registerField("agreeKVKK")} />}
-                      label="K.V.K.K. Sözleşmesini Okudum Kabul Ediyorum"
+                    <FieldError message={errors.tcNo?.message} />
+                    <label className="text-muted-foreground mt-0.5 flex cursor-pointer items-center gap-1.5 text-sm">
+                      <input
+                        type="checkbox"
+                        className="size-4 accent-[#476F16]"
+                        {...registerField("notTurkish")}
+                      />
+                      T.C. uyruklu değilim.
+                    </label>
+                  </div>
+                </div>
+
+                {/* 2. İletişim Bilgileri */}
+                <SectionHeader number={2} title="İletişim Bilgileriniz" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <Input
+                      placeholder="05XX XXX XX XX"
+                      className={inputCls(!!errors.phone)}
+                      {...registerField("phone")}
                     />
-                    {(errors.agreeContract || errors.agreeKVKK) && (
-                      <Typography variant="caption" color="error">
-                        Devam etmek için sözleşmeleri onaylamalısınız.
-                      </Typography>
+                    <FieldError message={errors.phone?.message} />
+                    {!errors.phone && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        Şifre sıfırlama ve bildirimler bu numaraya gönderilir
+                      </p>
                     )}
-                  </Stack>
+                  </div>
+                  <div>
+                    <Input
+                      placeholder="ornek@eposta.com"
+                      type="email"
+                      className={inputCls(!!errors.email)}
+                      {...registerField("email")}
+                    />
+                    <FieldError message={errors.email?.message} />
+                  </div>
+                </div>
 
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    disabled={isSubmitting}
-                    sx={{ boxShadow: ELEVATION.l1, py: 1.25, alignSelf: { xs: "stretch", md: "flex-end" }, px: 6 }}
-                  >
-                    {isSubmitting ? <CircularProgress size={22} color="inherit" /> : "Hesabımı Oluştur"}
-                  </Button>
-                </Stack>
-              </Box>
+                {/* 3. Şifre */}
+                <SectionHeader number={3} title="Şifrenizi Belirleyin" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <Input
+                      type="password"
+                      placeholder="En az 8 karakter"
+                      className={inputCls(!!errors.password)}
+                      {...registerField("password")}
+                    />
+                    <FieldError message={errors.password?.message} />
+                    {!errors.password && (
+                      <p className="text-muted-foreground mt-1 text-xs">En az 8 karakter olmalıdır</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="password"
+                      placeholder="Şifrenizi tekrar yazın"
+                      className={inputCls(!!errors.passwordRepeat)}
+                      {...registerField("passwordRepeat")}
+                    />
+                    <FieldError message={errors.passwordRepeat?.message} />
+                  </div>
+                </div>
+
+                {/* 4. Adres Bilgileri */}
+                <SectionHeader number={4} title="Adres Bilgileriniz" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div>
+                    <Select {...registerField("memberType")}>
+                      <option value="Bireysel">Bireysel</option>
+                      <option value="Kurumsal">Kurumsal</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Select {...registerField("country")}>
+                      <option value="Türkiye">Türkiye</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Select className={inputCls(!!errors.city)} {...registerField("city")} defaultValue="">
+                      <option value="">İl seçiniz</option>
+                      {PROVINCES.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </Select>
+                    <FieldError message={errors.city?.message} />
+                  </div>
+                  <div>
+                    <Select
+                      className={inputCls(!!errors.district)}
+                      {...registerField("district")}
+                      defaultValue=""
+                      disabled={!selectedCity || !ILLER[selectedCity]?.length}
+                    >
+                      <option value="">
+                        {ILLER[selectedCity]?.length ? "İlçe seçiniz" : "Önce il seçin"}
+                      </option>
+                      {(ILLER[selectedCity] ?? []).map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </Select>
+                    <FieldError message={errors.district?.message} />
+                  </div>
+                  <div>
+                    <Input placeholder="Önce ilçe seçin" {...registerField("neighborhood")} />
+                  </div>
+                  <div>
+                    <Input {...registerField("taxOffice")} placeholder="Vergi Dairesi" />
+                  </div>
+                  <div>
+                    <Input {...registerField("taxNo")} placeholder="Vergi Numarası" />
+                  </div>
+                  <div>
+                    <Input {...registerField("postalCode")} placeholder="Posta Kodu" />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <Textarea placeholder="Açık adresinizi yazın" rows={2} {...registerField("address")} />
+                  </div>
+                </div>
+
+                {/* 5. Sözleşmeler */}
+                <SectionHeader number={5} title="Sözleşmeler" />
+                <div className="flex flex-col gap-0.5">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-[#476F16]"
+                      {...registerField("agreeContract")}
+                    />
+                    BestWork Bağımsız Girişimci Sözleşmesi&apos;ni Okudum Kabul Ediyorum
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-[#476F16]"
+                      {...registerField("agreeKVKK")}
+                    />
+                    K.V.K.K. Sözleşmesini Okudum Kabul Ediyorum
+                  </label>
+                  {(errors.agreeContract || errors.agreeKVKK) && (
+                    <p className="text-destructive mt-0.5 text-xs">
+                      Devam etmek için sözleşmeleri onaylamalısınız.
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isSubmitting}
+                  className="mt-1 self-stretch px-6 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] md:self-end"
+                >
+                  {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : "Hesabımı Oluştur"}
+                </Button>
+              </form>
             )}
 
-            <Typography variant="body2" sx={{ mt: 2.5, textAlign: "center" }}>
+            <p className="mt-2.5 text-center text-sm">
               Zaten hesabınız var mı?{" "}
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("open-login"))}
-                style={{ background: "none", border: "none", padding: 0, color: "#2E7D32", fontWeight: 700, cursor: "pointer", fontSize: "inherit" }}
+                className="cursor-pointer border-none bg-transparent p-0 text-[#2E7D32] text-sm font-bold"
               >
                 Giriş yapın
               </button>
-            </Typography>
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
