@@ -9,6 +9,18 @@ import { getProfile, updateThemeColor } from "@/services/api";
 const COLOR_KEY = "bestwork_color";
 const HIDDEN_KEY = "bestwork_theme_hidden";
 const MODE_KEY = "bestwork_mode";
+const COLOR_COOKIE = "bw_color";
+
+// Rengi hem localStorage'a hem cookie'ye yaz (cookie SSR tarafında okunur → flaşsız)
+function persistColor(hex: string) {
+  try {
+    window.localStorage.setItem(COLOR_KEY, hex);
+    document.documentElement.style.setProperty("--brand-color", hex);
+    document.cookie = `${COLOR_COOKIE}=${hex}; max-age=31536000; path=/; SameSite=Lax`;
+  } catch {
+    /* yoksay */
+  }
+}
 
 function initialMode(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
@@ -62,10 +74,16 @@ export function useThemeContext() {
   return ctx;
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Sayfa boyanmadan önce inline script "—brand-color" CSS değişkenini koyar:
-  // böylece seçilen renk ilk karede bile direkt uygulanır (yeşil flaş yok).
+export function ThemeProvider({
+  children,
+  initialColor,
+}: {
+  children: ReactNode;
+  initialColor?: string | null;
+}) {
+  // Sunucudan (cookie) gelen renk önceliklidir → SSR bile doğru renkle çizilir (yeşil flaş yok).
   const [color, setColorState] = useState<string>(() => {
+    if (initialColor && /^#[0-9a-fA-F]{6}$/.test(initialColor)) return initialColor;
     if (typeof window === "undefined") return "#3B6B35";
     try {
       const css = window.getComputedStyle(document.documentElement).getPropertyValue("--brand-color").trim();
@@ -105,12 +123,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const saved = p.theme_color;
         if (typeof saved === "string" && /^#[0-9a-fA-F]{6}$/.test(saved)) {
           setColorState(saved);
-          try {
-            window.localStorage.setItem(COLOR_KEY, saved);
-            document.documentElement.style.setProperty("--brand-color", saved);
-          } catch {
-            /* yoksay */
-          }
+          persistColor(saved);
         }
         // Sunucuda renk yoksa kullanıcının yerelde seçtiği renk korunur (yeşile dönülmez).
       })
@@ -134,9 +147,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       palette: {
         mode,
         primary: {
-          main: "var(--brand-color, #3B6B35)",
-          light: "var(--brand-color-light, #A3C79D)",
-          dark: "var(--brand-color-dark, #2E5E28)",
+          main: palette.primary,
+          light: palette.primaryLight,
+          dark: isDark ? mix(palette.primary, 255, 0.55) : palette.primaryDark,
           contrastText: "#ffffff",
         },
         secondary: {
@@ -193,12 +206,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       color,
       setColor: (hex: string) => {
         setColorState(hex);
-        try {
-          window.localStorage.setItem(COLOR_KEY, hex);
-          document.documentElement.style.setProperty("--brand-color", hex);
-        } catch {
-          /* yoksay */
-        }
+        persistColor(hex);
         if (user) {
           updateThemeColor(hex).catch(() => {});
         }
