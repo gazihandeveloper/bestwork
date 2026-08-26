@@ -391,7 +391,7 @@ function ReportContent() {
             Başarı Raporu
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user?.name} · {user?.member_code}
+            {user?.name.toLocaleUpperCase("tr-TR")} · {user?.member_code}
           </Typography>
         </Box>
       </Box>

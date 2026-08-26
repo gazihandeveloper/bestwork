@@ -28,7 +28,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
         <Button
           component={Link}
           href="/dashboard"
-          startIcon={<AccountCircleRoundedIcon />}
+          startIcon={<AccountCircleRoundedIcon sx={{ fontSize: 24 }} />}
           fullWidth={fullWidth}
           sx={{
             color: "primary.main",
@@ -38,7 +38,7 @@ export default function AuthCTA({ variant = "hero", fullWidth = false }: AuthCTA
             "&:hover": { bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08) },
           }}
         >
-          {user.name}
+          {user.name.toLocaleUpperCase("tr-TR")}
         </Button>
       );
     }
