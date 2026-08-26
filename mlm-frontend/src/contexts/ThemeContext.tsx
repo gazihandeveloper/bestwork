@@ -1,26 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createTheme } from "@mui/material/styles";
-import { useAuth } from "@/hooks/useAuth";
-import { getProfile, updateThemeColor } from "@/services/api";
 
-const COLOR_KEY = "bestwork_color";
-const HIDDEN_KEY = "bestwork_theme_hidden";
+// Sabit marka rengi — renk seçimi kaldırıldı, yalnızca bu renk kullanılır.
+const BRAND_COLOR = "#476F16";
 const MODE_KEY = "bestwork_mode";
-const COLOR_COOKIE = "bw_color";
-
-// Rengi hem localStorage'a hem cookie'ye yaz (cookie SSR tarafında okunur → flaşsız)
-function persistColor(hex: string) {
-  try {
-    window.localStorage.setItem(COLOR_KEY, hex);
-    document.documentElement.style.setProperty("--brand-color", hex);
-    document.cookie = `${COLOR_COOKIE}=${hex}; max-age=31536000; path=/; SameSite=Lax`;
-  } catch {
-    /* yoksay */
-  }
-}
 
 function initialMode(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
@@ -41,10 +27,8 @@ function mix(hex: string, target: number, ratio: number): string {
   return `#${[mixC(r), mixC(g), mixC(b)].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
 }
 
-export function derivePalette(hex: string) {
+function derivePalette(hex: string) {
   return {
-    key: "custom",
-    label: "Özel",
     primary: hex,
     primaryLight: mix(hex, 255, 0.35),
     primaryDark: mix(hex, 0, 0.25),
@@ -54,13 +38,9 @@ export function derivePalette(hex: string) {
   };
 }
 
+const palette = derivePalette(BRAND_COLOR);
+
 interface ThemeContextValue {
-  color: string;
-  setColor: (hex: string) => void;
-  previewColor: string | null;
-  setPreviewColor: (hex: string | null) => void;
-  hidden: boolean;
-  setHidden: (v: boolean) => void;
   mode: "light" | "dark";
   toggleMode: () => void;
   theme: ReturnType<typeof createTheme>;
@@ -74,73 +54,10 @@ export function useThemeContext() {
   return ctx;
 }
 
-export function ThemeProvider({
-  children,
-  initialColor,
-}: {
-  children: ReactNode;
-  initialColor?: string | null;
-}) {
-  // Sunucudan (cookie) gelen renk önceliklidir → SSR bile doğru renkle çizilir (yeşil flaş yok).
-  const [color, setColorState] = useState<string>(() => {
-    if (initialColor && /^#[0-9a-fA-F]{6}$/.test(initialColor)) return initialColor;
-    if (typeof window === "undefined") return "#3B6B35";
-    try {
-      const css = window.getComputedStyle(document.documentElement).getPropertyValue("--brand-color").trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(css)) return css;
-      const saved = window.localStorage.getItem(COLOR_KEY);
-      return saved && /^#[0-9a-fA-F]{6}$/.test(saved) ? saved : "#3B6B35";
-    } catch {
-      return "#3B6B35";
-    }
-  });
-  const { user } = useAuth();
-  const [previewColor, setPreviewColor] = useState<string | null>(null);
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<"light" | "dark">(initialMode);
-  const [hidden, setHidden] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return window.localStorage.getItem(HIDDEN_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
 
-  useEffect(() => {
-    if (user) {
-      const t = setTimeout(() => setPreviewColor(null), 0);
-      return () => clearTimeout(t);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user) return;
-    let active = true;
-    getProfile()
-      .then((p) => {
-        if (!active) return;
-        const saved = p.theme_color;
-        if (typeof saved === "string" && /^#[0-9a-fA-F]{6}$/.test(saved)) {
-          setColorState(saved);
-          persistColor(saved);
-        }
-        // Sunucuda renk yoksa kullanıcının yerelde seçtiği renk korunur (yeşile dönülmez).
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  // Giriş yapılmamışsa (anasayfa vb.) her zaman orijinal yeşil kullanılır;
-  // login modalı önizlemesi (previewColor) bu kuralı geçici olarak ezer.
-  const effectiveColor = previewColor ?? (user ? color : "#3B6B35");
-
-  const palette = useMemo(() => derivePalette(effectiveColor), [effectiveColor]);
-
-  // Gece/gündüz modu — ay/güneş düğmesi ile değiştirilir; aydınlıkta bembeyaz zemin
+  // Sabit marka rengi #476F16 — gece/gündüz moduna göre yalnızca zemin metni değişir
   const theme = useMemo(() => {
     const isDark = mode === "dark";
     return createTheme({
@@ -199,29 +116,10 @@ export function ThemeProvider({
         },
       },
     });
-  }, [palette, mode]);
+  }, [mode]);
 
   const value = useMemo(
     () => ({
-      color,
-      setColor: (hex: string) => {
-        setColorState(hex);
-        persistColor(hex);
-        if (user) {
-          updateThemeColor(hex).catch(() => {});
-        }
-      },
-      previewColor,
-      setPreviewColor,
-      hidden,
-      setHidden: (v: boolean) => {
-        setHidden(v);
-        try {
-          window.localStorage.setItem(HIDDEN_KEY, v ? "1" : "0");
-        } catch {
-          /* yoksay */
-        }
-      },
       mode,
       toggleMode: () => {
         setMode((m) => {
@@ -236,8 +134,7 @@ export function ThemeProvider({
       },
       theme,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [color, theme, hidden, previewColor, mode],
+    [theme, mode],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
