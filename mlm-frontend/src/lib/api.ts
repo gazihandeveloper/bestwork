@@ -1,7 +1,11 @@
 import axios from "axios";
 
 // Ortak axios istemcisi: HttpOnly oturum cookie'sini gönderir, 401'de oturumu düşürür.
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+// Yerel geliştirmede /api → canlı API'ye proxy'lenir (next.config rewrites) — böylece
+// oturum çerezi localhost domain'inde kalır, giriş sonrası geri atma yaşanmaz.
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? "/api" : "http://localhost:8080/api");
 
 // Uygulamanın yayınlandığı alt yol (üretimde "/mlm", yerelde "").
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";

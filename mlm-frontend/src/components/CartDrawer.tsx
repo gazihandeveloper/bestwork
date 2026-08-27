@@ -3,14 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
-import Drawer from "@mui/material/Drawer";
-import { X, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Check, Minus, Plus, ShoppingBag, X } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/cart";
 import { createOrder, getErrorMessage, getMe, fileUrl as apiFileUrl } from "@/services/api";
@@ -147,298 +143,234 @@ export default function CartDrawer() {
     }
   };
 
+  // Başarı bildirimi 8 saniye sonra otomatik kapanır (eski Snackbar autoHideDuration davranışı).
+  useEffect(() => {
+    if (successOrder === null) return;
+    const t = setTimeout(() => setSuccessOrder(null), 8000);
+    return () => clearTimeout(t);
+  }, [successOrder]);
+
   return (
     <>
-      <Drawer
-        anchor="right"
-        open={open}
-        onClose={() => setOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              width: { xs: "min(92%, 380px)", md: 380 },
-              borderTopLeftRadius: "28px",
-              borderBottomLeftRadius: "28px",
-              p: 2.5,
-            },
-          },
-        }}
-      >
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 1.5,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              Sepetim{items.length > 0 ? ` (${items.reduce((s, c) => s + c.quantity, 0)} ürün)` : ""}
-            </Typography>
-            <IconButton aria-label="Sepeti kapat" onClick={() => setOpen(false)}>
-              <X />
-            </IconButton>
-          </Box>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 1.5 }}>
-              {error}
-            </Alert>
-          )}
-
-          {items.length === 0 ? (
-            <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
-              <ShoppingBag className="size-[48px] mb-2" />
-              <Typography variant="body1">Sepetiniz boş.</Typography>
-              <Button
-                variant="outlined"
-                sx={{ mt: 2 }}
-                onClick={() => {
-                  setOpen(false);
-                  router.push("/shop");
-                }}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent className="w-[min(92%,380px)] p-2.5">
+          <div className="flex h-full flex-col">
+            {/* Başlık */}
+            <div className="mb-1.5 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold">
+                Sepetim{items.length > 0 ? ` (${items.reduce((s, c) => s + c.quantity, 0)} ürün)` : ""}
+              </h2>
+              <button
+                type="button"
+                aria-label="Sepeti kapat"
+                onClick={() => setOpen(false)}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-9 cursor-pointer items-center justify-center rounded-sm transition-colors"
               >
-                Alışverişe Başla
-              </Button>
-            </Box>
-          ) : (
-            <>
-              <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-                {items.map((c) => (
-                  <Box
-                    key={c.product.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      py: 1,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 1.4,
-                        overflow: "hidden",
-                        bgcolor: "secondary.main",
-                        flexShrink: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {apiFileUrl(c.product.image_path) ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={apiFileUrl(c.product.image_path)!}
-                          alt={c.product.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                        />
-                      ) : (
-                        <ShoppingBag className="text-primary-dark" />
-                      )}
-                    </Box>
-                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                      <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
-                        {c.product.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {tl(c.product.price)} × {c.quantity} = {tl(c.product.price * c.quantity)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <IconButton size="small" onClick={() => setItems(decrementCart(c.product.id))}>
-                        <Minus className="size-4" />
-                      </IconButton>
-                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                        {c.quantity}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => setItems(addToCartStorage(c.product, 1))}
-                        disabled={c.quantity >= c.product.stock}
-                      >
-                        <Plus className="size-4" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
+                <X className="size-5" />
+              </button>
+            </div>
 
-              {/* Kariyer seviyeleri — şebeke gibi dikey çubuklar (özet çizgisinin üstünde) */}
-              {showLevels && (
-                <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", mb: 1 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
-                      Kariyer Seviyeleri
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "primary.main" }}>
-                      Seviye PV: {levelPV.toLocaleString("tr-TR")}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 0.75 }}>
-                    {LEVELS.map((lv) => {
-                      const reached = levelPV >= lv.pv;
-                      const fillPct = Math.min(100, Math.round((levelPV / lv.pv) * 100));
-                      return (
-                        <Box key={lv.name} sx={{ flex: 1, textAlign: "center" }}>
-                          {/* Merdiven: sabit yükseklikli çubuk + PV'ye göre iç dolum */}
-                          <Box sx={{ height: 56, width: "100%", display: "flex", alignItems: "flex-end" }}>
-                            <Box
-                              sx={{
-                                position: "relative",
-                                width: "100%",
-                                height: `${lv.height}%`,
-                                bgcolor: "#EDEDED",
-                                borderRadius: "6px 6px 2px 2px",
-                                overflow: "hidden",
+            {error && (
+              <div className="border-destructive/30 bg-destructive/10 text-destructive mb-1.5 rounded-sm border px-3 py-2 text-sm font-semibold">
+                {error}
+              </div>
+            )}
+
+            {items.length === 0 ? (
+              <div className="text-muted-foreground py-16 text-center">
+                <ShoppingBag className="mx-auto mb-2 size-12" />
+                <p>Sepetiniz boş.</p>
+                <Button
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/shop");
+                  }}
+                >
+                  Alışverişe Başla
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Sepet öğeleri */}
+                <div className="flex-1 overflow-y-auto">
+                  {items.map((c) => (
+                    <div key={c.product.id} className="border-border flex items-center gap-3 border-b py-2">
+                      <div className="bg-secondary flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+                        {apiFileUrl(c.product.image_path) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={apiFileUrl(c.product.image_path)!}
+                            alt={c.product.name}
+                            className="block h-full w-full object-cover"
+                          />
+                        ) : (
+                          <ShoppingBag className="text-primary-dark" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{c.product.name}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {tl(c.product.price)} × {c.quantity} = {tl(c.product.price * c.quantity)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          aria-label="Adedi azalt"
+                          onClick={() => setItems(decrementCart(c.product.id))}
+                          className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-sm transition-colors"
+                        >
+                          <Minus className="size-4" />
+                        </button>
+                        <span className="min-w-5 text-center text-sm font-bold">{c.quantity}</span>
+                        <button
+                          type="button"
+                          aria-label="Adedi artır"
+                          onClick={() => setItems(addToCartStorage(c.product, 1))}
+                          disabled={c.quantity >= c.product.stock}
+                          className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-sm transition-colors disabled:pointer-events-none disabled:opacity-40"
+                        >
+                          <Plus className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Kariyer seviyeleri — şebeke gibi dikey çubuklar (özet çizgisinin üstünde) */}
+                {showLevels && (
+                  <div className="mb-2">
+                    <div className="text-muted-foreground mb-1 flex items-baseline justify-between">
+                      <span className="text-xs font-bold">Kariyer Seviyeleri</span>
+                      <span className="text-primary text-xs font-extrabold">
+                        Seviye PV: {levelPV.toLocaleString("tr-TR")}
+                      </span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {LEVELS.map((lv) => {
+                        const reached = levelPV >= lv.pv;
+                        const fillPct = Math.min(100, Math.round((levelPV / lv.pv) * 100));
+                        return (
+                          <div key={lv.name} className="flex-1 text-center">
+                            {/* Merdiven: sabit yükseklikli çubuk + PV'ye göre iç dolum */}
+                            <div className="flex h-14 w-full items-end">
+                              <div
+                                className="relative w-full overflow-hidden rounded-sm"
+                                style={{ height: `${lv.height}%`, backgroundColor: "#EDEDED" }}
+                              >
+                                <div
+                                  className="absolute bottom-0 left-0 w-full transition-[height] duration-300"
+                                  style={{
+                                    height: `${fillPct}%`,
+                                    backgroundColor: lv.color,
+                                    opacity: reached ? 1 : 0.55,
+                                    boxShadow: reached ? "inset 0 -3px 0 rgba(0,0,0,0.12)" : "none",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <span
+                              className="mt-0.5 block"
+                              style={{
+                                fontSize: 10,
+                                fontWeight: reached ? 800 : 500,
+                                color: reached ? lv.color : "var(--muted-foreground)",
                               }}
                             >
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  bottom: 0,
-                                  left: 0,
-                                  width: "100%",
-                                  height: `${fillPct}%`,
-                                  bgcolor: lv.color,
-                                  opacity: reached ? 1 : 0.55,
-                                  transition: "height 300ms",
-                                  boxShadow: reached ? "inset 0 -3px 0 rgba(0,0,0,0.12)" : "none",
-                                }}
-                              />
-                            </Box>
-                          </Box>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontSize: 10,
-                              fontWeight: reached ? 800 : 500,
-                              color: reached ? lv.color : "text.secondary",
-                              display: "block",
-                              mt: 0.5,
-                            }}
-                          >
-                            {lv.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ fontSize: 9, color: "text.secondary", display: "block" }}>
-                            {lv.pv.toLocaleString("tr-TR")} PV
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                  {isPlatin && platinMsg && (
-                    <Box
-                      sx={{
-                        mt: 1.5,
-                        p: 1.5,
-                        borderRadius: 1.8,
-                        bgcolor: "primary.main",
-                        color: "#fff",
-                        textAlign: "center",
-                        fontWeight: 800,
-                        fontSize: { xs: 16, sm: 18 },
-                        letterSpacing: 0.3,
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-                        animation: "bw-pulse 1.2s ease-in-out 2",
-                      }}
-                    >
-                      🎉 Artık Platin seviyesine ulaştınız!
-                    </Box>
-                  )}
-                </Box>
-              )}
+                              {lv.name}
+                            </span>
+                            <span className="text-muted-foreground block" style={{ fontSize: 9 }}>
+                              {lv.pv.toLocaleString("tr-TR")} PV
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {isPlatin && platinMsg && (
+                      <div className="bg-primary mt-3 rounded-sm p-3 text-center text-base font-extrabold tracking-wide text-white shadow-lg animate-[bw-pulse_1.2s_ease-in-out_2] sm:text-lg">
+                        🎉 Artık Platin seviyesine ulaştınız!
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              <Box sx={{ borderTop: "1px solid", borderColor: "divider", mt: 2, pt: 1.5 }}>
-                <Typography variant="body1" sx={{ fontWeight: 700, mb: 1 }}>
-                  Sipariş Özeti
-                </Typography>
-                {[
-                  { label: "Ürün", value: `${totalQuantity} Ürün` },
-                  { label: "Toplam Satış Tutarı", value: tl(totalAmount) },
-                  { label: "Toplam CV", value: `${totalCV.toLocaleString("tr-TR")} CV` },
-                  { label: "Toplam PV", value: `${totalPV.toLocaleString("tr-TR")} PV` },
-                  { label: "Ödenecek Tutar", value: tl(totalAmount), strong: true },
-                ].map((row) => (
-                  <Box
-                    key={row.label}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      py: 0.4,
-                    }}
-                  >
-                    <Typography
-                      variant={row.strong ? "body1" : "body2"}
-                      color={row.strong ? "text.primary" : "text.secondary"}
-                      sx={{ fontWeight: row.strong ? 700 : 400 }}
-                    >
-                      {row.label}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{ fontWeight: row.strong ? 800 : 600, color: row.strong ? "primary.dark" : "text.primary" }}
-                    >
-                      {row.value}
-                    </Typography>
-                  </Box>
-                ))}
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                  Ödeme: EFT/HAVALE — sipariş, bildirim onaylanana kadar beklemede kalır.
-                </Typography>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  size="large"
-                  sx={{ mt: 1.5 }}
-                  onClick={checkout}
-                  disabled={checkingOut}
-                >
-                  {checkingOut ? "İşleniyor..." : "Siparişi Tamamla"}
-                </Button>
-              </Box>
-            </>
-          )}
-        </Box>
-      </Drawer>
+                <Separator className="mt-2" />
 
-      <Snackbar
-        open={successOrder !== null}
-        autoHideDuration={8000}
-        onClose={() => setSuccessOrder(null)}
-        message={successOrder !== null ? `Sipariş #${successOrder} oluşturuldu (beklemede).` : ""}
-        action={
-          <Button color="inherit" size="small" component={Link} href="/payment-notifications">
-            Ödeme Bildirimi Yap
-          </Button>
-        }
-      />
+                {/* Sipariş özeti */}
+                <div className="pt-3">
+                  <p className="mb-1 text-base font-bold">Sipariş Özeti</p>
+                  {[
+                    { label: "Ürün", value: `${totalQuantity} Ürün` },
+                    { label: "Toplam Satış Tutarı", value: tl(totalAmount) },
+                    { label: "Toplam CV", value: `${totalCV.toLocaleString("tr-TR")} CV` },
+                    { label: "Toplam PV", value: `${totalPV.toLocaleString("tr-TR")} PV` },
+                    { label: "Ödenecek Tutar", value: tl(totalAmount), strong: true },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between py-0.5">
+                      <span className={row.strong ? "text-base font-bold" : "text-muted-foreground text-sm"}>
+                        {row.label}
+                      </span>
+                      <span className={row.strong ? "text-primary-dark text-base font-extrabold" : "text-sm font-semibold"}>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="text-muted-foreground mt-0.5 block text-xs">
+                    Ödeme: EFT/HAVALE — sipariş, bildirim onaylanana kadar beklemede kalır.
+                  </p>
+                  <Button size="lg" className="mt-3 w-full" onClick={checkout} disabled={checkingOut}>
+                    {checkingOut ? "İşleniyor..." : "Siparişi Tamamla"}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
+      {/* Başarı bildirimi (Tailwind toast) */}
+      {successOrder !== null && (
+        <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-sm px-5 py-3 text-sm font-semibold">
+            <Check className="size-5 shrink-0" />
+            <span className="flex-1 truncate">Sipariş #{successOrder} oluşturuldu (beklemede).</span>
+            <Link href="/payment-notifications" className="font-bold underline underline-offset-2">
+              Ödeme Bildirimi Yap
+            </Link>
+            <button
+              type="button"
+              aria-label="Bildirimi kapat"
+              className="ml-1 cursor-pointer text-xl leading-none opacity-60 transition-opacity hover:opacity-100"
+              onClick={() => setSuccessOrder(null)}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Platin konfettisi */}
       {confetti && (
-        <Box sx={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 2000, overflow: "hidden" }}>
+        <div className="pointer-events-none fixed inset-0 z-[2000] overflow-hidden">
           {Array.from({ length: 40 }).map((_, i) => (
-            <Box
+            <span
               key={i}
-              component="span"
-              sx={{
+              style={{
                 position: "absolute",
                 top: "-16px",
                 left: `${(i * 37) % 100}%`,
                 width: 8,
                 height: 14,
-                bgcolor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
                 borderRadius: "1.4px",
                 animation: `bw-fall ${2.4 + (i % 5) * 0.5}s ${(i % 9) * 0.08}s linear forwards`,
                 transform: `rotate(${(i * 29) % 360}deg)`,
               }}
             />
           ))}
-        </Box>
+        </div>
       )}
     </>
   );

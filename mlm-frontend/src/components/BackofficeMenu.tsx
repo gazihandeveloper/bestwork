@@ -1,13 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import {
   User,
   Landmark,
@@ -26,9 +20,8 @@ import {
   Mail,
   ChevronDown,
 } from "lucide-react";
-import { alpha } from "@mui/material/styles";
 import { useAuth } from "@/hooks/useAuth";
-import { ELEVATION } from "@/components/landing/tokens";
+import { cn } from "@/lib/utils";
 
 interface MenuItemDef {
   path: string;
@@ -108,10 +101,14 @@ export default function BackofficeMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const { isAdmin } = useAuth();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const visibleGroups = groups.filter((g) => !g.adminOnly || isAdmin);
+  const openMenuGroup = openGroup
+    ? visibleGroups.find((g) => g.title === openGroup) ?? null
+    : null;
 
   const groupActive = (g: MenuGroup) =>
     g.items.some((item) => {
@@ -119,117 +116,139 @@ export default function BackofficeMenu() {
       return pathname === base || pathname.startsWith(base + "/");
     });
 
-  const handleOpen = (title: string, e: React.MouseEvent<HTMLElement>) => {
-    setOpenGroup(title);
-    setAnchorEl(e.currentTarget);
+  const itemSelected = (path: string) => {
+    const base = path.split("?")[0];
+    return pathname === base || pathname.startsWith(base + "/");
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const closeMenu = () => {
     setOpenGroup(null);
+    setMenuPos(null);
+  };
+
+  // Grup butonunun altına, viewport'a sabitlenmiş panel açar.
+  const toggleGroup = (title: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (openGroup === title) {
+      closeMenu();
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - 264));
+    setMenuPos({ top: rect.bottom + 8, left });
+    setOpenGroup(title);
   };
 
   const handleNav = (path: string) => {
-    handleClose();
+    closeMenu();
     router.push(path);
   };
 
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        gap: 1,
-        overflowX: "auto",
-        p: 1,
-        mb: 2,
-        borderRadius: "14px",
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: "background.paper",
-        boxShadow: ELEVATION.l1,
-        scrollbarWidth: "none",
-        "&::-webkit-scrollbar": { display: "none" },
-      }}
-    >
-      {/* Anasayfa — düz buton, dropdown'suz */}
-      <Button
-        onClick={() => router.push("/dashboard")}
-        startIcon={<Home />}
-        sx={{
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-          borderRadius: "7px",
-          px: 2,
-          bgcolor: pathname === "/dashboard" ? "primary.main" : "transparent",
-          color: pathname === "/dashboard" ? "common.white" : "text.primary",
-          fontWeight: pathname === "/dashboard" ? 700 : 500,
-          "&:hover": {
-            bgcolor:
-              pathname === "/dashboard"
-                ? "primary.dark"
-                : (theme) => alpha(theme.palette.primary.main, 0.08),
-          },
-        }}
-      >
-        Anasayfa
-      </Button>
+  // Dışarı tıklama / Escape / kaydırma / yeniden boyutlandırma: dropdown'ı kapat.
+  useEffect(() => {
+    if (!openGroup) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        closeMenu();
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    const onScrollOrResize = () => closeMenu();
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [openGroup]);
 
-      {visibleGroups.map((g) => {
-        const active = groupActive(g);
-        return (
-          <Box key={g.title}>
-            <Button
-              onClick={(e) => handleOpen(g.title, e)}
-              startIcon={g.icon}
-              endIcon={<ChevronDown />}
-              sx={{
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                borderRadius: "7px",
-                px: 2,
-                bgcolor: active ? "primary.main" : "transparent",
-                color: active ? "common.white" : "text.primary",
-                fontWeight: active ? 700 : 500,
-                "&:hover": {
-                  bgcolor: active ? "primary.dark" : (theme) => alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              {g.title}
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={openGroup === g.title}
-              onClose={handleClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              transformOrigin={{ vertical: "top", horizontal: "left" }}
-              slotProps={{
-                paper: { sx: { borderRadius: "8.4px", minWidth: 240, mt: 0.5 } },
-              }}
-            >
-              {g.items.map((item) => {
-                const base = item.path.split("?")[0];
-                const selected = pathname === base || pathname.startsWith(base + "/");
-                return (
-                  <MenuItem
-                    key={item.path}
-                    selected={selected}
-                    onClick={() => handleNav(item.path)}
-                    sx={{ borderRadius: "5.6px", mx: 0.5 }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 34 }}>{item.icon}</ListItemIcon>
-                    <ListItemText
-                      primary={item.label}
-                      slotProps={{ primary: { sx: { fontSize: 14, fontWeight: selected ? 700 : 400 } } }}
-                    />
-                  </MenuItem>
-                );
-              })}
-            </Menu>
-          </Box>
-        );
-      })}
-    </Box>
+  const buttonBase =
+    "flex shrink-0 cursor-pointer items-center gap-2 rounded-sm px-3.5 py-2 text-sm whitespace-nowrap transition-colors [&_svg]:size-4 [&_svg]:shrink-0";
+
+  return (
+    <div ref={rootRef}>
+      {/* Yatay menü çubuğu — içerik sığınca ortalanır, taşınca yatay kaydırılır */}
+      <div className="bg-card mb-2 overflow-x-auto rounded-sm border border-border p-1.5 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto flex w-fit items-center gap-1">
+          {/* Anasayfa — düz buton, dropdown'suz */}
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className={cn(
+              buttonBase,
+              pathname === "/dashboard"
+                ? "bg-primary font-semibold text-white hover:bg-primary-dark"
+                : "text-foreground hover:bg-accent"
+            )}
+          >
+            <Home />
+            Anasayfa
+          </button>
+
+          {visibleGroups.map((g) => {
+            const active = groupActive(g);
+            const open = openGroup === g.title;
+            return (
+              <div key={g.title}>
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={open}
+                  onClick={(e) => toggleGroup(g.title, e)}
+                  className={cn(
+                    buttonBase,
+                    active
+                      ? "bg-primary font-semibold text-white hover:bg-primary-dark"
+                      : "text-foreground hover:bg-accent"
+                  )}
+                >
+                  {g.icon}
+                  {g.title}
+                  <ChevronDown
+                    className={cn("transition-transform duration-200", open && "rotate-180")}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Açık grup dropdown paneli */}
+      {openMenuGroup && menuPos && (
+        <div
+          role="menu"
+          aria-label={`${openMenuGroup.title} menüsü`}
+          style={{ top: menuPos.top, left: menuPos.left }}
+          className="bg-card fixed z-50 min-w-60 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 rounded-sm border border-border p-1 shadow-lg duration-150"
+        >
+          {openMenuGroup.items.map((item) => {
+            const selected = itemSelected(item.path);
+            return (
+              <button
+                key={item.path}
+                type="button"
+                role="menuitem"
+                onClick={() => handleNav(item.path)}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
+                  selected
+                    ? "bg-primary/10 font-semibold text-primary"
+                    : "text-foreground hover:bg-accent"
+                )}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
+import { Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 // Sayfa koruması: giriş yapılmamışsa /login'e yönlendirir.
 // adminOnly ile admin rolü de zorunlu kılınabilir.
-export default function RequireAuth({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
+export default function RequireAuth({ children, adminOnly = false }: { children: ReactNode; adminOnly?: boolean }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -23,9 +23,9 @@ export default function RequireAuth({ children, adminOnly = false }: { children:
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress color="primary" />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="size-10 animate-spin text-primary" />
+      </div>
     );
   }
 

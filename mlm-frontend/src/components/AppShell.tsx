@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import Box from "@mui/material/Box";
 import type { ReactNode } from "react";
 
 const FloatingNavbar = dynamic(() => import("@/components/FloatingNavbar"), { ssr: true });
@@ -21,17 +20,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Box sx={{ pt: { xs: 14, md: 13 } }}>
-      <Box
-        component="main"
-        sx={{ minHeight: "100vh", pb: { xs: 12, md: 4 }, bgcolor: "background.default" }}
-      >
-          <Box sx={{ width: "100%", px: { xs: 2, md: 3 }, pt: 2 }}>
-            <BackofficeMenu />
-            {children}
-          </Box>
-      </Box>
+    <div className="pt-[104px] md:pt-[112px]">
+      <main className="bg-background min-h-screen pb-12 md:pb-4">
+        <div className="w-full px-2 md:px-3 pt-2">
+          <BackofficeMenu />
+          {children}
+        </div>
+      </main>
       <FloatingNavbar />
-    </Box>
+    </div>
   );
 }
