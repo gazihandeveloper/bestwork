@@ -161,7 +161,7 @@ export default function SiteNav() {
                 <>
                   <Link
                     href="/dashboard"
-                    className="text-foreground hover:bg-accent rounded-full px-3.5 py-2 text-[15px] font-extrabold tracking-tight transition-colors whitespace-nowrap"
+                    className="text-foreground hover:bg-accent rounded-full px-3.5 py-2 text-[15px] font-medium tracking-tight transition-colors whitespace-nowrap"
                   >
                     {user.name.toLocaleUpperCase("tr-TR")}
                   </Link>
@@ -265,7 +265,7 @@ export default function SiteNav() {
               <div className="bg-secondary/70 h-11 animate-pulse rounded-full" />
             ) : user ? (
               <>
-                <Button asChild className="w-full" onClick={() => setMobileOpen(false)}>
+                <Button asChild className="w-full font-medium" onClick={() => setMobileOpen(false)}>
                   <Link href="/dashboard">{user.name.toLocaleUpperCase("tr-TR")}</Link>
                 </Button>
                 <Button
