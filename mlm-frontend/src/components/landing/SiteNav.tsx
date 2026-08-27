@@ -163,15 +163,14 @@ export default function SiteNav() {
                     href="/dashboard"
                     className="text-primary hover:bg-primary/10 rounded-full px-3.5 py-2 text-[15px] font-extrabold tracking-tight transition-colors whitespace-nowrap"
                   >
-                    {user.name.toLocaleUpperCase("tr-TR")}
+                    Hesabım
                   </Link>
                   <button aria-label="Çıkış yap" className={iconBtn} onClick={logout}>
                     <LogOut className="size-5" />
                   </button>
                 </>
               ) : (
-                <Button onClick={openLogin} className="ml-1 px-6 font-extrabold text-white">
-                  Oturum Aç
+                <Button onClick={openLogin} className="ml-1 px-6 font-extrabold text-white">                  Oturum Aç
                 </Button>
               )}
             </div>
@@ -267,7 +266,7 @@ export default function SiteNav() {
             ) : user ? (
               <>
                 <Button asChild className="w-full" onClick={() => setMobileOpen(false)}>
-                  <Link href="/dashboard">{user.name.toLocaleUpperCase("tr-TR")}</Link>
+                  <Link href="/dashboard">Hesabım</Link>
                 </Button>
                 <Button
                   variant="outline"

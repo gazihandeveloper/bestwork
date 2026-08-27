@@ -496,15 +496,15 @@ function DashboardContent() {
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
-                borderRadius: "17px",
+                borderRadius: "4px",
                 overflow: "hidden",
-                background: (theme) =>
-                  `linear-gradient(165deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 55%, ${theme.palette.secondary.dark} 100%)`,
-                color: "common.white",
-                boxShadow: 6,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                boxShadow: "none",
               }}
             >
-              {/* Profil görseli — çerçevesiz bant */}
+              {/* Profil görseli — düz bant */}
               <Box sx={{ position: "relative", width: "100%", aspectRatio: "16/10", flexShrink: 0 }}>
                 <Box
                   sx={{
@@ -513,7 +513,7 @@ function DashboardContent() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: "rgba(255,255,255,0.08)",
+                    bgcolor: "secondary.light",
                   }}
                 >
                   {profileImage ? (
@@ -522,22 +522,22 @@ function DashboardContent() {
                       src={fileUrl(profileImage) ?? ""}
                       alt={contextUser?.name ?? "Profil"}
                       style={{
-                        width: 170,
-                        height: 170,
+                        width: 150,
+                        height: 150,
                         objectFit: "cover",
                         objectPosition: "center",
                         display: "block",
-                        borderRadius: "9.8px",
+                        borderRadius: "4px",
                       }}
                     />
                   ) : (
-                    <Box sx={{ fontSize: 64, fontWeight: 800, color: "#D8F0DC" }}>{initials}</Box>
+                    <Box sx={{ fontSize: 64, fontWeight: 800, color: "text.secondary" }}>{initials}</Box>
                   )}
                 </Box>
                 <Box
                   component="label"
                   aria-label="Profil fotoğrafı yükle"
-                  sx={{ cursor: "pointer", position: "absolute", right: 12, bottom: 12 }}
+                  sx={{ cursor: "pointer", position: "absolute", right: 10, bottom: 10 }}
                 >
                   <input
                     type="file"
@@ -547,107 +547,115 @@ function DashboardContent() {
                   />
                   <Box
                     sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "8.4px",
+                      width: 36,
+                      height: 36,
+                      borderRadius: "4px",
                       bgcolor: "common.white",
-                      color: "primary.dark",
+                      color: "text.secondary",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      boxShadow: 3,
-                      "&:hover": { bgcolor: "#D8F0DC" },
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                      "&:hover": { bgcolor: "secondary.light" },
                     }}
                   >
-                    {uploading ? <CircularProgress size={18} /> : <Camera className="size-5" />}
+                    {uploading ? <CircularProgress size={16} /> : <Camera className="size-4" />}
                   </Box>
                 </Box>
               </Box>
 
-              {/* İçerik */}
-              <Box sx={{ p: 3, pt: 2, display: "flex", flexDirection: "column", gap: 1.25, alignItems: "center", textAlign: "center" }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.25 }}>
-                  {contextUser?.name.toLocaleUpperCase("tr-TR")}
+              {/* İçerik — düz, sade */}
+              <Box sx={{ p: 2.5, pt: 2, display: "flex", flexDirection: "column", gap: 1, alignItems: "center", textAlign: "center" }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.25, color: "text.primary" }}>
+                  Hesabım
                 </Typography>
 
                 <Box
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 1,
-                    bgcolor: "common.white",
-                    borderRadius: "20px",
-                    px: 2,
-                    py: 0.75,
-                    boxShadow: 2,
+                    gap: 0.75,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: "4px",
+                    px: 1.5,
+                    py: 0.5,
+                    bgcolor: "transparent",
+                    boxShadow: "none",
                   }}
                 >
                   <Box
                     aria-hidden
                     sx={{
-                      width: 9,
-                      height: 9,
+                      width: 8,
+                      height: 8,
                       borderRadius: "50%",
                       bgcolor: me?.is_active ? "success.main" : "error.main",
-                      animation: "blink 1.2s ease-in-out infinite",
-                      "@media (prefers-reduced-motion: reduce)": { animation: "none" },
                     }}
                   />
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: me?.is_active ? "success.main" : "error.main" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: me?.is_active ? "success.main" : "error.main" }}>
                     Aktif
                   </Typography>
                 </Box>
 
-                <Chip
-                  label={`Üye Numaranız: ${me?.member_code}`}
-                  sx={{
-                    bgcolor: "rgba(255,255,255,0.15)",
-                    color: "common.white",
-                    cursor: "pointer",
-                    "&:hover": { bgcolor: "rgba(255,255,255,0.28)" },
-                  }}
+                <Button
+                  size="small"
+                  variant="outlined"
                   onClick={() => copyText(me?.member_code ?? "", "üye-id")}
-                  deleteIcon={<Copy className="size-4 text-white" />}
-                  onDelete={() => copyText(me?.member_code ?? "", "üye-id")}
-                />
+                  endIcon={<Copy className="size-3.5" />}
+                  sx={{
+                    color: "text.primary",
+                    borderColor: "divider",
+                    borderRadius: "4px",
+                    textTransform: "none",
+                    "&:hover": { bgcolor: "secondary.light", borderColor: "divider" },
+                  }}
+                >
+                  Üye No: {me?.member_code}
+                </Button>
                 {d.user.rank && (
-                  <Chip
-                    label={`Rütbe: ${d.user.rank}`}
-                    sx={{
-                      bgcolor: "rgba(255,255,255,0.15)",
-                      color: "common.white",
-                      cursor: "pointer",
-                      "&:hover": { bgcolor: "rgba(255,255,255,0.28)" },
-                    }}
+                  <Button
+                    size="small"
+                    variant="outlined"
                     onClick={() => router.push("/career")}
-                  />
+                    sx={{
+                      color: "text.primary",
+                      borderColor: "divider",
+                      borderRadius: "4px",
+                      textTransform: "none",
+                      "&:hover": { bgcolor: "secondary.light", borderColor: "divider" },
+                    }}
+                  >
+                    Rütbe: {d.user.rank}
+                  </Button>
                 )}
 
-                {/* Başarı Raporu — üye numarasının altı */}
+                {/* Başarı Raporu — düz buton */}
                 <Button
                   component={Link}
                   href="/success-report"
                   size="small"
-                  variant="contained"
-                  startIcon={<BarChart3 />}
+                  variant="outlined"
+                  startIcon={<BarChart3 className="size-4" />}
                   sx={{
-                    bgcolor: "common.white",
-                    color: "primary.dark",
-                    borderRadius: "20px",
-                    px: 2.5,
-                    fontWeight: 800,
-                    "&:hover": { bgcolor: "#D8F0DC" },
+                    color: "primary.main",
+                    borderColor: "primary.main",
+                    borderRadius: "4px",
+                    textTransform: "none",
+                    px: 2,
+                    fontWeight: 700,
+                    "&:hover": { bgcolor: "rgba(71,111,22,0.06)" },
                   }}
                 >
-                  🏅 Başarı Raporu
+                  Başarı Raporu
                 </Button>
               </Box>
 
               {/* Üye kayıt linki — alt */}
-              <Box sx={{ px: 3, pb: 3, mt: "auto" }}>
+              <Box sx={{ px: 2.5, pb: 2.5, mt: "auto" }}>
                 <Typography
                   variant="overline"
-                  sx={{ display: "block", textAlign: "center", color: "rgba(255,255,255,0.75)", fontWeight: 700, letterSpacing: 1.5, mb: 0.75, fontSize: 10.5 }}
+                  sx={{ display: "block", textAlign: "center", color: "text.secondary", fontWeight: 700, letterSpacing: 1.2, mb: 0.5, fontSize: 10 }}
                 >
                   Üye Kayıt Linkiniz
                 </Typography>
@@ -656,27 +664,28 @@ function DashboardContent() {
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                    bgcolor: "rgba(255,255,255,0.12)",
-                    border: "1px solid rgba(255,255,255,0.25)",
-                    borderRadius: 2.1,
+                    bgcolor: "transparent",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: "4px",
                     px: 1.5,
                     py: 1,
                   }}
                 >
-                  <LinkIcon className="size-[18px] shrink-0 text-white" />
+                  <LinkIcon className="size-4 shrink-0 text-muted-foreground" />
                   <Typography
                     variant="body2"
                     noWrap
-                    sx={{ color: "common.white", fontFamily: "monospace", fontSize: 12, flexGrow: 1 }}
+                    sx={{ color: "text.secondary", fontFamily: "monospace", fontSize: 12, flexGrow: 1 }}
                   >
                     {referralLink}
                   </Typography>
                   <Button
                     size="small"
-                    variant="contained"
-                    startIcon={<Copy className="size-4" />}
+                    variant="outlined"
+                    startIcon={<Copy className="size-3.5" />}
                     onClick={() => copyText(referralLink, "link")}
-                    sx={{ flexShrink: 0, fontSize: 11, py: 0.5 }}
+                    sx={{ flexShrink: 0, fontSize: 11, py: 0.5, borderRadius: "4px", textTransform: "none" }}
                   >
                     {copied === "link" ? "Kopyalandı!" : "Kopyala"}
                   </Button>
