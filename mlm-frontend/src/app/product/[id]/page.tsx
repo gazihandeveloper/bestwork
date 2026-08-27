@@ -198,7 +198,7 @@ export default function ProductPage() {
               className="cursor-pointer font-bold underline underline-offset-2"
               onClick={() => {
                 setSnackbar("");
-                window.dispatchEvent(new CustomEvent("open-cart"));
+                router.push("/cart");
               }}
             >
               Sepete Git

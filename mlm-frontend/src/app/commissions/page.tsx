@@ -2,38 +2,22 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
-import Chip from "@mui/material/Chip";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TablePagination from "@mui/material/TablePagination";
-import { Medal, Network, Receipt, Users } from "lucide-react";
+import { Medal, Network, Receipt, Users, Loader2 } from "lucide-react";
 import { api, getErrorMessage } from "@/lib/api";
 import { getDashboard } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
 import type { Commission } from "@/services/api";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
 
-const TYPE_META: Record<string, { label: string; color: "success" | "info" | "warning" | "default"; icon: React.ReactElement }> = {
-  referral: { label: "Referans", color: "success", icon: <Users size={15} /> },
-  binary: { label: "Binary", color: "info", icon: <Network size={15} /> },
-  matching: { label: "Matching", color: "warning", icon: <Medal size={15} /> },
+const TYPE_META: Record<string, { label: string; badge: string; icon: React.ReactNode }> = {
+  referral: { label: "Referans", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <Users size={15} /> },
+  binary: { label: "Binary", badge: "border-[#0288D1]/50 text-[#0277BD]", icon: <Network size={15} /> },
+  matching: { label: "Matching", badge: "border-amber-500/50 text-amber-600", icon: <Medal size={15} /> },
 };
 
 function CommissionsContent() {
@@ -75,112 +59,110 @@ function CommissionsContent() {
   ];
 
   return (
-    <Container maxWidth={false} sx={{ py: 3 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
-        Prim Detayları
-      </Typography>
+    <div className="py-3">
+      <h1 className="text-primary-dark mb-3 text-2xl font-extrabold">Prim Detayları</h1>
 
       {/* Özet kartları */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {summaryCards.map((s) => (
-          <Grid size={{ xs: 6, sm: 3 }} key={s.label}>
-            <Card
-              sx={{
-                borderRadius: "13px",
-                border: "1px solid",
-                borderColor: "divider",
-                background: s.highlight
-                  ? (theme) =>
-                      `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-                  : "background.paper",
-              }}
+          <div
+            key={s.label}
+            className={cn(
+              "rounded border p-2",
+              s.highlight
+                ? "border-transparent bg-gradient-to-br from-primary to-primary-dark text-white"
+                : "border-border bg-card"
+            )}
+          >
+            <p
+              className={cn(
+                "text-[11px] font-bold uppercase",
+                s.highlight ? "text-white/85" : "text-muted-foreground"
+              )}
             >
-              <CardContent sx={{ p: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: s.highlight ? "rgba(255,255,255,0.85)" : "text.secondary",
-                    fontWeight: 700,
-                    fontSize: 11,
-                  }}
-                >
-                  {s.label.toLocaleUpperCase("tr-TR")}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 800, color: s.highlight ? "common.white" : "primary.dark" }}
-                >
-                  {tl(s.value)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+              {s.label.toLocaleUpperCase("tr-TR")}
+            </p>
+            <p
+              className={cn(
+                "text-lg font-extrabold",
+                s.highlight ? "text-white" : "text-primary-dark"
+              )}
+            >
+              {tl(s.value)}
+            </p>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-        <ToggleButtonGroup
-          value={type}
-          exclusive
-          size="small"
-          onChange={(_, v) => {
-            setType(v || "");
-            setPage(0);
-          }}
-        >
-          <ToggleButton value="">Tümü</ToggleButton>
-          <ToggleButton value="referral">Referans</ToggleButton>
-          <ToggleButton value="binary">Binary</ToggleButton>
-          <ToggleButton value="matching">Matching</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+      {/* Filtre */}
+      <div className="mb-2 flex flex-wrap items-center gap-1">
+        {[
+          { value: "", label: "Tümü" },
+          { value: "referral", label: "Referans" },
+          { value: "binary", label: "Binary" },
+          { value: "matching", label: "Matching" },
+        ].map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => {
+              setType(t.value);
+              setPage(0);
+            }}
+            className={cn(
+              "cursor-pointer rounded px-3 py-1.5 text-sm font-semibold transition-colors",
+              type === t.value
+                ? "bg-primary text-white"
+                : "border-border bg-card text-foreground border hover:bg-accent"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded border px-3 py-2 text-sm font-medium">
+          {error}
+        </div>
+      )}
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress />
-        </Box>
+        <div className="flex justify-center py-6">
+          <Loader2 className="text-primary size-8 animate-spin" />
+        </div>
       ) : commissions.length === 0 ? (
-        <Card>
-          <CardContent>
-            <EmptyState icon={<Receipt size={48} />} message="Bu filtrede komisyon kaydı yok." />
-          </CardContent>
-        </Card>
+        <div className="border-border bg-card rounded border p-4">
+          <EmptyState icon={<Receipt size={48} />} message="Bu filtrede komisyon kaydı yok." />
+        </div>
       ) : (
-        <Card sx={{ borderRadius: "14px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 560 }}>
-              <TableHead>
-                <TableRow
-                  sx={{
-                    bgcolor: (theme) => theme.palette.primary.main,
-                    "& th": { color: "common.white", fontWeight: 700, fontSize: 13 },
-                  }}
-                >
-                  <TableCell>Tarih</TableCell>
-                  <TableCell>Tür</TableCell>
-                  <TableCell align="right">İlgili CV</TableCell>
-                  <TableCell align="right">Tutar</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+        <div className="border-border bg-card overflow-hidden rounded border">
+          <div className="overflow-x-auto">
+            <table className="min-w-[560px] w-full text-sm">
+              <thead>
+                <tr className="bg-primary text-white">
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">Tarih</th>
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">Tür</th>
+                  <th className="px-3 py-2 text-right text-[13px] font-bold">İlgili CV</th>
+                  <th className="px-3 py-2 text-right text-[13px] font-bold">Tutar</th>
+                </tr>
+              </thead>
+              <tbody>
                 {commissions.map((c, i) => {
                   const meta = TYPE_META[c.type] ?? {
                     label: c.type,
-                    color: "default" as const,
+                    badge: "border-border text-muted-foreground",
                     icon: <Receipt size={15} />,
                   };
                   return (
-                    <TableRow
+                    <tr
                       key={c.id}
-                      hover
-                      sx={{
-                        bgcolor: i % 2 === 1 ? (theme) => theme.palette.secondary.light : "background.paper",
-                        "&:hover": { bgcolor: (theme) => theme.palette.secondary.main },
-                      }}
+                      className={cn(
+                        "border-border border-b transition-colors hover:bg-secondary/50",
+                        i % 2 === 1 && "bg-secondary-light/40"
+                      )}
                     >
-                      <TableCell sx={{ whiteSpace: "nowrap", fontSize: 13.5 }}>
+                      <td className="px-3 py-2 text-[13.5px] whitespace-nowrap">
                         {new Date(c.created_at).toLocaleString("tr-TR", {
                           day: "2-digit",
                           month: "2-digit",
@@ -188,50 +170,55 @@ function CommissionsContent() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          icon={meta.icon}
-                          label={meta.label}
-                          color={meta.color}
-                          sx={{ fontWeight: 600, "& .MuiChip-icon": { fontSize: 15 } }}
-                        />
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontSize: 13.5, color: "text.secondary" }}>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className={cn("gap-1 font-semibold", meta.badge)}>
+                          {meta.icon}
+                          {meta.label}
+                        </Badge>
+                      </td>
+                      <td className="text-muted-foreground px-3 py-2 text-right text-[13.5px]">
                         {c.related_cv != null ? `${c.related_cv.toLocaleString("tr-TR")} CV` : "—"}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography sx={{ fontWeight: 800, color: "primary.dark", fontSize: 14 }}>
-                          +{tl(c.amount)}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                      <td className="text-primary-dark px-3 py-2 text-right text-sm font-extrabold">
+                        +{tl(c.amount)}
+                      </td>
+                    </tr>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            component="div"
-            count={total}
-            page={page}
-            onPageChange={(_, p) => setPage(p)}
-            rowsPerPage={limit}
-            rowsPerPageOptions={[limit]}
-            labelRowsPerPage=""
-            labelDisplayedRows={({ from, to, count }) =>
-              `${from}-${to} / ${count.toLocaleString("tr-TR")} kayıt`
-            }
-            sx={{
-              borderTop: "1px solid",
-              borderColor: "divider",
-              "& .MuiTablePagination-toolbar": { minHeight: 56 },
-            }}
-          />
-        </Card>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Sayfalama */}
+          <div className="border-border flex items-center justify-between border-t px-3 py-2 text-sm">
+            <span className="text-muted-foreground">
+              {commissions.length === 0
+                ? "0-0 / 0 kayıt"
+                : `${page * limit + 1}-${Math.min((page + 1) * limit, total)} / ${total.toLocaleString("tr-TR")} kayıt`}
+            </span>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+                className="border-border bg-card text-foreground hover:bg-accent cursor-pointer rounded border px-3 py-1 text-sm font-semibold disabled:pointer-events-none disabled:opacity-40"
+              >
+                Önceki
+              </button>
+              <button
+                type="button"
+                disabled={(page + 1) * limit >= total}
+                onClick={() => setPage((p) => p + 1)}
+                className="border-border bg-card text-foreground hover:bg-accent cursor-pointer rounded border px-3 py-1 text-sm font-semibold disabled:pointer-events-none disabled:opacity-40"
+              >
+                Sonraki
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
 

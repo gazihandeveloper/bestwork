@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Loader2 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getTree, getErrorMessage } from "@/services/api";
@@ -16,9 +12,9 @@ import type { TreeNode } from "@/services/api";
 const BinaryTree = dynamic(() => import("@/components/binary-tree/BinaryTree"), {
   ssr: false,
   loading: () => (
-    <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-      <CircularProgress />
-    </Box>
+    <div className="flex justify-center py-10">
+      <Loader2 className="text-primary size-10 animate-spin" />
+    </div>
   ),
 });
 
@@ -45,23 +41,27 @@ function TreeContent() {
       .catch((err) => setError(getErrorMessage(err)));
   }, [user, period]);
 
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) {
+    return (
+      <div className="border-destructive/50 bg-destructive/10 text-destructive my-4 rounded border px-3 py-2 text-sm font-medium">
+        {error}
+      </div>
+    );
+  }
   if (!root) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary size-10 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 3 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
-        Binary Ağacım
-      </Typography>
+    <div className="py-3">
+      <h1 className="text-primary-dark mb-3 text-2xl font-extrabold">Binary Ağacım</h1>
 
       <BinaryTree data={root} depth={2} period={period} onPeriodChange={setPeriod} minMonth={minMonth} />
-    </Container>
+    </div>
   );
 }
 

@@ -67,7 +67,7 @@ export default function Hero() {
     return (
       <section aria-label="Kampanyalar yükleniyor" className="bg-background">
         <div className="pt-[112px] pb-8 md:pt-[128px] md:pb-10">
-          <Skeleton className="h-[400px] w-full rounded-sm sm:h-[480px] md:h-[580px]" />
+          <Skeleton className="h-[400px] w-full rounded sm:h-[480px] md:h-[580px]" />
         </div>
       </section>
     );
@@ -94,7 +94,7 @@ export default function Hero() {
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
           }}
-          className="group relative h-[400px] w-full overflow-hidden rounded-sm bg-secondary-dark shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5),0_2px_10px_rgba(0,0,0,0.08)] sm:h-[480px] md:h-[580px]"
+          className="group relative h-[400px] w-full overflow-hidden rounded bg-secondary-dark shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5),0_2px_10px_rgba(0,0,0,0.08)] sm:h-[480px] md:h-[580px]"
         >
           {/* Slaytlar */}
           {slides.map((s, i) => {

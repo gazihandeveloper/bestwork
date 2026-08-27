@@ -33,7 +33,7 @@ export default function Categories() {
           <Link
             key={name}
             href="/shop"
-            className="group border-border bg-card flex flex-col items-center justify-center gap-3 rounded-sm border px-3 py-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)] md:py-8"
+            className="group border-border bg-card flex flex-col items-center justify-center gap-3 rounded border px-3 py-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_2px_4px_rgba(0,0,0,0.18),0_4px_8px_3px_rgba(0,0,0,0.10)] md:py-8"
           >
             <span className="bg-secondary text-primary-dark group-hover:bg-primary group-hover:text-primary-foreground flex size-12 items-center justify-center rounded-full transition-colors duration-300 md:size-14">
               <Icon className="size-5 md:size-6" />

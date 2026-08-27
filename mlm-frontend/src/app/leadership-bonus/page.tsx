@@ -1,22 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Button from "@mui/material/Button";
+import { Loader2 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { listLeadershipBonuses, getErrorMessage } from "@/services/api";
 import type { Commission } from "@/services/api";
+import { Button } from "@/components/ui/button";
 
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
@@ -38,81 +27,74 @@ function LeadershipBonusContent() {
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
   }, [offset]);
+
   return (
-    <Container maxWidth={false} sx={{ py: 4 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Liderlik Primi (Matching)
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-4">
+      <h1 className="text-primary-dark text-2xl font-extrabold">Liderlik Primi (Matching)</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Ekibinizin binary kazançlarından 5 nesle kadar aldığınız liderlik primleri.
-      </Typography>
+      </p>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
-          <Box>
-            <Typography variant="body2" color="text.secondary">
-              Toplam Liderlik Primi
-            </Typography>
-            <Typography variant="h5" color="primary.dark">
-              {tl(
-                items.reduce((sum, c) => sum + c.amount, 0)
-              )}
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            Toplam {total} kayıt
-          </Typography>
-        </CardContent>
-      </Card>
+      <div className="border-border bg-card mb-3 flex flex-wrap items-center justify-between gap-1 rounded border p-3">
+        <div>
+          <p className="text-muted-foreground text-sm">Toplam Liderlik Primi</p>
+          <p className="text-primary-dark text-xl font-extrabold">
+            {tl(items.reduce((sum, c) => sum + c.amount, 0))}
+          </p>
+        </div>
+        <p className="text-muted-foreground text-sm">Toplam {total} kayıt</p>
+      </div>
 
-      {error && <Alert severity="error">{error}</Alert>}
-
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress />
-        </Box>
-      ) : items.length === 0 ? (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary">Henüz liderlik primi kazanmadınız.</Typography>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Tarih</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Kazanç</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Kazandıran Üye</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>İlgili CV</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {items.map((c) => (
-                <TableRow key={c.id} hover>
-                  <TableCell>{new Date(c.created_at).toLocaleString("tr-TR")}</TableCell>
-                  <TableCell align="right" sx={{ color: "success.main", fontWeight: 700 }}>
-                    +{tl(c.amount)}
-                  </TableCell>
-                  <TableCell>{c.from_user_id != null ? `Üye #${c.from_user_id}` : "-"}</TableCell>
-                  <TableCell align="right">{c.related_cv ?? "-"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded border px-3 py-2 text-sm font-medium">
+          {error}
+        </div>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-        <Button disabled={offset === 0} onClick={() => setOffset((o) => Math.max(0, o - limit))}>
+      {loading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="text-primary size-8 animate-spin" />
+        </div>
+      ) : items.length === 0 ? (
+        <div className="border-border bg-card rounded border p-4">
+          <p className="text-muted-foreground text-sm">Henüz liderlik primi kazanmadınız.</p>
+        </div>
+      ) : (
+        <div className="border-border bg-card overflow-hidden rounded border">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-border border-b bg-accent/50">
+                  <th className="px-3 py-2 text-left font-bold">Tarih</th>
+                  <th className="px-3 py-2 text-right font-bold">Kazanç</th>
+                  <th className="px-3 py-2 text-left font-bold">Kazandıran Üye</th>
+                  <th className="px-3 py-2 text-right font-bold">İlgili CV</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((c) => (
+                  <tr key={c.id} className="border-border hover:bg-accent/40 border-b transition-colors">
+                    <td className="px-3 py-2">{new Date(c.created_at).toLocaleString("tr-TR")}</td>
+                    <td className="text-[#2E7D32] px-3 py-2 text-right font-bold">+{tl(c.amount)}</td>
+                    <td className="px-3 py-2">{c.from_user_id != null ? `Üye #${c.from_user_id}` : "-"}</td>
+                    <td className="px-3 py-2 text-right">{c.related_cv ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-2 flex justify-between">
+        <Button variant="outline" disabled={offset === 0} onClick={() => setOffset((o) => Math.max(0, o - limit))}>
           Önceki
         </Button>
-        <Button disabled={offset + limit >= total} onClick={() => setOffset((o) => o + limit)}>
+        <Button variant="outline" disabled={offset + limit >= total} onClick={() => setOffset((o) => o + limit)}>
           Sonraki
         </Button>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 }
 

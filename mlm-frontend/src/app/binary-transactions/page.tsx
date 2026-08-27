@@ -1,37 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
-import Chip from "@mui/material/Chip";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TablePagination from "@mui/material/TablePagination";
-import { Network, RefreshCcw, TrendingDown, TrendingUp } from "lucide-react";
+import { Network, RefreshCcw, TrendingDown, TrendingUp, Loader2 } from "lucide-react";
 import { listBinaryTransactions, getErrorMessage } from "@/services/api";
 import type { BinaryTransactionsResponse } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-const TYPE_META: Record<
-  string,
-  { label: string; color: "success" | "error" | "warning"; icon: React.ReactElement }
-> = {
-  add: { label: "Ekleme", color: "success", icon: <TrendingUp size={15} /> },
-  deduct: { label: "Eşleşme Düşümü", color: "error", icon: <TrendingDown size={15} /> },
-  reset: { label: "Sıfırlama", color: "warning", icon: <RefreshCcw size={15} /> },
+const TYPE_META: Record<string, { label: string; badge: string; icon: React.ReactNode }> = {
+  add: { label: "Ekleme", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <TrendingUp size={15} /> },
+  deduct: { label: "Eşleşme Düşümü", badge: "border-destructive/50 text-destructive", icon: <TrendingDown size={15} /> },
+  reset: { label: "Sıfırlama", badge: "border-amber-500/50 text-amber-600", icon: <RefreshCcw size={15} /> },
 };
 
 function BinaryTransactionsContent() {
@@ -66,133 +47,137 @@ function BinaryTransactionsContent() {
     { label: "Eşleşme Düşümü (sayfa)", value: deductTotal },
   ];
 
+  const filterBtn = (active: boolean) =>
+    cn(
+      "cursor-pointer rounded px-3 py-1.5 text-sm font-semibold transition-colors",
+      active
+        ? "bg-primary text-white"
+        : "border-border bg-card text-foreground border hover:bg-accent"
+    );
+
   return (
-    <Container maxWidth={false} sx={{ py: 3 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
-        Binary Hareketleri
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-3">
+      <h1 className="text-primary-dark mb-1 text-2xl font-extrabold">Binary Hareketleri</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Sol ve sağ hatlarınızdaki PV/CV ekleme ve eşleşme düşümlerinin geçmişi.
-      </Typography>
+      </p>
 
       {/* Özet kartları */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {summaryCards.map((s) => (
-          <Grid size={{ xs: 6, sm: 4 }} key={s.label}>
-            <Card
-              sx={{
-                borderRadius: "13px",
-                border: "1px solid",
-                borderColor: "divider",
-                background: s.highlight
-                  ? (theme) =>
-                      `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-                  : "background.paper",
-              }}
+          <div
+            key={s.label}
+            className={cn(
+              "rounded border p-2",
+              s.highlight
+                ? "border-transparent bg-gradient-to-br from-primary to-primary-dark text-white"
+                : "border-border bg-card"
+            )}
+          >
+            <p
+              className={cn(
+                "text-[11px] font-bold uppercase",
+                s.highlight ? "text-white/85" : "text-muted-foreground"
+              )}
             >
-              <CardContent sx={{ p: 2 }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: s.highlight ? "rgba(255,255,255,0.85)" : "text.secondary",
-                    fontWeight: 700,
-                    fontSize: 11,
-                  }}
-                >
-                  {s.label.toLocaleUpperCase("tr-TR")}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 800, color: s.highlight ? "common.white" : "primary.dark" }}
-                >
-                  {typeof s.value === "number" && !Number.isInteger(s.value)
-                    ? `${s.value.toLocaleString("tr-TR")} CV`
-                    : s.value.toLocaleString("tr-TR")}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+              {s.label.toLocaleUpperCase("tr-TR")}
+            </p>
+            <p
+              className={cn(
+                "text-lg font-extrabold",
+                s.highlight ? "text-white" : "text-primary-dark"
+              )}
+            >
+              {typeof s.value === "number" && !Number.isInteger(s.value)
+                ? `${s.value.toLocaleString("tr-TR")} CV`
+                : s.value.toLocaleString("tr-TR")}
+            </p>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
-        <ToggleButtonGroup
-          value={position}
-          exclusive
-          size="small"
-          onChange={(_, v) => {
-            setPosition(v || "");
-            setPage(0);
-          }}
-        >
-          <ToggleButton value="">Tüm Hatlar</ToggleButton>
-          <ToggleButton value="L">Sol</ToggleButton>
-          <ToggleButton value="R">Sağ</ToggleButton>
-        </ToggleButtonGroup>
+      {/* Filtreler */}
+      <div className="mb-2 flex flex-wrap gap-1">
+        {[
+          { group: "pos", value: "", label: "Tüm Hatlar" },
+          { group: "pos", value: "L", label: "Sol" },
+          { group: "pos", value: "R", label: "Sağ" },
+        ].map((t) => (
+          <button
+            key={`pos-${t.value}`}
+            type="button"
+            onClick={() => {
+              setPosition(t.value);
+              setPage(0);
+            }}
+            className={filterBtn(position === t.value)}
+          >
+            {t.label}
+          </button>
+        ))}
+        {[
+          { group: "type", value: "", label: "Tümü" },
+          { group: "type", value: "add", label: "Ekleme" },
+          { group: "type", value: "deduct", label: "Düşüm" },
+        ].map((t) => (
+          <button
+            key={`type-${t.value}`}
+            type="button"
+            onClick={() => {
+              setTxType(t.value);
+              setPage(0);
+            }}
+            className={filterBtn(txType === t.value)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-        <ToggleButtonGroup
-          value={txType}
-          exclusive
-          size="small"
-          onChange={(_, v) => {
-            setTxType(v || "");
-            setPage(0);
-          }}
-        >
-          <ToggleButton value="">Tümü</ToggleButton>
-          <ToggleButton value="add">Ekleme</ToggleButton>
-          <ToggleButton value="deduct">Düşüm</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded border px-3 py-2 text-sm font-medium">
+          {error}
+        </div>
+      )}
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress />
-        </Box>
+        <div className="flex justify-center py-6">
+          <Loader2 className="text-primary size-8 animate-spin" />
+        </div>
       ) : data && data.transactions.length === 0 ? (
-        <Card>
-          <CardContent>
-            <EmptyState icon={<Network size={48} />} message="Henüz binary hareketi yok." />
-          </CardContent>
-        </Card>
+        <div className="border-border bg-card rounded border p-4">
+          <EmptyState icon={<Network size={48} />} message="Henüz binary hareketi yok." />
+        </div>
       ) : (
-        <Card sx={{ borderRadius: "14px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 640 }}>
-              <TableHead>
-                <TableRow
-                  sx={{
-                    bgcolor: (theme) => theme.palette.primary.main,
-                    "& th": { color: "common.white", fontWeight: 700, fontSize: 13 },
-                  }}
-                >
-                  <TableCell>Tarih</TableCell>
-                  <TableCell>Hat</TableCell>
-                  <TableCell>İşlem</TableCell>
-                  <TableCell align="right">PV</TableCell>
-                  <TableCell align="right">CV</TableCell>
-                  <TableCell>Açıklama</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+        <div className="border-border bg-card overflow-hidden rounded border">
+          <div className="overflow-x-auto">
+            <table className="min-w-[640px] w-full text-sm">
+              <thead>
+                <tr className="bg-primary text-white">
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">Tarih</th>
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">Hat</th>
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">İşlem</th>
+                  <th className="px-3 py-2 text-right text-[13px] font-bold">PV</th>
+                  <th className="px-3 py-2 text-right text-[13px] font-bold">CV</th>
+                  <th className="px-3 py-2 text-left text-[13px] font-bold">Açıklama</th>
+                </tr>
+              </thead>
+              <tbody>
                 {data?.transactions.map((t, i) => {
                   const meta = TYPE_META[t.transaction_type] ?? {
                     label: t.transaction_type,
-                    color: "default" as const,
+                    badge: "border-border text-muted-foreground",
                     icon: <Network size={15} />,
                   };
                   return (
-                    <TableRow
+                    <tr
                       key={t.id}
-                      hover
-                      sx={{
-                        bgcolor: i % 2 === 1 ? (theme) => theme.palette.secondary.light : "background.paper",
-                        "&:hover": { bgcolor: (theme) => theme.palette.secondary.main },
-                      }}
+                      className={cn(
+                        "border-border border-b transition-colors hover:bg-secondary/50",
+                        i % 2 === 1 && "bg-secondary-light/40"
+                      )}
                     >
-                      <TableCell sx={{ whiteSpace: "nowrap", fontSize: 13.5 }}>
+                      <td className="px-3 py-2 text-[13.5px] whitespace-nowrap">
                         {new Date(t.created_at).toLocaleString("tr-TR", {
                           day: "2-digit",
                           month: "2-digit",
@@ -200,81 +185,75 @@ function BinaryTransactionsContent() {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={t.position === "L" ? "Sol Hat" : "Sağ Hat"}
-                          color="primary"
-                          variant="outlined"
-                          sx={{ fontWeight: 600 }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          icon={meta.icon}
-                          label={meta.label}
-                          color={meta.color}
-                          sx={{ fontWeight: 600, "& .MuiChip-icon": { fontSize: 15 } }}
-                        />
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontSize: 13.5 }}>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className="border-primary/40 text-primary font-semibold">
+                          {t.position === "L" ? "Sol Hat" : "Sağ Hat"}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant="outline" className={cn("gap-1 font-semibold", meta.badge)}>
+                          {meta.icon}
+                          {meta.label}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 text-right text-[13.5px]">
                         {t.pv > 0 ? (
-                          <Typography sx={{ fontWeight: 700, color: "success.main", fontSize: 14 }}>
-                            +{t.pv.toLocaleString("tr-TR")} PV
-                          </Typography>
+                          <span className="text-[#2E7D32] text-sm font-bold">+{t.pv.toLocaleString("tr-TR")} PV</span>
                         ) : (
                           "—"
                         )}
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontSize: 13.5 }}>
+                      </td>
+                      <td className="px-3 py-2 text-right text-[13.5px]">
                         {t.cv > 0 ? (
-                          <Typography sx={{ fontWeight: 700, color: "primary.dark", fontSize: 14 }}>
-                            +{t.cv.toLocaleString("tr-TR")} CV
-                          </Typography>
+                          <span className="text-primary-dark text-sm font-bold">+{t.cv.toLocaleString("tr-TR")} CV</span>
                         ) : (
                           "—"
                         )}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: 12.5, color: "text.secondary", maxWidth: 260 }}>
-                        <Typography
-                          component="span"
-                          noWrap
-                          sx={{ display: "block", textOverflow: "ellipsis", overflow: "hidden" }}
-                        >
+                      </td>
+                      <td className="text-muted-foreground max-w-[260px] px-3 py-2 text-[12.5px]">
+                        <span className="block truncate">
                           {t.description || "—"}
                           {t.related_order_id != null && ` · Sipariş #${t.related_order_id}`}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
+                        </span>
+                      </td>
+                    </tr>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              </tbody>
+            </table>
+          </div>
+
           {data && (
-            <TablePagination
-              component="div"
-              count={data.total}
-              page={page}
-              onPageChange={(_, p) => setPage(p)}
-              rowsPerPage={limit}
-              rowsPerPageOptions={[limit]}
-              labelRowsPerPage=""
-              labelDisplayedRows={({ from, to, count }) =>
-                `${from}-${to} / ${count.toLocaleString("tr-TR")} hareket`
-              }
-              sx={{
-                borderTop: "1px solid",
-                borderColor: "divider",
-                "& .MuiTablePagination-toolbar": { minHeight: 56 },
-              }}
-            />
+            <div className="border-border flex items-center justify-between border-t px-3 py-2 text-sm">
+              <span className="text-muted-foreground">
+                {data.transactions.length === 0
+                  ? "0-0 / 0 hareket"
+                  : `${page * limit + 1}-${Math.min((page + 1) * limit, data.total)} / ${data.total.toLocaleString("tr-TR")} hareket`}
+              </span>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="border-border bg-card text-foreground hover:bg-accent cursor-pointer rounded border px-3 py-1 text-sm font-semibold disabled:pointer-events-none disabled:opacity-40"
+                >
+                  Önceki
+                </button>
+                <button
+                  type="button"
+                  disabled={(page + 1) * limit >= data.total}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="border-border bg-card text-foreground hover:bg-accent cursor-pointer rounded border px-3 py-1 text-sm font-semibold disabled:pointer-events-none disabled:opacity-40"
+                >
+                  Sonraki
+                </button>
+              </div>
+            </div>
           )}
-        </Card>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
 

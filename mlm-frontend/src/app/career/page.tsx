@@ -1,16 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Chip from "@mui/material/Chip";
-import LinearProgress from "@mui/material/LinearProgress";
 import {
   CheckCircle2,
   Lock,
@@ -22,12 +12,14 @@ import {
   Diamond,
   Square,
   User,
+  Loader2,
 } from "lucide-react";
-import { alpha } from "@mui/material/styles";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { listCareer, getRanks, getErrorMessage } from "@/services/api";
 import type { CareerProgress, Rank } from "@/services/api";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const fmt = (v: number) => v.toLocaleString("tr-TR");
 
@@ -76,9 +68,9 @@ function CareerContent() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary size-10 animate-spin" />
+      </div>
     );
   }
 
@@ -97,320 +89,227 @@ function CareerContent() {
 
   const currentStep = steps.find((s) => s.next) ?? null;
 
+  const rankCards = [
+    // Başlangıç seviyesi: GİRİŞİMCİ
+    {
+      id: "girisimci",
+      name: "Girişimci",
+      isActive: activeID == null,
+      isAchieved: true,
+      isNext: false,
+      meta: { icon: User, color: "#004786", stars: 0 },
+    },
+    ...steps.map((s) => ({
+      id: s.rank.id,
+      name: RANK_DISPLAY[s.rank.name.toLocaleLowerCase("tr-TR")] ?? s.rank.name,
+      isActive: s.isActive,
+      isAchieved: s.isAchieved,
+      isNext: s.next,
+      meta: rankMeta(s.rank.name),
+    })),
+  ];
+
   return (
-    <Container maxWidth={false} sx={{ py: 3 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom sx={{ fontWeight: 800 }}>
-        Kariyer Takibi
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-3">
+      <h1 className="text-primary-dark mb-1 text-2xl font-extrabold">Kariyer Takibi</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Rütbeler hat PV toplamlarına göre kazanılır ve kalıcıdır — adım adım ilerleyin.
-      </Typography>
+      </p>
 
-      {error && <Alert severity="error">{error}</Alert>}
-
-      {!loading && ranks.length === 0 && (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary">Rütbe tanımları bulunamadı.</Typography>
-          </CardContent>
-        </Card>
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded border px-3 py-2 text-sm font-medium">
+          {error}
+        </div>
       )}
 
-      {/* Kariyer seviyeleri — Stitch paneli: yatay kaydırılabilir rütbe kartları */}
-      <Card sx={{ mb: 4, borderRadius: "17px", border: "1px solid", borderColor: "divider" }}>
-        <CardContent sx={{ p: 2.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <Trophy className="text-primary" />
-            <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.5, color: "text.secondary" }}>
-              KARİYER SEVİYELERİ
-            </Typography>
-            <Box sx={{ flexGrow: 1 }} />
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-              {currentStep ? `Sıradaki: ${currentStep.rank.name}` : "Tümü kazanıldı 🎉"}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              gap: { xs: 1, md: 1.5 },
-              overflowX: { xs: "auto", md: "hidden" },
-              py: 1,
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
-            }}
-          >
-            {[
-              // Başlangıç seviyesi: GİRİŞİMCİ — rütbesi olmayan kullanıcıda seçili (user ikonu)
-              {
-                id: "girisimci",
-                name: "Girişimci",
-                isActive: activeID == null,
-                isAchieved: true,
-                isNext: false,
-                meta: { icon: User, color: "#004786", stars: 0 },
-              },
-              ...steps.map((s) => ({
-                id: s.rank.id,
-                name: RANK_DISPLAY[s.rank.name.toLocaleLowerCase("tr-TR")] ?? s.rank.name,
-                isActive: s.isActive,
-                isAchieved: s.isAchieved,
-                isNext: s.next,
-                meta: rankMeta(s.rank.name),
-              })),
-            ].map((c) => {
-              const Icon = c.meta.icon;
-              return (
-                <Box
-                  key={c.id}
-                  sx={{
-                    flex: "1 1 0",
-                    minWidth: { xs: 120, md: 56 },
-                    height: 100,
-                    borderRadius: "11px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 0.75,
-                    cursor: "pointer",
-                    transition: "transform 200ms ease, box-shadow 200ms ease",
-                    "&:hover": { transform: "translateY(-3px)" },
-                    bgcolor: c.isActive
-                      ? "primary.main"
-                      : c.isNext
-                        ? (theme) => alpha(theme.palette.primary.main, 0.12)
-                        : c.isAchieved
-                          ? (theme) => alpha(theme.palette.success.main, 0.12)
-                          : (theme) => alpha(theme.palette.secondary.main, 0.06),
-                    border: "1.5px solid",
-                    borderColor: c.isActive
-                      ? "primary.main"
-                      : c.isNext
-                        ? "primary.main"
-                        : c.isAchieved
-                          ? "success.main"
-                          : "divider",
-                    boxShadow: c.isActive || c.isNext ? 4 : 0,
-                  }}
-                >
-                  <Box sx={{ position: "relative" }}>
-                    <Icon
-                      className="size-10 md:size-8"
-                      color={c.isActive ? "#fff" : c.meta.color}
-                    />
-                    {c.isAchieved && (
-                      <CheckCircle2 className="absolute -top-0.5 -left-[18px] size-[18px] rounded-full bg-background text-[#2E7D32]" />
-                    )}
-                    {c.meta.stars > 0 && (
-                      <Box sx={{ position: "absolute", top: -7, right: -12, display: "flex", gap: 0.25 }}>
-                        {Array.from({ length: c.meta.stars }).map((_, k) => (
-                          <Star
-                            key={k}
-                            className="size-[13px] rounded-full bg-background text-[#ffd700]"
-                          />
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: { xs: 11, md: 10 },
-                      textAlign: "center",
-                      px: 0.5,
-                      lineHeight: 1.15,
-                      color: c.isActive ? "#fff" : c.isAchieved ? "success.dark" : c.isNext ? "primary.main" : "text.secondary",
-                    }}
-                  >
-                    {c.name.toLocaleUpperCase("tr-TR")}
-                  </Typography>
-                  {(c.isActive || c.isNext) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        color: c.isActive ? "rgba(255,255,255,0.85)" : "primary.main",
-                      }}
-                    >
-                      {c.isActive ? "GÜNCEL" : "SONRAKİ"}
-                    </Typography>
+      {!loading && ranks.length === 0 && (
+        <div className="border-border bg-card rounded border p-4">
+          <p className="text-muted-foreground text-sm">Rütbe tanımları bulunamadı.</p>
+        </div>
+      )}
+
+      {/* Kariyer seviyeleri — yatay kaydırılabilir rütbe kartları */}
+      <div className="border-border bg-card mb-4 rounded border p-2.5">
+        <div className="mb-2 flex items-center gap-1">
+          <Trophy className="text-primary size-4" />
+          <p className="text-muted-foreground text-[11px] font-extrabold tracking-[1.5px] uppercase">
+            Kariyer Seviyeleri
+          </p>
+          <div className="flex-1" />
+          <p className="text-muted-foreground text-xs font-bold">
+            {currentStep ? `Sıradaki: ${currentStep.rank.name}` : "Tümü kazanıldı 🎉"}
+          </p>
+        </div>
+        <div className="flex gap-1 overflow-x-auto py-1 md:gap-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {rankCards.map((c) => {
+            const Icon = c.meta.icon;
+            return (
+              <div
+                key={c.id}
+                className={cn(
+                  "flex h-[100px] min-w-[120px] flex-1 cursor-pointer flex-col items-center justify-center gap-0.75 rounded border-[1.5px] transition-transform duration-200 hover:-translate-y-[3px] md:min-w-[56px]",
+                  c.isActive
+                    ? "border-primary bg-primary shadow-md"
+                    : c.isNext
+                      ? "border-primary bg-primary/10 shadow-md"
+                      : c.isAchieved
+                        ? "border-[#2E7D32] bg-[#2E7D32]/10"
+                        : "border-border bg-secondary/5"
+                )}
+              >
+                <div className="relative">
+                  <Icon className="size-10 md:size-8" color={c.isActive ? "#fff" : c.meta.color} />
+                  {c.isAchieved && (
+                    <CheckCircle2 className="bg-background text-[#2E7D32] absolute -top-0.5 -left-[18px] size-[18px] rounded-full" />
                   )}
-                </Box>
-              );
-            })}
-          </Box>
-        </CardContent>
-      </Card>
+                  {c.meta.stars > 0 && (
+                    <div className="absolute -top-[7px] -right-[12px] flex gap-0.25">
+                      {Array.from({ length: c.meta.stars }).map((_, k) => (
+                        <Star
+                          key={k}
+                          className="bg-background text-[#ffd700] size-[13px] rounded-full"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p
+                  className={cn(
+                    "px-0.5 text-center text-[11px] leading-snug font-extrabold md:text-[10px]",
+                    c.isActive
+                      ? "text-white"
+                      : c.isAchieved
+                        ? "text-[#2E7D32]"
+                        : c.isNext
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                  )}
+                >
+                  {c.name.toLocaleUpperCase("tr-TR")}
+                </p>
+                {(c.isActive || c.isNext) && (
+                  <p
+                    className={cn(
+                      "text-[9px] font-bold",
+                      c.isActive ? "text-white/85" : "text-primary"
+                    )}
+                  >
+                    {c.isActive ? "GÜNCEL" : "SONRAKİ"}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Rütbe kutuları — satırda 3 */}
-      <Grid container spacing={2}>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
         {steps.map((s) => {
           const achievedAt = achievedByRank.get(s.rank.id)?.achieved_at;
           const leftPct = Math.min(100, Math.round((leftPV / s.rank.required_left_pv) * 100));
           const rightPct = Math.min(100, Math.round((rightPV / s.rank.required_right_pv) * 100));
           const pct = Math.round((leftPct + rightPct) / 2);
+          const emphasized = s.isAchieved || s.next;
 
           return (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={s.rank.id}>
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: "14px",
-                  border: "2px solid",
-                  borderColor: s.isAchieved ? "warning.main" : s.next ? "primary.main" : "divider",
-                  bgcolor: s.next
-                    ? (theme) => alpha(theme.palette.secondary.main, 0.15)
-                    : "background.paper",
-                  opacity: s.isAchieved || s.next ? 1 : 0.75,
-                  position: "relative",
-                  overflow: "hidden",
-                  transition: "transform 250ms ease, box-shadow 250ms ease",
-                  "&:hover": {
-                    transform: s.isAchieved || s.next ? "translateY(-4px)" : "none",
-                    boxShadow: s.isAchieved || s.next ? 6 : 0,
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 2.5, display: "flex", flexDirection: "column", flexGrow: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                    {/* İkon + durum */}
-                    <Box
-                      sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: "9.8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: s.isAchieved
-                          ? "warning.main"
-                          : s.next
-                            ? "primary.main"
-                            : (theme) => theme.palette.secondary.light,
-                        color: s.isAchieved || s.next ? "common.white" : "text.disabled",
-                      }}
-                    >
-                      {s.isAchieved ? (
-                        <CheckCircle2 className="size-[26px]" />
-                      ) : s.next ? (
-                        <Star className="size-6" />
-                      ) : (
-                        <Lock className="size-[22px]" />
-                      )}
-                    </Box>
-                    {s.isActive && (
-                      <Chip
-                        size="small"
-                        label="Güncel Rütbeniz"
-                        color="success"
-                        icon={<Trophy className="size-[14px]" />}
-                        sx={{ fontWeight: 700, "& .MuiChip-icon": { fontSize: 14 } }}
-                      />
-                    )}
-                    {s.next && (
-                      <Chip
-                        size="small"
-                        label="Sonraki"
-                        color="primary"
-                        icon={<Star className="size-[14px]" />}
-                        sx={{ fontWeight: 700, "& .MuiChip-icon": { fontSize: 14 } }}
-                      />
-                    )}
-                  </Box>
-
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: "primary.dark" }}>
-                    {s.rank.name}
-                  </Typography>
-
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    Sol {fmt(s.rank.required_left_pv)} PV · Sağ {fmt(s.rank.required_right_pv)} PV
-                  </Typography>
-
-                  {achievedAt ? (
-                    <Typography variant="caption" color="warning.dark" sx={{ mt: 0.5, fontWeight: 700 }}>
-                      Kazanıldı: {new Date(achievedAt).toLocaleDateString("tr-TR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </Typography>
-                  ) : (
-                    <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, fontWeight: 600 }}>
-                      {s.next ? "Yaklaşıyorsunuz..." : "Kilitli"}
-                    </Typography>
+            <div
+              key={s.rank.id}
+              className={cn(
+                "border-border bg-card relative flex h-full flex-col overflow-hidden rounded border-2 p-2.5 transition-transform duration-250",
+                s.isAchieved
+                  ? "border-amber-500"
+                  : s.next
+                    ? "border-primary bg-secondary/15"
+                    : "opacity-75",
+                emphasized && "hover:-translate-y-1 hover:shadow-md"
+              )}
+            >
+              <div className="mb-1 flex items-center justify-between">
+                <div
+                  className={cn(
+                    "flex size-11 items-center justify-center rounded",
+                    s.isAchieved
+                      ? "bg-amber-500 text-white"
+                      : s.next
+                        ? "bg-primary text-white"
+                        : "bg-secondary-light text-muted-foreground/50"
                   )}
+                >
+                  {s.isAchieved ? (
+                    <CheckCircle2 className="size-[26px]" />
+                  ) : s.next ? (
+                    <Star className="size-6" />
+                  ) : (
+                    <Lock className="size-[22px]" />
+                  )}
+                </div>
+                <div className="flex gap-0.5">
+                  {s.isActive && (
+                    <Badge className="border-[#2E7D32]/50 text-[#2E7D32] gap-1 font-bold">
+                      <Trophy className="size-3.5" />
+                      Güncel Rütbeniz
+                    </Badge>
+                  )}
+                  {s.next && (
+                    <Badge className="gap-1 font-bold">
+                      <Star className="size-3.5" />
+                      Sonraki
+                    </Badge>
+                  )}
+                </div>
+              </div>
 
-                  <Box sx={{ mt: "auto", pt: 1.5 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={pct}
-                      sx={{
-                        borderRadius: 2.8,
-                        height: 8,
-                        bgcolor: "secondary.light",
-                        "& .MuiLinearProgress-bar": {
-                          bgcolor: s.isAchieved ? "warning.main" : s.next ? "primary.main" : "divider",
-                          borderRadius: 2.8,
-                        },
-                      }}
-                    />
-                    <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Sol: %{leftPct}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Sağ: %{rightPct}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
+              <h3 className="text-primary-dark text-lg font-extrabold">{s.rank.name}</h3>
 
-                {/* Geçilen seviyeler: blur + ortada yuvarlak tik */}
-                {s.isAchieved && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1,
-                      bgcolor: "rgba(255,255,255,0.45)",
-                      backdropFilter: "blur(2.5px)",
-                      WebkitBackdropFilter: "blur(2.5px)",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        bgcolor: "warning.main",
-                        color: "common.white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: 4,
-                      }}
-                    >
-                      <CheckCircle2 className="size-[38px]" />
-                    </Box>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: "warning.dark" }}>
-                      GEÇİLDİ
-                    </Typography>
-                  </Box>
-                )}
-              </Card>
-            </Grid>
+              <p className="text-muted-foreground mt-0.5 text-sm">
+                Sol {fmt(s.rank.required_left_pv)} PV · Sağ {fmt(s.rank.required_right_pv)} PV
+              </p>
+
+              {achievedAt ? (
+                <p className="text-amber-600 mt-0.5 text-xs font-bold">
+                  Kazanıldı: {new Date(achievedAt).toLocaleDateString("tr-TR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              ) : (
+                <p className="text-muted-foreground/60 mt-0.5 text-xs font-semibold">
+                  {s.next ? "Yaklaşıyorsunuz..." : "Kilitli"}
+                </p>
+              )}
+
+              <div className="mt-auto pt-1.5">
+                <div className="bg-secondary-light h-2 w-full overflow-hidden rounded">
+                  <div
+                    className={cn(
+                      "h-full rounded transition-[width] duration-300",
+                      s.isAchieved ? "bg-amber-500" : s.next ? "bg-primary" : "bg-border"
+                    )}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <div className="text-muted-foreground mt-0.5 flex justify-between text-xs">
+                  <span>Sol: %{leftPct}</span>
+                  <span>Sağ: %{rightPct}</span>
+                </div>
+              </div>
+
+              {/* Geçilen seviyeler: blur + ortada yuvarlak tik */}
+              {s.isAchieved && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/45 backdrop-blur-[2.5px]">
+                  <div className="bg-amber-500 flex size-[60px] items-center justify-center rounded-full text-white shadow-md">
+                    <CheckCircle2 className="size-[38px]" />
+                  </div>
+                  <p className="text-amber-600 text-xs font-extrabold">GEÇİLDİ</p>
+                </div>
+              )}
+            </div>
           );
         })}
-      </Grid>
-    </Container>
+      </div>
+    </div>
   );
 }
 

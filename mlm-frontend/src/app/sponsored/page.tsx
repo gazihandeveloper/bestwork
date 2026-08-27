@@ -1,17 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Chip from "@mui/material/Chip";
+import { Loader2 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { listSponsored, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 function SponsoredContent() {
   const [users, setUsers] = useState<User[]>([]);
@@ -27,54 +22,60 @@ function SponsoredContent() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary size-10 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 4 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Sponsor Olduklarım
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-4">
+      <h1 className="text-primary-dark text-2xl font-extrabold">Sponsor Olduklarım</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Sponsorluğunuzu yaptığınız üyeler ({users.length} kişi).
-      </Typography>
+      </p>
 
-      {error && <Alert severity="error">{error}</Alert>}
-
-      {!loading && users.length === 0 && (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary">Henüz sponsor olduğunuz üye yok.</Typography>
-          </CardContent>
-        </Card>
+      {error && (
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-3 rounded border px-3 py-2 text-sm font-medium">
+          {error}
+        </div>
       )}
 
-      {users.map((u) => (
-        <Card key={u.id} sx={{ mb: 1.5 }}>
-          <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {u.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {u.email} · {u.member_code}
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-              <Chip
-                size="small"
-                label={u.is_in_pending_pool ? "Bekliyor" : "Ağaçta"}
-                color={u.is_in_pending_pool ? "warning" : "success"}
-              />
-              <Chip size="small" label={`${u.total_pv_accumulated} PV`} variant="outlined" />
-            </Box>
-          </CardContent>
-        </Card>
-      ))}
-    </Container>
+      {!loading && users.length === 0 && (
+        <div className="border-border bg-card rounded border p-4">
+          <p className="text-muted-foreground text-sm">Henüz sponsor olduğunuz üye yok.</p>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1.5">
+        {users.map((u) => (
+          <div
+            key={u.id}
+            className="border-border bg-card flex flex-wrap items-center justify-between gap-1 rounded border p-3"
+          >
+            <div>
+              <p className="text-sm font-semibold">{u.name}</p>
+              <p className="text-muted-foreground text-xs">{u.email} · {u.member_code}</p>
+            </div>
+            <div className="flex flex-wrap gap-0.5">
+              <Badge
+                variant="outline"
+                className={cn(
+                  u.is_in_pending_pool
+                    ? "border-amber-500/50 text-amber-600"
+                    : "border-[#2E7D32]/50 text-[#2E7D32]"
+                )}
+              >
+                {u.is_in_pending_pool ? "Bekliyor" : "Ağaçta"}
+              </Badge>
+              <Badge variant="outline" className="border-border text-muted-foreground">
+                {u.total_pv_accumulated} PV
+              </Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Moon, Sun, ShoppingCart, LogOut, Menu, X } from "lucide-react";
+import { Moon, Sun, ShoppingCart, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { cartCount } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -45,8 +43,6 @@ export default function SiteNav() {
   const { user, logout, loading } = useAuth();
   const { mode, toggleMode } = useThemeContext();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQ, setSearchQ] = useState("");
   const [count, setCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
@@ -71,14 +67,9 @@ export default function SiteNav() {
   }, []);
 
   const openLogin = () => window.dispatchEvent(new CustomEvent("open-login"));
-  const openCart = () => window.dispatchEvent(new CustomEvent("open-cart"));
+  const openCart = () => router.push("/cart");
 
-  const submitSearch = () => {
-    const q = searchQ.trim();
-    setSearchOpen(false);
-    setSearchQ("");
-    router.push(`/shop${q ? `?q=${encodeURIComponent(q)}` : ""}`);
-  };
+;
 
   const iconBtn =
     "relative inline-flex size-9 md:size-10 cursor-pointer items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-primary";
@@ -132,10 +123,6 @@ export default function SiteNav() {
 
           {/* Aksiyonlar */}
           <div className="flex items-center gap-0.5 md:gap-1">
-            <button aria-label="Ara" className={iconBtn} onClick={() => setSearchOpen(true)}>
-              <Search className="size-5" />
-            </button>
-
             <button
               aria-label="Gece/gündüz modu"
               className={cn(iconBtn, mode === "dark" && "text-[#FFB300] hover:text-[#FFB300]")}
@@ -187,25 +174,6 @@ export default function SiteNav() {
         </nav>
       </header>
 
-      {/* Arama popup — ortada, blur arka plan */}
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="max-w-md rounded-sm p-3">
-          <div className="relative">
-            <Search className="text-primary absolute top-1/2 left-4 size-5 -translate-y-1/2" />
-            <Input
-              autoFocus
-              placeholder="Ürün ara..."
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submitSearch();
-              }}
-              className="border-primary/60 pl-11 pr-4 text-base"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Mobil çekmece — sağdan, tam cam efektli */}
       <div
         aria-hidden={!mobileOpen}
@@ -247,7 +215,7 @@ export default function SiteNav() {
                   href={l.href}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center justify-between rounded-sm px-4 py-3 text-[15px] font-semibold transition-colors",
+                    "flex items-center justify-between rounded px-4 py-3 text-[15px] font-semibold transition-colors",
                     active
                       ? "bg-primary text-white"
                       : "hover:bg-accent text-foreground"

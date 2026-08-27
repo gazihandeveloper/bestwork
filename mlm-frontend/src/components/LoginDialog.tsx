@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const NEXT_KEY = "bestwork_login_next";
 
 // Global giriş modalı — "open-login" olayıyla her sayfada açılır.
-// Sade ve düz tasarım: gradyan yok, gölge yok, köşeli (rounded-sm).
+// Sade ve düz tasarım: gradyan yok, gölge yok, köşeli (rounded).
 export default function LoginDialog() {
   const { login } = useAuth();
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function LoginDialog() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {error && (
-            <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-sm border px-3 py-2 text-sm font-medium">
+            <div className="border-destructive/50 bg-destructive/10 text-destructive rounded border px-3 py-2 text-sm font-medium">
               {error}
             </div>
           )}

@@ -53,7 +53,6 @@ const groups: MenuGroup[] = [
     icon: <Receipt />,
     items: [
       { path: "/commissions", label: "Prim Detayları", icon: <Receipt /> },
-      { path: "/commissions?type=referral", label: "Referans Bonusu", icon: <Users /> },
       { path: "/leadership-bonus", label: "Liderlik Primi", icon: <Medal /> },
       { path: "/binary-transactions", label: "Binary Hareketleri", icon: <Network /> },
       { path: "/career", label: "Kariyer Takibi", icon: <Medal /> },
@@ -168,12 +167,12 @@ export default function BackofficeMenu() {
   }, [openGroup]);
 
   const buttonBase =
-    "flex shrink-0 cursor-pointer items-center gap-2 rounded-sm px-3.5 py-2 text-sm whitespace-nowrap transition-colors [&_svg]:size-4 [&_svg]:shrink-0";
+    "flex shrink-0 cursor-pointer items-center gap-2 rounded px-3.5 py-2 text-sm whitespace-nowrap transition-colors [&_svg]:size-4 [&_svg]:shrink-0";
 
   return (
     <div ref={rootRef}>
       {/* Yatay menü çubuğu — içerik sığınca ortalanır, taşınca yatay kaydırılır */}
-      <div className="bg-card mb-2 overflow-x-auto rounded-sm border border-border p-1.5 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="bg-card mb-2 overflow-x-auto rounded border border-border p-1.5 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto flex w-fit items-center gap-1">
           {/* Anasayfa — düz buton, dropdown'suz */}
           <button
@@ -225,7 +224,7 @@ export default function BackofficeMenu() {
           role="menu"
           aria-label={`${openMenuGroup.title} menüsü`}
           style={{ top: menuPos.top, left: menuPos.left }}
-          className="bg-card fixed z-50 min-w-60 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 rounded-sm border border-border p-1 shadow-lg duration-150"
+          className="bg-card fixed z-50 min-w-60 max-w-[calc(100vw-2rem)] animate-in fade-in zoom-in-95 rounded border border-border p-1 shadow-lg duration-150"
         >
           {openMenuGroup.items.map((item) => {
             const selected = itemSelected(item.path);
@@ -236,7 +235,7 @@ export default function BackofficeMenu() {
                 role="menuitem"
                 onClick={() => handleNav(item.path)}
                 className={cn(
-                  "flex w-full cursor-pointer items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
+                  "flex w-full cursor-pointer items-center gap-3 rounded px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
                   selected
                     ? "bg-primary/10 font-semibold text-primary"
                     : "text-foreground hover:bg-accent"

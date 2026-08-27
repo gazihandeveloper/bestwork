@@ -1,24 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import { BarChart3, Copy } from "lucide-react";
 import Link from "next/link";
+import { BarChart3, Copy } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { getDashboard } from "@/services/api";
 import type { Wallet, UserDashboard } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 function ProfileContent() {
   const { user, logout } = useAuth();
@@ -55,74 +47,65 @@ function ProfileContent() {
   ];
 
   return (
-    <Container maxWidth={false} sx={{ py: 3 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Profilim
-      </Typography>
+    <div className="py-3">
+      <h1 className="text-primary-dark mb-3 text-2xl font-extrabold">Profilim</h1>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Hesap Bilgileri
-              </Typography>
+      <div className="border-border bg-card max-w-2xl rounded border p-4">
+        <h2 className="mb-2.5 text-lg font-bold">Hesap Bilgileri</h2>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <Chip label={`Üye Numaranız: ${user?.member_code}`} color="primary" variant="outlined" />
-                <IconButton size="small" onClick={copyMemberCode} aria-label="üye kodunu kopyala">
-                  <Copy className="size-4" />
-                </IconButton>
-                <Chip label={user?.role === "admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"} color="secondary" />
-              </Box>
+        <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className="border-primary/40 text-primary cursor-pointer py-1"
+            onClick={copyMemberCode}
+          >
+            Üye Numaranız: {user?.member_code}
+            <Copy className="size-3.5" />
+          </Badge>
+          <Badge className="bg-secondary text-secondary-foreground">
+            {user?.role === "admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"}
+          </Badge>
+        </div>
 
-              {/* Başarı Raporu rozeti — üye numarasının altı */}
-              <Button
-                component={Link}
-                href="/success-report"
-                size="medium"
-                variant="contained"
-                startIcon={<BarChart3 />}
-                sx={{ mb: 2, borderRadius: "20px", fontWeight: 800, px: 3, boxShadow: 2 }}
-              >
-                🏅 Başarı Raporu
-              </Button>
+        {/* Başarı Raporu */}
+        <Button asChild size="sm" className="text-primary-dark mb-2.5 rounded bg-white font-extrabold shadow-sm hover:bg-white/90">
+          <Link href="/success-report">
+            <BarChart3 className="size-4" />
+            🏅 Başarı Raporu
+          </Link>
+        </Button>
 
-              <Grid container spacing={1.5}>
-                {infoItems.map((item) => (
-                  <Grid size={{ xs: 12, sm: 6 }} key={item.label}>
-                    <Box sx={{ bgcolor: "background.default", borderRadius: 2.1, p: 1.5 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {item.label}
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {item.value}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
+        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+          {infoItems.map((item) => (
+            <div key={item.label} className="bg-background rounded p-1.5">
+              <p className="text-muted-foreground text-xs font-bold tracking-wide uppercase">
+                {item.label}
+              </p>
+              <p className="text-sm font-semibold">{item.value}</p>
+            </div>
+          ))}
+        </div>
 
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="body2">
-                <strong>Bakiye:</strong> {wallet?.balance.toFixed(2)} TL
-              </Typography>
-              <Typography variant="body2">
-                <strong>Chip:</strong> {wallet?.chip_balance.toFixed(2)} TL
-              </Typography>
-              <Typography variant="body2">
-                <strong>Toplam Kazanç:</strong> {wallet?.total_earned.toFixed(2)} TL
-              </Typography>
-              <Button variant="outlined" color="error" sx={{ mt: 2 }} onClick={logout}>
-                Çıkış Yap
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        <div className="border-border my-2 h-px w-full" />
+
+        <div className="space-y-0.5 text-sm">
+          <p>
+            <strong>Bakiye:</strong> {wallet?.balance.toFixed(2)} TL
+          </p>
+          <p>
+            <strong>Chip:</strong> {wallet?.chip_balance.toFixed(2)} TL
+          </p>
+          <p>
+            <strong>Toplam Kazanç:</strong> {wallet?.total_earned.toFixed(2)} TL
+          </p>
+        </div>
+        <Button variant="outline" className="text-destructive border-destructive/50 mt-2 rounded" onClick={logout}>
+          Çıkış Yap
+        </Button>
+      </div>
 
       <AppSnackbar open={snackbar.open} message={snackbar.message} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} />
-    </Container>
+    </div>
   );
 }
 

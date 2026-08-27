@@ -325,7 +325,9 @@ export class BinaryTreeRenderer {
 
       // Seviye (her zaman — rütbe yoksa GİRİŞİMCİ) → Paket rozeti → Durum (AKTİF/PASİF)
       let cx2 = tx + posW + 7;
-      const rk = (n.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("tr-TR").slice(0, 9);
+      // Rütbe kısaltması: 12 karakterden uzun rütbeler ilk 12 harf + "." olur
+      const fullRank = (n.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("tr-TR");
+      const rk = fullRank.length > 12 ? `${fullRank.slice(0, 12)}.` : fullRank;
       g.append("text")
         .attr("x", cx2)
         .attr("y", top + 37)
@@ -491,8 +493,8 @@ export class BinaryTreeRenderer {
       const cy = CARD_H / 2 - 20;
       const xs = [-26, 0, 26];
       const glyphs = ["↑", "i", "↗"];
-      const fills = ["#D4E3FF", "#DAE2F9", "#D9E2FF"];
-      const texts = ["#001C3A", "#004786", "#121B30"];
+      const fills = ["#DCEBD4", "#DCEBD4", "#DCEBD4"];
+      const texts = ["#2E7D32", "#2E7D32", "#2E7D32"];
 
       // Orta düğmenin üstündeki bağlantı çizgisi
       g.append("line")

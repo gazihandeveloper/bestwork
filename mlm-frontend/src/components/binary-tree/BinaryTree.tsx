@@ -1,12 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Box from "@mui/material/Box";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
 import {
   FoldVertical,
   Maximize,
@@ -16,26 +10,10 @@ import {
   X,
   ZoomIn,
   ZoomOut,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
-import Avatar from "@mui/material/Avatar";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableRow from "@mui/material/TableRow";
-import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import InputAdornment from "@mui/material/InputAdornment";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import { useTheme, type Theme } from "@mui/material/styles";
 import {
   fileUrl,
   getTree,
@@ -49,25 +27,33 @@ import {
 import type { TreeNode, User } from "@/services/api";
 import { BinaryTreeRenderer } from "./renderer";
 import { ANIM_MS, LAZY_DEPTH, graftChildren, setCollapsedBelowRoot, toBTNode, type BTNode, type TreeColors } from "./types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
-/** deriveTreeColors karta uygulanan renkleri MUI temasından türetir (tema değişince renkler de değişir). */
-function deriveTreeColors(theme: Theme): TreeColors {
-  const p = theme.palette;
-  const primary = p.primary.main;
-  const secondary = p.secondary.main;
+/** TreeColors'u Tailwind/CSS değişkenlerinden türetir (tema değişince renkler de değişir). */
+function deriveTreeColors(): TreeColors {
+  const cssVar = (name: string, fallback: string) => {
+    if (typeof window === "undefined") return fallback;
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  };
   return {
-    root: p.primary.dark,
-    left: primary,
-    right: secondary,
-    text: p.text.primary,
-    subtext: p.text.secondary,
-    card: p.background.paper,
+    root: cssVar("--primary-dark", "#355310"),
+    left: cssVar("--primary", "#476F16"),
+    right: cssVar("--secondary", "#B5C5A2"),
+    text: cssVar("--foreground", "#1F1F1F"),
+    subtext: cssVar("--muted-foreground", "#625D63"),
+    card: cssVar("--card", "#FFFFFF"),
     divider: "#E3E2E5",
-    placeholder: p.text.secondary,
-    statusActive: (p.success as { main: string }).main,
-    statusPassive: (p.error as { main: string }).main,
-    legLeft: primary,
-    legRight: secondary,
+    placeholder: cssVar("--muted-foreground", "#625D63"),
+    statusActive: "#2E7D32",
+    statusPassive: "#D3381F",
+    legLeft: cssVar("--primary", "#476F16"),
+    legRight: cssVar("--secondary", "#B5C5A2"),
   };
 }
 
@@ -115,8 +101,15 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rendererRef = useRef<BinaryTreeRenderer | null>(null);
   const rootRef = useRef<BTNode | null>(null);
-  const theme = useTheme();
-  const treeColors = useMemo(() => deriveTreeColors(theme), [theme]);
+  const [colorsVersion, setColorsVersion] = useState(0);
+  const treeColors = useMemo(() => deriveTreeColors(), [colorsVersion]);
+
+  // Tema değişince renkleri tazele (dark class togglenince)
+  useEffect(() => {
+    const observer = new MutationObserver(() => setColorsVersion((v) => v + 1));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   const [search, setSearch] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -304,202 +297,228 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
     }
   };
 
+  const iconBtn =
+    "text-muted-foreground hover:bg-accent hover:text-foreground flex size-11 cursor-pointer items-center justify-center rounded transition-colors";
+
   return (
-    <Box
+    <div
       ref={wrapRef}
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 2.1,
-        overflow: "hidden",
-        bgcolor: "#FFFFFF",
+      className="border-border relative flex h-[640px] flex-col overflow-hidden rounded border bg-[#FFFFFF] md:h-[740px]"
+      style={{
         backgroundImage: "radial-gradient(circle, rgba(39,77,36,0.07) 1.2px, transparent 1.2px)",
         backgroundSize: "15px 15px",
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        height: { xs: 640, md: 740 },
       }}
     >
       {/* Tek satırlık kompakt kontrol çubuğu */}
-      <Box sx={{ p: 1.25, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 1 }}>
-          <Select
-            size="small"
-            value={period}
-            onChange={(e) => onPeriodChange?.(e.target.value as string)}
-            aria-label="Dönem"
-            sx={{ minWidth: 104 }}
-          >
-            {periodOptions(minMonth).map((v) => (
-              <MenuItem key={v} value={v}>
-                {v}
-              </MenuItem>
-            ))}
-          </Select>
-          <TextField
-            size="small"
-            placeholder="Üye ara (TR90 kodu girin)..."
+      <div className="border-border flex flex-wrap items-center gap-1 border-b bg-background p-1.25">
+        <Select
+          value={period}
+          onChange={(e) => onPeriodChange?.(e.target.value)}
+          aria-label="Dönem"
+          className="h-9 min-w-[104px]"
+        >
+          {periodOptions(minMonth).map((v) => (
+            <option key={v} value={v}>
+              {v}
+            </option>
+          ))}
+        </Select>
+        <div className="relative">
+          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+          <Input
+            placeholder="Üye ara (TR90 kodu)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            sx={{ width: { xs: 150, sm: 240 } }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search className="size-[18px]" />
-                  </InputAdornment>
-                ),
-              },
-            }}
+            className="h-9 w-[150px] pl-8 sm:w-[240px]"
           />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Chip size="small" label="Kök" sx={{ bgcolor: treeColors.root, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
-            <Chip size="small" label="Sol" sx={{ bgcolor: treeColors.left, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
-            <Chip size="small" label="Sağ" sx={{ bgcolor: treeColors.right, color: "#fff", height: 22, fontSize: 11, fontWeight: 700 }} />
-          </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton size="small" title="Tümünü aç" aria-label="Tümünü aç" onClick={() => toggleAll(false)}>
-            <UnfoldVertical />
-          </IconButton>
-          <IconButton size="small" title="Tümünü kapat" aria-label="Tümünü kapat" onClick={() => toggleAll(true)}>
-            <FoldVertical />
-          </IconButton>
-          <IconButton size="small" title="Yaklaş" aria-label="Yaklaş" onClick={() => rendererRef.current?.zoomBy(1.3)}>
-            <ZoomIn />
-          </IconButton>
-          <IconButton size="small" title="Uzaklaş" aria-label="Uzaklaş" onClick={() => rendererRef.current?.zoomBy(0.77)}>
-            <ZoomOut />
-          </IconButton>
-          <IconButton size="small" title="Sığdır" aria-label="Sığdır" onClick={() => rendererRef.current?.fit()}>
-            <Maximize />
-          </IconButton>
-        </Stack>
-      </Box>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <Badge className="bg-[#355310] h-[22px] px-2 text-[11px] text-white">Kök</Badge>
+          <Badge className="bg-primary h-[22px] px-2 text-[11px] text-white">Sol</Badge>
+          <Badge className="bg-secondary text-secondary-foreground h-[22px] px-2 text-[11px]">Sağ</Badge>
+        </div>
+        <div className="flex-1" />
+        <button type="button" title="Tümünü aç" aria-label="Tümünü aç" className={iconBtn} onClick={() => toggleAll(false)}>
+          <UnfoldVertical className="size-5" />
+        </button>
+        <button type="button" title="Tümünü kapat" aria-label="Tümünü kapat" className={iconBtn} onClick={() => toggleAll(true)}>
+          <FoldVertical className="size-5" />
+        </button>
+        <button type="button" title="Yaklaş" aria-label="Yaklaş" className={iconBtn} onClick={() => rendererRef.current?.zoomBy(1.3)}>
+          <ZoomIn className="size-5" />
+        </button>
+        <button type="button" title="Uzaklaş" aria-label="Uzaklaş" className={iconBtn} onClick={() => rendererRef.current?.zoomBy(0.77)}>
+          <ZoomOut className="size-5" />
+        </button>
+        <button type="button" title="Sığdır" aria-label="Sığdır" className={iconBtn} onClick={() => rendererRef.current?.fit()}>
+          <Maximize className="size-5" />
+        </button>
+      </div>
 
       {/* Ağaç alanı */}
-      <Box sx={{ flexGrow: 1, position: "relative", minHeight: 0 }}>
+      <div className="relative min-h-0 flex-1">
         <svg
           ref={svgRef}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none" }}
         />
-      </Box>
+      </div>
 
       {/* Boş bacağa kodla yerleştirme */}
-      <Dialog open={!!placeTarget} onClose={() => setPlaceTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 800 }}>
-          <UserPlus className="text-primary" />
-          {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton size="small" aria-label="Kapat" onClick={() => setPlaceTarget(null)}>
-            <X />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+      <Dialog open={!!placeTarget} onOpenChange={(o) => !o && setPlaceTarget(null)}>
+        <DialogContent className="max-w-xs">
+          <DialogTitle className="flex items-center gap-1 text-lg font-extrabold">
+            <UserPlus className="text-primary size-5" />
+            {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
+            <div className="flex-1" />
+            <button
+              type="button"
+              aria-label="Kapat"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+              onClick={() => setPlaceTarget(null)}
+            >
+              <X className="size-4" />
+            </button>
+          </DialogTitle>
+          <p className="text-muted-foreground mb-1.5 text-sm">
             Bu boş bacağa yerleştirilecek üyeyi listeden seçin.
             (Alışveriş yapmamış üyeler yerleştirilemez.)
-          </Typography>
+          </p>
 
           {placeError && !pendingLoading && (
-            <Alert severity="error" sx={{ mb: 1.5 }}>
+            <div className="border-destructive/50 bg-destructive/10 text-destructive mb-1.5 rounded border px-3 py-2 text-sm font-medium">
               {placeError}
-            </Alert>
+            </div>
           )}
 
           {pendingLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <CircularProgress size={28} />
-            </Box>
+            <div className="flex justify-center py-4">
+              <Loader2 className="text-primary size-7 animate-spin" />
+            </div>
           ) : pendingUsers.length === 0 && !placeError ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: "center" }}>
+            <p className="text-muted-foreground py-3 text-center text-sm">
               Yerleşim bekleyen üyeniz yok.
-            </Typography>
+            </p>
           ) : (
-            <List dense sx={{ maxHeight: 260, overflow: "auto" }}>
+            <div className="max-h-[260px] overflow-auto">
               {pendingUsers.map((u) => (
-                <ListItemButton
+                <button
                   key={u.id}
-                  selected={selectedUserId === u.id}
+                  type="button"
                   onClick={() => {
                     setSelectedUserId(u.id);
                     setPlaceError("");
                   }}
-                  sx={{ borderRadius: 1.4 }}
+                  className={cn(
+                    "flex w-full cursor-pointer flex-col items-start rounded px-3 py-2 text-left transition-colors",
+                    selectedUserId === u.id ? "bg-primary/10 text-primary" : "hover:bg-accent"
+                  )}
                 >
-                  <ListItemText
-                    primary={u.name}
-                    secondary={`${u.member_code} · ${u.is_active ? "Aktif" : "Pasif"}`}
-                  />
-                </ListItemButton>
+                  <span className="text-sm font-semibold">{u.name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {u.member_code} · {u.is_active ? "Aktif" : "Pasif"}
+                  </span>
+                </button>
               ))}
-            </List>
+            </div>
           )}
 
           <Button
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2 }}
+            className="mt-2 w-full"
             disabled={placing || pendingLoading || selectedUserId === null}
             onClick={handlePlaceSubmit}
           >
-            {placing ? <CircularProgress size={22} color="inherit" /> : "Yerleştir"}
+            {placing ? <Loader2 className="size-5 animate-spin" /> : "Yerleştir"}
           </Button>
         </DialogContent>
       </Dialog>
 
       {/* "i" — üye bilgi modalı */}
-      <Dialog open={!!infoNode} onClose={() => setInfoNode(null)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, pb: 1 }}>
-          {infoNode && (
-            <>
-              <Avatar
-                src={infoNode.imagePath ? fileUrl(infoNode.imagePath) ?? undefined : undefined}
-                sx={{ bgcolor: "primary.main", width: 46, height: 46, fontSize: 19, fontWeight: 800 }}
-              >
-                {(infoNode.name.charAt(0) || "?").toLocaleUpperCase("tr-TR")}
-              </Avatar>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-                  {infoNode.name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                  {infoNode.memberCode}
-                </Typography>
-              </Box>
-            </>
-          )}
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton size="small" aria-label="Kapat" onClick={() => setInfoNode(null)}>
-            <X />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {infoLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-              <CircularProgress size={32} />
-            </Box>
-          ) : infoError ? (
-            <Alert severity="error">{infoError}</Alert>
-          ) : infoCard ? (
-            <MemberInfoTable card={infoCard} />
-          ) : null}
+      <Dialog open={!!infoNode} onOpenChange={(o) => !o && setInfoNode(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogTitle className="flex items-center gap-1.5 pb-1">
+            {infoNode && (
+              <>
+                <span className="bg-primary flex size-[46px] items-center justify-center rounded text-[19px] font-extrabold text-white">
+                  {infoNode.imagePath ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={fileUrl(infoNode.imagePath) ?? ""}
+                      alt=""
+                      className="size-full rounded object-cover"
+                    />
+                  ) : (
+                    (infoNode.name.charAt(0) || "?").toLocaleUpperCase("tr-TR")
+                  )}
+                </span>
+                <span>
+                  <span className="block text-lg leading-tight font-extrabold">{infoNode.name}</span>
+                  <span className="text-muted-foreground text-xs font-bold">{infoNode.memberCode}</span>
+                </span>
+              </>
+            )}
+            <div className="flex-1" />
+            <button
+              type="button"
+              aria-label="Kapat"
+              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+              onClick={() => setInfoNode(null)}
+            >
+              <X className="size-4" />
+            </button>
+          </DialogTitle>
+          <div className="border-border border-t pt-3">
+            {infoLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="text-primary size-8 animate-spin" />
+              </div>
+            ) : infoError ? (
+              <div className="border-destructive/50 bg-destructive/10 text-destructive rounded border px-3 py-2 text-sm font-medium">
+                {infoError}
+              </div>
+            ) : infoCard ? (
+              <MemberInfoTable card={infoCard} />
+            ) : null}
+          </div>
         </DialogContent>
       </Dialog>
 
-      <Snackbar open={!!successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg("")}>
-        <Alert severity="success" onClose={() => setSuccessMsg("")}>
-          {successMsg}
-        </Alert>
-      </Snackbar>
+      {/* Bildirimler */}
+      {successMsg && (
+        <Toast msg={successMsg} onClose={() => setSuccessMsg("")} type="success" />
+      )}
+      {loadError && (
+        <Toast msg={loadError} onClose={() => setLoadError("")} type="error" />
+      )}
+    </div>
+  );
+}
 
-      <Snackbar open={!!loadError} autoHideDuration={4000} onClose={() => setLoadError("")}>
-        <Alert severity="error" onClose={() => setLoadError("")}>
-          {loadError}
-        </Alert>
-      </Snackbar>
-    </Box>
+function Toast({ msg, onClose, type }: { msg: string; onClose: () => void; type: "success" | "error" }) {
+  return (
+    <div className="fixed bottom-5 left-1/2 z-[1400] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+      <div
+        className={cn(
+          "flex items-center gap-2 rounded px-4 py-3 text-sm font-semibold shadow-lg",
+          type === "success" ? "bg-foreground text-background" : "bg-destructive text-white"
+        )}
+      >
+        {type === "success" ? (
+          <CheckCircle2 className="size-5 shrink-0" />
+        ) : (
+          <AlertCircle className="size-5 shrink-0" />
+        )}
+        <span className="flex-1">{msg}</span>
+        <button
+          type="button"
+          aria-label="Kapat"
+          className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
+          onClick={onClose}
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -520,92 +539,73 @@ function MemberInfoTable({ card }: { card: UserInfoCard }) {
       : card.total_pv_right < card.total_pv_left
         ? "SAĞ"
         : "EŞİT";
-  const rank = (card.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("en-US");
+  // Rütbe kısaltması: 12 karakterden uzun rütbeler ilk 12 harf + "." olur
+  const fullRank = (card.rank ?? "GİRİŞİMCİ").toLocaleUpperCase("en-US");
+  const rank = fullRank.length > 12 ? `${fullRank.slice(0, 12)}.` : fullRank;
 
   const pair = (k1: string, v1: string, k2: string, v2: string) => (
-    <TableRow>
-      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+    <tr className="border-border border-b">
+      <th scope="row" className="text-muted-foreground w-[15%] py-1.1 text-left text-xs font-bold">
         {k1}
-      </TableCell>
-      <TableCell align="right" sx={{ fontWeight: 800, width: "35%" }}>
-        {v1}
-      </TableCell>
-      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+      </th>
+      <td className="w-[35%] py-1.1 text-right text-xs font-extrabold">{v1}</td>
+      <th scope="row" className="text-muted-foreground w-[15%] py-1.1 text-left text-xs font-bold">
         {k2}
-      </TableCell>
-      <TableCell align="right" sx={{ fontWeight: 800, width: "35%" }}>
-        {v2}
-      </TableCell>
-    </TableRow>
+      </th>
+      <td className="w-[35%] py-1.1 text-right text-xs font-extrabold">{v2}</td>
+    </tr>
   );
 
   const full = (k: string, v: string) => (
-    <TableRow>
-      <TableCell component="th" scope="row" sx={{ color: "text.secondary", fontWeight: 700, width: "15%" }}>
+    <tr className="border-border border-b">
+      <th scope="row" className="text-muted-foreground w-[15%] py-1.1 text-left text-xs font-bold">
         {k}
-      </TableCell>
-      <TableCell colSpan={3} align="right" sx={{ fontWeight: 800 }}>
+      </th>
+      <td colSpan={3} className="py-1.1 text-right text-xs font-extrabold">
         {v}
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 
   return (
-    <Box>
+    <div>
       {/* Rozetler: rütbe · durum · paket */}
-      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1, mb: 1.5 }}>
-        <Chip size="small" label={rank} sx={{ bgcolor: "primary.main", color: "#fff", fontWeight: 800 }} />
-        <Chip
-          size="small"
-          label={card.is_active ? "AKTİF" : "PASİF"}
-          sx={
-            card.is_active
-              ? { bgcolor: "#E3F3E8", color: "#1B7A3D", fontWeight: 800 }
-              : { bgcolor: "#FBE7E7", color: "#C62828", fontWeight: 800 }
-          }
-        />
+      <div className="mb-1.5 flex flex-wrap gap-1">
+        <Badge className="bg-primary text-white font-extrabold">{rank}</Badge>
+        <Badge
+          className={cn(
+            "font-extrabold",
+            card.is_active ? "bg-[#E3F3E8] text-[#1B7A3D]" : "bg-[#FBE7E7] text-[#C62828]"
+          )}
+        >
+          {card.is_active ? "AKTİF" : "PASİF"}
+        </Badge>
         {card.package ? (
-          <Chip size="small" variant="outlined" label={card.package.toLocaleUpperCase("tr-TR")} sx={{ fontWeight: 700 }} />
+          <Badge variant="outline" className="border-border font-bold">
+            {card.package.toLocaleUpperCase("tr-TR")}
+          </Badge>
         ) : null}
-      </Stack>
+      </div>
 
       {/* Bacak dağılımı */}
-      <Stack
-        direction="row"
-        spacing={1.5}
-        sx={{ alignItems: "center", justifyContent: "center", py: 1.25, mb: 2, borderRadius: 1.4, bgcolor: "action.hover" }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: "#2E7D32" }} />
-          <Typography variant="body2" sx={{ fontWeight: 800 }}>
-            SOL %{pctL}
-          </Typography>
-        </Box>
-        <Typography variant="body2" color="text.secondary">
-          |
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Zayıf bacak:{" "}
-          <Box component="span" sx={{ fontWeight: 800, color: "text.primary" }}>
-            {weak}
-          </Box>
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          |
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: "#B4552D" }} />
-          <Typography variant="body2" sx={{ fontWeight: 800 }}>
-            SAĞ %{pctR}
-          </Typography>
-        </Box>
-      </Stack>
+      <div className="bg-accent/50 mb-2 flex items-center justify-center gap-1.5 rounded py-1.25">
+        <span className="flex items-center gap-0.5">
+          <span className="bg-[#2E7D32] size-2.5 rounded-full" />
+          <span className="text-sm font-extrabold">SOL %{pctL}</span>
+        </span>
+        <span className="text-muted-foreground text-sm">|</span>
+        <span className="text-muted-foreground text-sm">
+          Zayıf bacak: <span className="text-foreground font-extrabold">{weak}</span>
+        </span>
+        <span className="text-muted-foreground text-sm">|</span>
+        <span className="flex items-center gap-0.5">
+          <span className="bg-[#B4552D] size-2.5 rounded-full" />
+          <span className="text-sm font-extrabold">SAĞ %{pctR}</span>
+        </span>
+      </div>
 
-      <Table
-        size="small"
-        sx={{ "& .MuiTableCell-root": { borderBottom: "1px solid", borderColor: "divider", py: 1.1 } }}
-      >
-        <TableBody>
+      <table className="w-full text-sm">
+        <tbody>
           {pair("SOL.CV", fmt(card.total_cv_left), "SAĞ.CV", fmt(card.total_cv_right))}
           {pair("KİŞ.", tl(card.wallet_balance), "EK.C.", tl(card.chip_balance))}
           {pair("SOL.EK", fmt(card.left_team_count), "SAĞ.EK", fmt(card.right_team_count))}
@@ -613,8 +613,8 @@ function MemberInfoTable({ card }: { card: UserInfoCard }) {
           {full("ALT EKİP", fmt(card.total_team_count))}
           {full("KARİYER", rank)}
           {full("SPONSOR", card.sponsor_name ?? "—")}
-        </TableBody>
-      </Table>
-    </Box>
+        </tbody>
+      </table>
+    </div>
   );
 }

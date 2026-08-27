@@ -1,20 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
-import CircularProgress from "@mui/material/CircularProgress";
-import Chip from "@mui/material/Chip";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, X } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { listPendingUsers, placePendingUser, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -24,7 +17,7 @@ function PendingContent() {
   const [snackbar, setSnackbar] = useState("");
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState<number | null>(null);
-	const [now, setNow] = useState(0);
+  const [now, setNow] = useState(0);
 
   const load = () => {
     listPendingUsers()
@@ -33,7 +26,9 @@ function PendingContent() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
   useEffect(() => {
     const timer = window.setTimeout(() => setNow(Date.now()), 0);
     return () => window.clearTimeout(timer);
@@ -55,86 +50,104 @@ function PendingContent() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary size-10 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Container maxWidth={false} sx={{ py: 4 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Bekleyenler Havuzu
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-4">
+      <h1 className="text-primary-dark text-2xl font-extrabold">Bekleyenler Havuzu</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Sponsorluğunuzu yaptığınız ve henüz ağaca yerleştirmediğiniz üyeler. Sol veya sağ bacağa yerleştirin.
-      </Typography>
+      </p>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-2 rounded border px-3 py-2 text-sm font-medium">
           {error}
-        </Alert>
+        </div>
       )}
 
       {!loading && users.length === 0 && (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary">Bekleyen üyeniz yok.</Typography>
-          </CardContent>
-        </Card>
+        <div className="border-border bg-card rounded border p-4">
+          <p className="text-muted-foreground text-sm">Bekleyen üyeniz yok.</p>
+        </div>
       )}
 
-      {users.map((u) => {
-    		const pendingMs = u.pending_since && now > 0 ? now - new Date(u.pending_since).getTime() : 0;
-        const days = Math.floor(pendingMs / DAY_MS);
-        const overdue = days > 10;
+      <div className="flex flex-col gap-2">
+        {users.map((u) => {
+          const pendingMs = u.pending_since && now > 0 ? now - new Date(u.pending_since).getTime() : 0;
+          const days = Math.floor(pendingMs / DAY_MS);
+          const overdue = days > 10;
 
-        return (
-          <Card key={u.id} sx={{ mb: 2 }}>
-            <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
-              <Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="h6">{u.name}</Typography>
-                  {overdue && <AlertTriangle className="size-4 text-destructive" />}
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {u.email} · {u.member_code}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                  <Chip size="small" label={`${u.total_pv_accumulated} PV`} color="primary" variant="outlined" />
-                  <Chip size="small" label={`${u.total_cv_accumulated} CV`} color="secondary" variant="outlined" />
-                  <Chip
-                    size="small"
-                    label={`${days} gündür bekliyor`}
-                    color={overdue ? "error" : "default"}
-                  />
-                </Box>
+          return (
+            <div
+              key={u.id}
+              className="border-border bg-card flex flex-wrap items-center justify-between gap-1 rounded border p-3"
+            >
+              <div>
+                <div className="flex items-center gap-1">
+                  <h3 className="text-base font-bold">{u.name}</h3>
+                  {overdue && <AlertTriangle className="text-destructive size-4" />}
+                </div>
+                <p className="text-muted-foreground text-sm">{u.email} · {u.member_code}</p>
+                <div className="mt-0.5 flex flex-wrap gap-0.5">
+                  <Badge variant="outline" className="border-primary/40 text-primary font-semibold">
+                    {u.total_pv_accumulated} PV
+                  </Badge>
+                  <Badge variant="outline" className="border-secondary-dark/40 text-secondary-foreground font-semibold">
+                    {u.total_cv_accumulated} CV
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "font-semibold",
+                      overdue ? "border-destructive/50 text-destructive" : "border-border text-muted-foreground"
+                    )}
+                  >
+                    {days} gündür bekliyor
+                  </Badge>
+                </div>
                 {overdue && (
-                  <Typography variant="caption" color="error">
-                    10 günden fazladır bekliyor!
-                  </Typography>
+                  <p className="text-destructive mt-0.5 text-xs font-bold">10 günden fazladır bekliyor!</p>
                 )}
-              </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
+              </div>
+              <div className="flex gap-1">
                 <Button
-                  variant="contained"
-                  color="success"
+                  variant="default"
+                  className="bg-[#2E7D32] hover:bg-[#256a2a]"
                   disabled={placing === u.id}
                   onClick={() => place(u.id, "L", u.name)}
                 >
                   Sola Yerleştir
                 </Button>
-                <Button variant="contained" disabled={placing === u.id} onClick={() => place(u.id, "R", u.name)}>
+                <Button disabled={placing === u.id} onClick={() => place(u.id, "R", u.name)}>
                   Sağa Yerleştir
                 </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        );
-      })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-      <Snackbar open={!!snackbar} autoHideDuration={5000} onClose={() => setSnackbar("")} message={snackbar} />
-    </Container>
+      {/* Bildirim */}
+      {snackbar && (
+        <div className="fixed bottom-5 left-1/2 z-[1400] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background flex items-center gap-2 rounded px-4 py-3 text-sm font-semibold shadow-lg">
+            <CheckCircle2 className="size-5 shrink-0" />
+            <span className="flex-1">{snackbar}</span>
+            <button
+              aria-label="Kapat"
+              className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
+              onClick={() => setSnackbar("")}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

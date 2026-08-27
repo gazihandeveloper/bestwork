@@ -126,7 +126,7 @@ export default function Products() {
               En çok tercih edilen ürünler — PV/CV puan kazanın, seviye atlayın.
             </p>
           </div>
-          <Button asChild variant="outline" className="text-primary border-primary/40 rounded-sm hover:bg-primary/5">
+          <Button asChild variant="outline" className="text-primary border-primary/40 rounded hover:bg-primary/5">
             <Link href="/shop">
               Tümünü Gör
               <ArrowRight className="size-4" />
@@ -175,7 +175,7 @@ export default function Products() {
             return (
               <Reveal key={p.id} delay={(index % 3) * 80} className="h-full">
                 <div
-                  className="group border-border bg-background relative flex h-full cursor-pointer flex-col overflow-hidden rounded-sm border shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.22)]"
+                  className="group border-border bg-background relative flex h-full cursor-pointer flex-col overflow-hidden rounded border shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.22)]"
                   onClick={() => router.push(`/product/${p.id}`)}
                 >
                   {/* Görsel */}
@@ -259,7 +259,7 @@ export default function Products() {
 
                     {/* Aksiyonlar */}
                     <div className="mt-auto flex items-center gap-2">
-                      <div className="border-border bg-muted/50 flex shrink-0 items-center gap-1 rounded-sm border px-1 py-1">
+                      <div className="border-border bg-muted/50 flex shrink-0 items-center gap-1 rounded border px-1 py-1">
                         <button
                           type="button"
                           aria-label="Adedi azalt"
@@ -310,7 +310,7 @@ export default function Products() {
       {/* Sepete ekleme bildirimi */}
       {snackbar && (
         <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
-          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded-sm px-5 py-3 text-sm font-semibold">
+          <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded px-5 py-3 text-sm font-semibold">
             <Check className="size-5 shrink-0" />
             <span className="flex-1 truncate">{snackbar}</span>
             <button
@@ -318,7 +318,7 @@ export default function Products() {
               className="cursor-pointer font-bold underline underline-offset-2"
               onClick={() => {
                 setSnackbar("");
-                window.dispatchEvent(new CustomEvent("open-cart"));
+                router.push("/cart");
               }}
             >
               Sepete Git

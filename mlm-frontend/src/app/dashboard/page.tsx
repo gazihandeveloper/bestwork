@@ -3,27 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Container from "@mui/material/Container";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import CircularProgress from "@mui/material/CircularProgress";
-import Chip from "@mui/material/Chip";
-import Snackbar from "@mui/material/Snackbar";
-import LinearProgress from "@mui/material/LinearProgress";
 import {
   Copy,
   Link as LinkIcon,
@@ -40,12 +19,19 @@ import {
   Wallet,
   Clock,
   X,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
 import { BASE_PATH } from "@/lib/api";
 import type { UserDashboard, Rank, User } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const fmt2 = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -60,7 +46,6 @@ interface StatBlockProps {
   progress?: number;
   steps?: { filled: number; total: number };
   icon: React.ReactNode;
-  highlight?: boolean;
   big?: boolean;
   info?: string;
   flipped?: boolean;
@@ -68,290 +53,135 @@ interface StatBlockProps {
   onClick?: () => void;
 }
 
-function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, highlight = false, big, info, flipped, onFlip, onClick }: StatBlockProps) {
+// İstatistik kartı — köşeli (4px), düz, tıklanabilir, bilgi için çevrilebilir.
+function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, big, info, flipped, onFlip, onClick }: StatBlockProps) {
   return (
-    <Card
+    <div
       onClick={onClick}
-      sx={{
-        height: "100%",
-        cursor: onClick ? "pointer" : "default",
-        borderRadius: "14px",
-        border: "1px solid",
-        borderColor: "divider",
-        background: highlight
-          ? (theme) =>
-              `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-          : "background.paper",
-        color: highlight ? "common.white" : "text.primary",
-        boxShadow: 2,
-        transition: "box-shadow 250ms ease",
-        perspective: 1000,
-        "&:hover": { boxShadow: 6 },
-      }}
+      className={cn(
+        "border-border bg-card text-foreground relative h-full rounded border shadow-sm transition-shadow hover:shadow-md",
+        onClick && "cursor-pointer"
+      )}
+      style={{ perspective: 1000 }}
     >
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
+      <div
+        className="relative h-full w-full transition-transform duration-600"
+        style={{
           transformStyle: "preserve-3d",
-          transition: "transform 600ms cubic-bezier(0.2, 0, 0, 1)",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
         }}
       >
         {/* Ön yüz */}
-        <Box
-          sx={{
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            height: "100%",
-          }}
-        >
-          <CardContent sx={{ p: 2, position: "relative", minHeight: 178, display: "flex", flexDirection: "column" }}>
-        <Box
-          aria-hidden
-          sx={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1,
-          }}
-        >
-          <Box
-            component="button"
-            type="button"
-            aria-label={`${label} hakkında bilgi`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onFlip?.();
-            }}
-            sx={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Info
-              className={`size-[28px] transition duration-200 hover:scale-[1.15] ${
-                highlight ? "text-white/90" : "text-primary"
-              }`}
-            />
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            width: 38,
-            height: 38,
-            borderRadius: "8.4px",
-            bgcolor: highlight ? "rgba(255,255,255,0.2)" : "secondary.main",
-            color: highlight ? "common.white" : "primary.dark",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 1,
-          }}
-        >
-          {icon}
-        </Box>
-        <Typography
-          variant="caption"
-          sx={{
-            color: highlight ? "rgba(255,255,255,0.85)" : "text.secondary",
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            fontSize: 14,
-          }}
-        >
-          {label.toLocaleUpperCase("tr-TR")}
-        </Typography>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 800,
-            mt: 0.25,
-            fontSize: big ? "2.4rem" : "1.7rem",
-            lineHeight: 1.2,
-            color: highlight ? "common.white" : "primary.dark",
-          }}
-        >
-          {value}
-        </Typography>
-        {steps && (
-          <Box sx={{ mt: "auto", pt: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
-            {Array.from({ length: steps.total }, (_, i) => {
-              const filled = i < steps.filled;
-              return (
-                <Box
-                  key={i}
-                  sx={{
-                    flexGrow: 1,
-                    height: 8,
-                    borderRadius: 2.8,
-                    bgcolor: filled
-                      ? highlight
-                        ? "#D8F0DC"
-                        : "primary.main"
-                      : highlight
-                        ? "rgba(255,255,255,0.25)"
-                        : "secondary.light",
-                    transition: "background-color 300ms ease",
-                  }}
-                />
-              );
-            })}
-          </Box>
-        )}
-        {kalanBoxes && (
-          <Box sx={{ mt: "auto", pt: 1, display: "flex", gap: 1 }}>
-            {[
-              { label: kalanBoxes.leftLabel ?? "Sol", value: kalanBoxes.left },
-              { label: kalanBoxes.rightLabel ?? "Sağ", value: kalanBoxes.right },
-            ].map((b) => (
-              <Box
-                key={b.label}
-                sx={{
-                  flexGrow: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 0.5,
-                  border: "1px solid",
-                  borderColor: "primary.main",
-                  borderRadius: "5.6px",
-                  px: 0.75,
-                  py: 0.1,
-                  textAlign: "center",
-                  bgcolor: "primary.main",
+        <div className="h-full" style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
+          <div className="relative flex min-h-[178px] flex-col p-2">
+            {/* Bilgi butonu */}
+            <div className="absolute top-3 right-3 z-[1] flex items-center justify-center">
+              <button
+                type="button"
+                aria-label={`${label} hakkında bilgi`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFlip?.();
                 }}
+                className="cursor-pointer border-none bg-transparent p-0"
               >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "rgba(255,255,255,0.85)",
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {b.label}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: 12.5,
-                    color: "common.white",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {b.value}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
-        {kalan && (
-          <Typography
-            variant="caption"
-            sx={{
-              display: "block",
-              mt: "auto",
-              pt: 1,
-              color: highlight ? "rgba(255,255,255,0.85)" : "text.secondary",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            Kalan: {kalan}
-          </Typography>
-        )}
+                <Info className="text-primary size-[28px] transition duration-200 hover:scale-115" />
+              </button>
+            </div>
 
-        {progress !== undefined && (
-          <Box sx={{ mt: 1 }}>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{
-                borderRadius: 2.8,
-                height: 7,
-                bgcolor: highlight ? "rgba(255,255,255,0.25)" : "secondary.light",
-                "& .MuiLinearProgress-bar": {
-                  bgcolor: highlight ? "#D8F0DC" : "primary.main",
-                  borderRadius: 2.8,
-                },
-              }}
-            />
-          </Box>
-        )}
-      </CardContent>
-        </Box>
+            <div className="bg-secondary text-primary-dark mb-1 flex size-[38px] items-center justify-center rounded">
+              {icon}
+            </div>
+            <p className="text-muted-foreground text-sm font-bold tracking-wide uppercase">
+              {label.toLocaleUpperCase("tr-TR")}
+            </p>
+            <p
+              className="text-primary-dark mt-0.5 font-extrabold leading-tight"
+              style={{ fontSize: big ? "2.4rem" : "1.7rem" }}
+            >
+              {value}
+            </p>
+
+            {steps && (
+              <div className="mt-auto flex items-center gap-0.5 pt-1">
+                {Array.from({ length: steps.total }, (_, i) => {
+                  const filled = i < steps.filled;
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-2 flex-grow rounded transition-colors duration-300",
+                        filled ? "bg-primary" : "bg-secondary-light"
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {kalanBoxes && (
+              <div className="mt-auto flex gap-1 pt-1">
+                {[
+                  { label: kalanBoxes.leftLabel ?? "Sol Hat", value: kalanBoxes.left },
+                  { label: kalanBoxes.rightLabel ?? "Sağ Hat", value: kalanBoxes.right },
+                ].map((b) => (
+                  <div
+                    key={b.label}
+                    className="bg-primary flex flex-grow items-center justify-center gap-0.5 rounded px-0.75 py-0.1 text-center"
+                  >
+                    <span className="text-[10.5px] font-bold leading-tight text-white/85">{b.label}</span>
+                    <span className="text-[12.5px] leading-tight font-extrabold text-white">{b.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {kalan && (
+              <p className="text-muted-foreground mt-auto block pt-1 text-[13px] font-semibold">
+                Kalan: {kalan}
+              </p>
+            )}
+
+            {progress !== undefined && (
+              <div className="mt-1">
+                <div className="bg-secondary-light h-[7px] w-full overflow-hidden rounded">
+                  <div
+                    className="bg-primary h-full rounded transition-[width] duration-300"
+                    style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Arka yüz (bilgi) */}
         {info && (
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
+          <div
+            className="bg-secondary-light text-primary-dark absolute inset-0 flex flex-col items-center justify-center gap-1 rounded p-2.5 text-center"
+            style={{
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              p: 2.5,
-              gap: 1,
-              borderRadius: "14px",
-              background: highlight
-                ? (theme) =>
-                    `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.light})`
-                : (theme) => theme.palette.secondary.light,
-              color: "primary.dark",
             }}
           >
             <Info className="size-[30px]" />
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              {value}
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, maxWidth: 220 }}>
-              {info}
-            </Typography>
-            <Box
-              component="button"
+            <p className="text-lg font-extrabold">{value}</p>
+            <p className="max-w-[220px] text-sm font-semibold">{info}</p>
+            <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onFlip?.();
               }}
-              sx={{
-                mt: 1,
-                border: "1px solid",
-                borderColor: "primary.main",
-                bgcolor: "background.paper",
-                color: "primary.dark",
-                borderRadius: "20px",
-                px: 2,
-                py: 0.75,
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                "&:hover": { bgcolor: "secondary.main" },
-              }}
+              className="bg-background text-primary-dark mt-1 cursor-pointer rounded border border-primary px-2 py-0.75 text-[13px] font-bold hover:bg-secondary"
             >
               Geri Dön
-            </Box>
-          </Box>
+            </button>
+          </div>
         )}
-      </Box>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -423,17 +253,22 @@ function DashboardContent() {
     };
   }, []);
 
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) {
+    return (
+      <div className="border-destructive/50 bg-destructive/10 text-destructive my-4 rounded border px-4 py-3 text-sm font-medium">
+        {error}
+      </div>
+    );
+  }
   if (!data) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-10">
+        <Loader2 className="text-primary size-10 animate-spin" />
+      </div>
     );
   }
 
   const d = data;
-
 
   const currentRankId = me?.current_rank_id;
   const rankIndex = currentRankId != null ? ranks.findIndex((r) => r.id === currentRankId) : -1;
@@ -459,85 +294,46 @@ function DashboardContent() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(what);
-      setTimeout(() => setCopied(""), 2000);
+      setTimeout(() => setCopied(""), 1600);
     } catch {
-      setCopied("");
+      setMsg("Kopyalanamadı.");
     }
   };
 
-  const initials = (contextUser?.name ?? "?")
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
+  const initials =
+    (contextUser?.name ?? "?")
+      .split(" ")
+      .map((p) => p[0])
+      .slice(0, 2)
+      .join("")
+      .toLocaleUpperCase("tr-TR") || "?";
 
-  const referralLink =
-    typeof window !== "undefined" && me
-      ? `${window.location.origin}${BASE_PATH}/register?ref=${me.member_code}`
-      : "";
+  const referralLink = `${typeof window !== "undefined" ? window.location.origin : ""}${BASE_PATH}/register?ref=${me?.member_code ?? ""}`;
 
   return (
-    <Container maxWidth={false} sx={{ width: "100%", py: 3 }}>
-      <Grid container spacing={2.5}>
+    <div className="w-full py-3">
+      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12">
         {/* Sol profil sidebar */}
-        <Grid size={{ xs: 12, md: 3 }} sx={{ display: "flex" }}>
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexGrow: 1,
-              position: { md: "sticky" },
-              top: 96,
-            }}
-          >
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                borderRadius: "4px",
-                overflow: "hidden",
-                bgcolor: "background.paper",
-                border: "1px solid",
-                borderColor: "divider",
-                boxShadow: "none",
-              }}
-            >
-              {/* Profil görseli — düz bant */}
-              <Box sx={{ position: "relative", width: "100%", aspectRatio: "16/10", flexShrink: 0 }}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    bgcolor: "secondary.light",
-                  }}
-                >
-                  {profileImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={fileUrl(profileImage) ?? ""}
-                      alt={contextUser?.name ?? "Profil"}
-                      style={{
-                        width: 150,
-                        height: 150,
-                        objectFit: "cover",
-                        objectPosition: "center",
-                        display: "block",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  ) : (
-                    <Box sx={{ fontSize: 64, fontWeight: 800, color: "text.secondary" }}>{initials}</Box>
-                  )}
-                </Box>
-                <Box
-                  component="label"
-                  aria-label="Profil fotoğrafı yükle"
-                  sx={{ cursor: "pointer", position: "absolute", right: 10, bottom: 10 }}
+        <div className="flex md:col-span-3">
+          <div className="flex h-full w-full flex-col md:sticky md:top-24">
+            <div className="border-border bg-card flex h-full w-full flex-col overflow-hidden rounded border">
+              {/* Profil görseli — pastel zemin, hover'da kamera */}
+              <div className="bg-secondary-light/60 group relative flex h-[210px] w-full shrink-0 items-center justify-center">
+                {profileImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={fileUrl(profileImage) ?? ""}
+                    alt={contextUser?.name ?? "Profil"}
+                    className="block size-[140px] rounded-full border-4 border-background object-cover object-center shadow-sm transition-opacity group-hover:opacity-80"
+                  />
+                ) : (
+                  <span className="bg-accent text-foreground flex size-[140px] items-center justify-center rounded-full border-4 border-background text-4xl font-extrabold shadow-sm">
+                    {initials}
+                  </span>
+                )}
+                <label
+                  aria-label="Profil fotoğrafını değiştir"
+                  className="absolute inset-0 flex cursor-pointer items-center justify-center"
                 >
                   <input
                     type="file"
@@ -545,322 +341,239 @@ function DashboardContent() {
                     hidden
                     onChange={(e) => handleImageUpload(e.target.files?.[0])}
                   />
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "4px",
-                      bgcolor: "common.white",
-                      color: "text.secondary",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-                      "&:hover": { bgcolor: "secondary.light" },
-                    }}
-                  >
-                    {uploading ? <CircularProgress size={16} /> : <Camera className="size-4" />}
-                  </Box>
-                </Box>
-              </Box>
+                  <span className="bg-background/90 text-foreground flex size-11 items-center justify-center rounded-full shadow-lg opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
+                    {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
+                  </span>
+                </label>
+              </div>
 
-              {/* İçerik — düz, sade */}
-              <Box sx={{ p: 2.5, pt: 2, display: "flex", flexDirection: "column", gap: 1, alignItems: "center", textAlign: "center" }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.25, color: "text.primary" }}>
-                  Hesabım
-                </Typography>
+              {/* İçerik — isim soyisim, nötr */}
+              <div className="flex flex-col items-center gap-1.5 p-3 pt-2.5 text-center">
+                <h2 className="text-foreground text-xl leading-snug font-extrabold">
+                  {contextUser?.name.toLocaleUpperCase("tr-TR")}
+                </h2>
 
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 0.75,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: "4px",
-                    px: 1.5,
-                    py: 0.5,
-                    bgcolor: "transparent",
-                    boxShadow: "none",
-                  }}
-                >
-                  <Box
+                <div className="border-border flex items-center gap-1 rounded border px-2 py-0.5">
+                  <span
                     aria-hidden
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      bgcolor: me?.is_active ? "success.main" : "error.main",
-                    }}
+                    className={cn(
+                      "size-2 rounded-full",
+                      me?.is_active ? "bg-[#2E7D32]" : "bg-destructive"
+                    )}
                   />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: me?.is_active ? "success.main" : "error.main" }}>
+                  <span className={cn("text-sm font-bold", me?.is_active ? "text-[#2E7D32]" : "text-destructive")}>
                     Aktif
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
 
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => copyText(me?.member_code ?? "", "üye-id")}
-                  endIcon={<Copy className="size-3.5" />}
-                  sx={{
-                    color: "text.primary",
-                    borderColor: "divider",
-                    borderRadius: "4px",
-                    textTransform: "none",
-                    "&:hover": { bgcolor: "secondary.light", borderColor: "divider" },
-                  }}
-                >
-                  Üye No: {me?.member_code}
-                </Button>
-                {d.user.rank && (
+                <div className="mt-0.5 flex w-full flex-col gap-1">
                   <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => router.push("/career")}
-                    sx={{
-                      color: "text.primary",
-                      borderColor: "divider",
-                      borderRadius: "4px",
-                      textTransform: "none",
-                      "&:hover": { bgcolor: "secondary.light", borderColor: "divider" },
-                    }}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyText(me?.member_code ?? "", "üye-id")}
+                    className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
                   >
-                    Rütbe: {d.user.rank}
+                    Üye No: {me?.member_code}
+                    <Copy className="size-3.5" />
                   </Button>
-                )}
-
-                {/* Başarı Raporu — düz buton */}
-                <Button
-                  component={Link}
-                  href="/success-report"
-                  size="small"
-                  variant="outlined"
-                  startIcon={<BarChart3 className="size-4" />}
-                  sx={{
-                    color: "primary.main",
-                    borderColor: "primary.main",
-                    borderRadius: "4px",
-                    textTransform: "none",
-                    px: 2,
-                    fontWeight: 700,
-                    "&:hover": { bgcolor: "rgba(71,111,22,0.06)" },
-                  }}
-                >
-                  Başarı Raporu
-                </Button>
-              </Box>
+                  {d.user.rank && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push("/career")}
+                      className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
+                    >
+                      Rütbe: {d.user.rank}
+                    </Button>
+                  )}
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="text-primary border-primary w-full rounded normal-case font-bold hover:bg-primary/5"
+                  >
+                    <Link href="/success-report">
+                      <BarChart3 className="size-4" />
+                      Başarı Raporu
+                    </Link>
+                  </Button>
+                </div>
+              </div>
 
               {/* Üye kayıt linki — alt */}
-              <Box sx={{ px: 2.5, pb: 2.5, mt: "auto" }}>
-                <Typography
-                  variant="overline"
-                  sx={{ display: "block", textAlign: "center", color: "text.secondary", fontWeight: 700, letterSpacing: 1.2, mb: 0.5, fontSize: 10 }}
-                >
+              <div className="mt-auto border-t border-border px-3 pt-2.5 pb-3">
+                <p className="text-muted-foreground mb-1 block text-center text-[10px] font-bold tracking-[1.2px] uppercase">
                   Üye Kayıt Linkiniz
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    bgcolor: "transparent",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: "4px",
-                    px: 1.5,
-                    py: 1,
-                  }}
-                >
-                  <LinkIcon className="size-4 shrink-0 text-muted-foreground" />
-                  <Typography
-                    variant="body2"
-                    noWrap
-                    sx={{ color: "text.secondary", fontFamily: "monospace", fontSize: 12, flexGrow: 1 }}
-                  >
-                    {referralLink}
-                  </Typography>
+                </p>
+                <div className="border-border flex items-center gap-1 rounded border px-1.5 py-1">
+                  <LinkIcon className="text-muted-foreground size-4 shrink-0" />
+                  <span className="text-muted-foreground font-mono text-xs flex-grow truncate">{referralLink}</span>
                   <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<Copy className="size-3.5" />}
+                    size="sm"
+                    variant="outline"
                     onClick={() => copyText(referralLink, "link")}
-                    sx={{ flexShrink: 0, fontSize: 11, py: 0.5, borderRadius: "4px", textTransform: "none" }}
+                    className="rounded px-2 text-[11px] normal-case"
                   >
+                    <Copy className="size-3.5" />
                     {copied === "link" ? "Kopyalandı!" : "Kopyala"}
                   </Button>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-        </Grid>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* İstatistik blokları */}
-        <Grid size={{ xs: 12, md: 9 }}>
-          <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Ünvan"
-            value={currentRankName}
-            steps={{ filled: rankIndex + 1, total: 12 }}
-            icon={<Medal />}
-            highlight
-            info={`${currentRankName} — Sistemdeki en yüksek kariyer unvanınız.`}
-            flipped={flippedCard === "Ünvan"}
-            onFlip={() => flip("Ünvan")}
-            onClick={() => router.push("/career")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Güncel Kariyeriniz"
-            value={currentRankName}
-            icon={<BadgeCheck />}
-            info="Bu ayki güncel kariyeriniz."
-            flipped={flippedCard === "Güncel Kariyeriniz"}
-            onFlip={() => flip("Güncel Kariyeriniz")}
-            onClick={() => router.push("/career")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Seviyeniz"
-            value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
-            icon={<SignalHigh />}
-            info="Kazanç oranlarınızı belirleyen paketiniz."
-            flipped={flippedCard === "Seviyeniz"}
-            onFlip={() => flip("Seviyeniz")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Sponsor Olduklarım"
-            value={String(sponsoredCount)}
-            icon={<UserPlus />}
-            info="Doğrudan kaydettiğiniz 1. hat üyeleriniz."
-            flipped={flippedCard === "Sponsor Olduklarım"}
-            onFlip={() => flip("Sponsor Olduklarım")}
-            onClick={() => router.push("/sponsor-tree")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Ekibim"
-            value={`${fmt(d.left_team_count)} / ${fmt(d.right_team_count)}`}
-            kalanBoxes={{
-              leftLabel: "Sol Kol",
-              rightLabel: "Sağ Kol",
-              left: fmt(d.left_team_count),
-              right: fmt(d.right_team_count),
-            }}
-            icon={<Users />}
-            info="Binary ağacınızdaki toplam üye sayısı."
-            flipped={flippedCard === "Ekibim"}
-            onFlip={() => flip("Ekibim")}
-            onClick={() => router.push("/tree")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Anlık Eşleşme"
-            value={`${fmt(d.monthly_matched_cv)} CV`}
-            kalanBoxes={{
-              left: fmt(d.leg_cv_left_total),
-              right: fmt(d.leg_cv_right_total),
-            }}
-            icon={<Scale />}
-            info="Kısa kol ile eşleşen puanınız."
-            flipped={flippedCard === "Anlık Eşleşme"}
-            onFlip={() => flip("Anlık Eşleşme")}
-            onClick={() => router.push("/binary-transactions")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Kişisel Toplam Kazanç"
-            value={`${fmt2(d.wallet.total_earned)} ₺`}
-            icon={<ChartLine />}
-            info="Sisteme katılımınızdan beri toplam kazancınız."
-            flipped={flippedCard === "Kişisel Toplam Kazanç"}
-            onFlip={() => flip("Kişisel Toplam Kazanç")}
-            onClick={() => router.push("/commissions")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Yerleşim Bekleyen"
-            value={String(pendingCount)}
-            icon={<Clock />}
-            info="Ağaca yerleştirilmeyi bekleyen üyeler."
-            flipped={flippedCard === "Yerleşim Bekleyen"}
-            onFlip={() => flip("Yerleşim Bekleyen")}
-            onClick={openPendingModal}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <StatBlock
-            label="Anlık Kazanç"
-            value={`${fmt2(d.monthly_earned)} ₺`}
-            icon={<Wallet />}
-            info="Bu cari dönemde oluşan güncel hakedişiniz."
-            flipped={flippedCard === "Anlık Kazanç"}
-            onFlip={() => flip("Anlık Kazanç")}
-            onClick={() => router.push("/commissions?type=binary")}
-          />
-        </Grid>
-        </Grid>
-      </Grid>
-      </Grid>
+        <div className="md:col-span-9">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+            <StatBlock
+              label="Ünvan"
+              value={currentRankName}
+              steps={{ filled: rankIndex + 1, total: 12 }}
+              icon={<Medal />}
+              info={`${currentRankName} — Sistemdeki en yüksek kariyer unvanınız.`}
+              flipped={flippedCard === "Ünvan"}
+              onFlip={() => flip("Ünvan")}
+              onClick={() => router.push("/career")}
+            />
+            <StatBlock
+              label="Güncel Kariyeriniz"
+              value={currentRankName}
+              icon={<BadgeCheck />}
+              info="Bu ayki güncel kariyeriniz."
+              flipped={flippedCard === "Güncel Kariyeriniz"}
+              onFlip={() => flip("Güncel Kariyeriniz")}
+              onClick={() => router.push("/career")}
+            />
+            <StatBlock
+              label="Seviyeniz"
+              value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
+              icon={<SignalHigh />}
+              info="Kazanç oranlarınızı belirleyen paketiniz."
+              flipped={flippedCard === "Seviyeniz"}
+              onFlip={() => flip("Seviyeniz")}
+            />
+            <StatBlock
+              label="Sponsor Olduklarım"
+              value={String(sponsoredCount)}
+              icon={<UserPlus />}
+              info="Doğrudan kaydettiğiniz 1. hat üyeleriniz."
+              flipped={flippedCard === "Sponsor Olduklarım"}
+              onFlip={() => flip("Sponsor Olduklarım")}
+              onClick={() => router.push("/sponsor-tree")}
+            />
+            <StatBlock
+              label="Ekibim"
+              value={`${fmt(d.left_team_count)} / ${fmt(d.right_team_count)}`}
+              kalanBoxes={{
+                leftLabel: "Sol Hat",
+                rightLabel: "Sağ Hat",
+                left: fmt(d.left_team_count),
+                right: fmt(d.right_team_count),
+              }}
+              icon={<Users />}
+              info="Binary ağacınızdaki toplam üye sayısı."
+              flipped={flippedCard === "Ekibim"}
+              onFlip={() => flip("Ekibim")}
+              onClick={() => router.push("/tree")}
+            />
+            <StatBlock
+              label="Anlık Eşleşme"
+              value={`${fmt(d.monthly_matched_cv)} CV`}
+              kalanBoxes={{
+                leftLabel: "Sol Hat",
+                rightLabel: "Sağ Hat",
+                left: fmt(d.leg_cv_left_total),
+                right: fmt(d.leg_cv_right_total),
+              }}
+              icon={<Scale />}
+              info="Kısa kol ile eşleşen puanınız."
+              flipped={flippedCard === "Anlık Eşleşme"}
+              onFlip={() => flip("Anlık Eşleşme")}
+              onClick={() => router.push("/binary-transactions")}
+            />
+            <StatBlock
+              label="Kişisel Toplam Kazanç"
+              value={`${fmt2(d.wallet.total_earned)} ₺`}
+              icon={<ChartLine />}
+              info="Sisteme katılımınızdan beri toplam kazancınız."
+              flipped={flippedCard === "Kişisel Toplam Kazanç"}
+              onFlip={() => flip("Kişisel Toplam Kazanç")}
+              onClick={() => router.push("/commissions")}
+            />
+            <StatBlock
+              label="Yerleşim Bekleyen"
+              value={String(pendingCount)}
+              icon={<Clock />}
+              info="Ağaca yerleştirilmeyi bekleyen üyeler."
+              flipped={flippedCard === "Yerleşim Bekleyen"}
+              onFlip={() => flip("Yerleşim Bekleyen")}
+              onClick={openPendingModal}
+            />
+            <StatBlock
+              label="Anlık Kazanç"
+              value={`${fmt2(d.monthly_earned)} ₺`}
+              icon={<Wallet />}
+              info="Bu cari dönemde oluşan güncel hakedişiniz."
+              flipped={flippedCard === "Anlık Kazanç"}
+              onFlip={() => flip("Anlık Kazanç")}
+              onClick={() => router.push("/commissions?type=binary")}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Yerleşim bekleyenler modalı */}
-      <Dialog open={pendingOpen} onClose={() => setPendingOpen(false)} maxWidth="md" fullWidth>
-        <DialogContent>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "primary.dark" }}>
+      <Dialog open={pendingOpen} onOpenChange={setPendingOpen}>
+        <DialogContent className="max-w-3xl">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-primary-dark text-lg font-extrabold">
               Yerleşim Bekleyen Üyeler
-            </Typography>
-            <IconButton aria-label="Kapat" onClick={() => setPendingOpen(false)}>
-              <X />
-            </IconButton>
-          </Box>
+            </DialogTitle>
+            <button
+              aria-label="Kapat"
+              onClick={() => setPendingOpen(false)}
+              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
           {pendingLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-              <CircularProgress />
-            </Box>
+            <div className="flex justify-center py-6">
+              <Loader2 className="text-primary size-8 animate-spin" />
+            </div>
           ) : pendingUsers.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
-              Yerleşim bekleyen üye yok.
-            </Typography>
+            <p className="text-muted-foreground py-4 text-center text-sm">Yerleşim bekleyen üye yok.</p>
           ) : (
-            <TableContainer>
-              <Table size="small" sx={{ minWidth: 640 }}>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: (theme) => theme.palette.primary.main, "& th": { color: "common.white", fontWeight: 700 } }}>
-                    <TableCell>Üye No</TableCell>
-                    <TableCell>Ad Soyad</TableCell>
-                    <TableCell>Kayıt Tarihi</TableCell>
-                    <TableCell>Aktiflik Tarihi</TableCell>
-                    <TableCell align="center">Ağaca Yerleştir</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+            <div className="overflow-x-auto">
+              <table className="min-w-[640px] w-full text-sm">
+                <thead>
+                  <tr className="bg-primary text-left text-white">
+                    <th className="px-3 py-2 font-bold">Üye No</th>
+                    <th className="px-3 py-2 font-bold">Ad Soyad</th>
+                    <th className="px-3 py-2 font-bold">Kayıt Tarihi</th>
+                    <th className="px-3 py-2 font-bold">Aktiflik Tarihi</th>
+                    <th className="px-3 py-2 text-center font-bold">Ağaca Yerleştir</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {pendingUsers.map((u) => (
-                    <TableRow key={u.id} hover>
-                      <TableCell sx={{ fontWeight: 700 }}>{u.member_code}</TableCell>
-                      <TableCell>{u.name}</TableCell>
-                      <TableCell>
+                    <tr key={u.id} className="border-border hover:bg-accent/40 border-b transition-colors">
+                      <td className="px-3 py-2 font-bold">{u.member_code}</td>
+                      <td className="px-3 py-2">{u.name}</td>
+                      <td className="px-3 py-2">
                         {u.created_at
                           ? new Date(u.created_at).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric" })
                           : "—"}
-                      </TableCell>
-                      <TableCell>
+                      </td>
+                      <td className="px-3 py-2">
                         {u.pending_since
                           ? new Date(u.pending_since).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric" })
                           : "—"}
-                      </TableCell>
-                      <TableCell align="center">
+                      </td>
+                      <td className="px-3 py-2 text-center">
                         <Button
-                          size="small"
-                          variant="contained"
+                          size="sm"
                           onClick={() => {
                             setPendingOpen(false);
                             router.push("/tree");
@@ -868,23 +581,33 @@ function DashboardContent() {
                         >
                           Ağaca Yerleştir
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                </tbody>
+              </table>
+            </div>
           )}
         </DialogContent>
       </Dialog>
 
-      <Snackbar
-        open={!!msg}
-        autoHideDuration={3000}
-        onClose={() => setMsg("")}
-        message={msg}
-      />
-    </Container>
+      {/* Bildirim */}
+      {msg && (
+        <div className="fixed bottom-5 left-1/2 z-[1400] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
+          <div className="bg-foreground text-background flex items-center gap-2 rounded px-4 py-3 text-sm font-semibold shadow-lg">
+            <CheckCircle2 className="size-5 shrink-0" />
+            <span className="flex-1">{msg}</span>
+            <button
+              aria-label="Kapat"
+              className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
+              onClick={() => setMsg("")}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

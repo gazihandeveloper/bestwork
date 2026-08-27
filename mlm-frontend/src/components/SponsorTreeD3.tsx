@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import type { SponsorTreeNode } from "@/services/api";
 
 interface SponsorTreeD3Props {
@@ -212,17 +210,17 @@ export default function SponsorTreeD3({ data, depth }: SponsorTreeD3Props) {
   }, [data, depth, height, version]);
 
   return (
-    <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+    <div>
+      <p className="text-muted-foreground mb-1 text-sm">
         Düğüme tıklayarak alt ağacı aç/kapat, sürükleyerek taşı, tekerlekle zoom yap.
-      </Typography>
-      <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2.1, overflow: "hidden", bgcolor: "#FDFEFD" }}>
+      </p>
+      <div className="border-border overflow-hidden rounded border bg-[#FDFEFD]">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${WIDTH} ${height}`}
           style={{ width: "100%", height: "auto", minHeight: 460, display: "block" }}
         />
-      </Box>
+      </div>
       <div
         ref={tooltipRef}
         style={{
@@ -232,13 +230,13 @@ export default function SponsorTreeD3({ data, depth }: SponsorTreeD3Props) {
           pointerEvents: "none",
           background: "#1B3A1E",
           color: "#fff",
-          borderRadius: 8.4,
+          borderRadius: 4,
           padding: "8px 12px",
           fontSize: 12,
           boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
           maxWidth: 220,
         }}
       />
-    </Box>
+    </div>
   );
 }

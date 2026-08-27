@@ -4,22 +4,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import { Trash2, Users } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
 import { listBeneficiaries, createBeneficiary, deleteBeneficiary, getErrorMessage } from "@/services/api";
 import type { Beneficiary } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const schema = yup.object({
   full_name: yup.string().required("Ad soyad zorunludur"),
@@ -29,6 +21,11 @@ const schema = yup.object({
 });
 
 type BeneficiaryForm = yup.InferType<typeof schema>;
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-destructive mt-1 text-xs font-medium">{message}</p>;
+}
 
 function BeneficiaryContent() {
   const [items, setItems] = useState<Beneficiary[]>([]);
@@ -48,7 +45,9 @@ function BeneficiaryContent() {
       .catch((err) => setError(getErrorMessage(err)));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const onSubmit = async (values: BeneficiaryForm) => {
     setError("");
@@ -74,68 +73,88 @@ function BeneficiaryContent() {
     }
   };
 
+  const inputCls = (hasError?: boolean) =>
+    cn(hasError && "border-destructive focus-visible:ring-destructive/40");
+
   return (
-    <Container maxWidth={false} sx={{ py: 4 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Varis Bilgileri
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+    <div className="py-4">
+      <h1 className="text-primary-dark text-2xl font-extrabold">Varis Bilgileri</h1>
+      <p className="text-muted-foreground mb-3 text-sm">
         Kazançlarınızın devredileceği varislerinizi tanımlayın.
-      </Typography>
+      </p>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Yeni Varis
-              </Typography>
-              <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-                <Stack spacing={2}>
-                  {error && <Alert severity="error">{error}</Alert>}
-                  {success && <Alert severity="success">{success}</Alert>}
-                  <TextField label="Ad Soyad" fullWidth {...register("full_name")} error={!!errors.full_name} helperText={errors.full_name?.message} />
-                  <TextField label="Yakınlık (Eş, Çocuk...)" fullWidth {...register("relationship")} error={!!errors.relationship} helperText={errors.relationship?.message} />
-                  <TextField label="Telefon" fullWidth {...register("phone")} error={!!errors.phone} helperText={errors.phone?.message} />
-                  <TextField label="E-posta" fullWidth {...register("email")} error={!!errors.email} helperText={errors.email?.message} />
-                  <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {isSubmitting ? "Ekleniyor..." : "Varis Ekle"}
-                  </Button>
-                </Stack>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Varislerim ({items.length})
-              </Typography>
-              {items.length === 0 && (
-                <EmptyState icon={<Users size={48} />} message="Henüz varis eklemediniz." />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+        {/* Yeni varis formu */}
+        <div className="md:col-span-5">
+          <div className="border-border bg-card rounded border p-4">
+            <h2 className="mb-2.5 text-lg font-bold">Yeni Varis</h2>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2.5">
+              {error && (
+                <div className="border-destructive/50 bg-destructive/10 text-destructive rounded border px-3 py-2 text-sm font-medium">
+                  {error}
+                </div>
               )}
-              {items.map((b) => (
-                <Box key={b.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
-                  <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {b.full_name} · {b.relationship}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {b.phone || "-"} · {b.email || "-"}
-                    </Typography>
-                  </Box>
-                  <IconButton color="error" onClick={() => handleDelete(b.id)} aria-label="sil">
-                    <Trash2 />
-                  </IconButton>
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+              {success && (
+                <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] rounded border px-3 py-2 text-sm font-medium">
+                  {success}
+                </div>
+              )}
+              <div>
+                <Input placeholder="Ad Soyad" className={inputCls(!!errors.full_name)} {...register("full_name")} />
+                <FieldError message={errors.full_name?.message} />
+              </div>
+              <div>
+                <Input
+                  placeholder="Yakınlık (Eş, Çocuk...)"
+                  className={inputCls(!!errors.relationship)}
+                  {...register("relationship")}
+                />
+                <FieldError message={errors.relationship?.message} />
+              </div>
+              <div>
+                <Input placeholder="Telefon" className={inputCls(!!errors.phone)} {...register("phone")} />
+                <FieldError message={errors.phone?.message} />
+              </div>
+              <div>
+                <Input placeholder="E-posta" type="email" className={inputCls(!!errors.email)} {...register("email")} />
+                <FieldError message={errors.email?.message} />
+              </div>
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? "Ekleniyor..." : "Varis Ekle"}
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Varis listesi */}
+        <div className="md:col-span-7">
+          <div className="border-border bg-card rounded border p-4">
+            <h2 className="mb-2.5 text-lg font-bold">Varislerim ({items.length})</h2>
+            {items.length === 0 && (
+              <EmptyState icon={<Users size={48} />} message="Henüz varis eklemediniz." />
+            )}
+            {items.map((b) => (
+              <div
+                key={b.id}
+                className="border-border flex items-center justify-between border-b py-1 last:border-b-0"
+              >
+                <div>
+                  <p className="text-sm font-semibold">{b.full_name} · {b.relationship}</p>
+                  <p className="text-muted-foreground text-xs">{b.phone || "-"} · {b.email || "-"}</p>
+                </div>
+                <button
+                  aria-label="sil"
+                  onClick={() => handleDelete(b.id)}
+                  className="text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

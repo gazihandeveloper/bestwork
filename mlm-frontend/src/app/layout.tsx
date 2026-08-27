@@ -6,7 +6,6 @@ import Providers from "@/components/Providers";
 import AppShell from "@/components/AppShell";
 import SiteNav from "@/components/landing/SiteNav";
 import Footer from "@/components/landing2/Footer";
-import CartDrawer from "@/components/CartDrawer";
 import LoginDialog from "@/components/LoginDialog";
 import "./globals.css";
 
@@ -34,7 +33,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteNav />
             <AppShell>{children}</AppShell>
             <Footer />
-            <CartDrawer />
             <LoginDialog />
           </Providers>
         </AppRouterCacheProvider>

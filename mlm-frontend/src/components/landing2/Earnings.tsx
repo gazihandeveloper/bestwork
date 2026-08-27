@@ -51,7 +51,7 @@ export default function Earnings() {
             {/* Dekoratif köşe parıltısı */}
             <div aria-hidden className="bg-primary/5 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full" />
 
-            <div className="bg-primary text-primary-foreground relative flex size-12 items-center justify-center rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
+            <div className="bg-primary text-primary-foreground relative flex size-12 items-center justify-center rounded shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
               <Icon className="size-6" />
             </div>
 

@@ -59,7 +59,7 @@ export default function Benefits() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {benefits.map((item, i) => (
           <Reveal key={item.id} delay={i * 60} className="h-full">
-            <div className="border-border bg-card shadow-sm flex h-full items-center gap-4 rounded-sm border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="border-border bg-card shadow-sm flex h-full items-center gap-4 rounded border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
               <div className="bg-gradient-to-br from-secondary-light to-secondary text-primary-dark flex size-12 shrink-0 items-center justify-center rounded-full">
                 {ICONS[item.icon] ?? ICONS.shipping}
               </div>

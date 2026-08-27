@@ -45,7 +45,7 @@ export default function AppSnackbar({ open, message, severity = "success", onClo
   return (
     <div
       role="alert"
-      className={`fixed bottom-4 left-1/2 z-[1400] flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-sm px-4 py-3 text-sm font-medium shadow-lg animate-in fade-in slide-in-from-bottom-2 ${severityStyles[severity]}`}
+      className={`fixed bottom-4 left-1/2 z-[1400] flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded px-4 py-3 text-sm font-medium shadow-lg animate-in fade-in slide-in-from-bottom-2 ${severityStyles[severity]}`}
     >
       {severityIcons[severity]}
       <span>{message}</span>
@@ -53,7 +53,7 @@ export default function AppSnackbar({ open, message, severity = "success", onClo
         type="button"
         aria-label="Bildirimi kapat"
         onClick={onClose}
-        className="ml-1 shrink-0 rounded-sm p-0.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+        className="ml-1 shrink-0 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
       >
         <X className="size-4" />
       </button>

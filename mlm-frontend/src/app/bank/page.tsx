@@ -4,21 +4,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import { Landmark, Pencil, Trash2 } from "lucide-react";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
@@ -31,6 +16,11 @@ import {
   getErrorMessage,
 } from "@/services/api";
 import type { BankAccount } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const schema = yup.object({
   bank_name: yup.string().required("Banka adı zorunludur"),
@@ -39,6 +29,11 @@ const schema = yup.object({
 });
 
 type BankForm = yup.InferType<typeof schema>;
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-destructive mt-1 text-xs font-medium">{message}</p>;
+}
 
 function BankContent() {
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -65,7 +60,9 @@ function BankContent() {
       .catch((err) => showSnackbar(getErrorMessage(err), "error"));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const onCreate = async (values: BankForm) => {
     try {
@@ -105,87 +102,114 @@ function BankContent() {
     }
   };
 
+  const inputCls = (hasError?: boolean) =>
+    cn(hasError && "border-destructive focus-visible:ring-destructive/40");
+
   return (
-    <Container maxWidth={false} sx={{ py: 4 }}>
-      <Typography variant="h5" color="primary.dark" gutterBottom>
-        Banka Bilgilerim
-      </Typography>
+    <div className="py-4">
+      <h1 className="text-primary-dark text-2xl font-extrabold">Banka Bilgilerim</h1>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Yeni Hesap Ekle
-              </Typography>
-              <Box component="form" onSubmit={handleSubmit(onCreate)}>
-                <Stack spacing={2}>
-                  <TextField label="Banka Adı" fullWidth {...register("bank_name")} error={!!errors.bank_name} helperText={errors.bank_name?.message} />
-                  <TextField label="IBAN" fullWidth {...register("iban")} error={!!errors.iban} helperText={errors.iban?.message} />
-                  <TextField label="Hesap Sahibi" fullWidth {...register("account_name")} error={!!errors.account_name} helperText={errors.account_name?.message} />
-                  <Button type="submit" variant="contained" disabled={isSubmitting}>
-                    {isSubmitting ? "Ekleniyor..." : "Ekle"}
-                  </Button>
-                </Stack>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+        {/* Yeni hesap formu */}
+        <div className="md:col-span-5">
+          <div className="border-border bg-card rounded border p-4">
+            <h2 className="mb-2.5 text-lg font-bold">Yeni Hesap Ekle</h2>
+            <form onSubmit={handleSubmit(onCreate)} className="flex flex-col gap-2.5">
+              <div>
+                <Input placeholder="Banka Adı" className={inputCls(!!errors.bank_name)} {...register("bank_name")} />
+                <FieldError message={errors.bank_name?.message} />
+              </div>
+              <div>
+                <Input placeholder="IBAN" className={inputCls(!!errors.iban)} {...register("iban")} />
+                <FieldError message={errors.iban?.message} />
+              </div>
+              <div>
+                <Input placeholder="Hesap Sahibi" className={inputCls(!!errors.account_name)} {...register("account_name")} />
+                <FieldError message={errors.account_name?.message} />
+              </div>
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? "Ekleniyor..." : "Ekle"}
+              </Button>
+            </form>
+          </div>
+        </div>
 
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Hesaplarım ({accounts.length})
-              </Typography>
-              {accounts.length === 0 && (
-                <EmptyState icon={<Landmark size={48} />} message="Henüz banka hesabı eklemediniz." />
-              )}
-              {accounts.map((a) => (
-                <Box key={a.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1, borderBottom: "1px solid", borderColor: "divider" }}>
-                  <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {a.bank_name} <Chip size="small" label={a.is_active ? "Aktif" : "Pasif"} color={a.is_active ? "success" : "default"} />
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {a.account_name} · {a.iban}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <IconButton color="primary" onClick={() => openEdit(a)} aria-label="düzenle">
-                      <Pencil />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => onDelete(a.id)} aria-label="sil">
-                      <Trash2 />
-                    </IconButton>
-                  </Box>
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        {/* Hesaplar listesi */}
+        <div className="md:col-span-7">
+          <div className="border-border bg-card rounded border p-4">
+            <h2 className="mb-2.5 text-lg font-bold">Hesaplarım ({accounts.length})</h2>
+            {accounts.length === 0 && (
+              <EmptyState icon={<Landmark size={48} />} message="Henüz banka hesabı eklemediniz." />
+            )}
+            {accounts.map((a) => (
+              <div
+                key={a.id}
+                className="border-border flex items-center justify-between border-b py-1 last:border-b-0"
+              >
+                <div>
+                  <p className="flex items-center gap-1.5 text-sm font-semibold">
+                    {a.bank_name}
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "px-1.5 py-0 text-[10px]",
+                        a.is_active ? "border-[#2E7D32]/50 text-[#2E7D32]" : "border-border text-muted-foreground"
+                      )}
+                    >
+                      {a.is_active ? "Aktif" : "Pasif"}
+                    </Badge>
+                  </p>
+                  <p className="text-muted-foreground text-xs">{a.account_name} · {a.iban}</p>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    aria-label="düzenle"
+                    onClick={() => openEdit(a)}
+                    className="text-primary hover:bg-primary/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                  <button
+                    aria-label="sil"
+                    onClick={() => onDelete(a.id)}
+                    className="text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Düzenleme dialogu */}
-      <Dialog open={!!editing} onClose={() => setEditing(null)} fullWidth maxWidth="xs">
-        <DialogTitle>Banka Hesabını Düzenle</DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(onEdit)}>
-          <DialogContent>
-            <Stack spacing={2}>
-              <TextField label="Banka Adı" fullWidth {...register("bank_name")} error={!!errors.bank_name} helperText={errors.bank_name?.message} />
-              <TextField label="IBAN" fullWidth {...register("iban")} error={!!errors.iban} helperText={errors.iban?.message} />
-              <TextField label="Hesap Sahibi" fullWidth {...register("account_name")} error={!!errors.account_name} helperText={errors.account_name?.message} />
-            </Stack>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setEditing(null)} color="inherit">
-              Vazgeç
-            </Button>
-            <Button type="submit" variant="contained" disabled={isSubmitting}>
-              {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
-            </Button>
-          </DialogActions>
-        </Box>
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogTitle className="text-lg font-bold">Banka Hesabını Düzenle</DialogTitle>
+          <form onSubmit={handleSubmit(onEdit)} className="flex flex-col gap-2.5">
+            <div>
+              <Input placeholder="Banka Adı" className={inputCls(!!errors.bank_name)} {...register("bank_name")} />
+              <FieldError message={errors.bank_name?.message} />
+            </div>
+            <div>
+              <Input placeholder="IBAN" className={inputCls(!!errors.iban)} {...register("iban")} />
+              <FieldError message={errors.iban?.message} />
+            </div>
+            <div>
+              <Input placeholder="Hesap Sahibi" className={inputCls(!!errors.account_name)} {...register("account_name")} />
+              <FieldError message={errors.account_name?.message} />
+            </div>
+            <div className="mt-1 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+                Vazgeç
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
       </Dialog>
 
       <AppSnackbar
@@ -194,7 +218,7 @@ function BankContent() {
         severity={snackbar.severity}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       />
-    </Container>
+    </div>
   );
 }
 

@@ -20,7 +20,7 @@ export default function FloatingNavbar() {
   return (
     <nav
       aria-label="Mobil alt navigasyon"
-      className="bg-[#16331B] fixed bottom-4 left-1/2 z-[1100] w-[min(92%,460px)] -translate-x-1/2 rounded-sm shadow-[0_10px_30px_-8px_rgba(0,0,0,0.55)] ring-1 ring-white/10 md:hidden"
+      className="bg-[#16331B] fixed bottom-4 left-1/2 z-[1100] w-[min(92%,460px)] -translate-x-1/2 rounded shadow-[0_10px_30px_-8px_rgba(0,0,0,0.55)] ring-1 ring-white/10 md:hidden"
     >
       <div className="flex">
         {tabs.map((tab) => {
@@ -38,7 +38,7 @@ export default function FloatingNavbar() {
               aria-current={isActive ? "page" : undefined}
               onClick={() => router.push(tab.path)}
               className={cn(
-                "relative flex min-h-[56px] flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-sm px-1 py-2 transition-colors duration-200",
+                "relative flex min-h-[56px] flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded px-1 py-2 transition-colors duration-200",
                 isActive ? "text-white" : "text-white/55 hover:text-white/85"
               )}
             >
