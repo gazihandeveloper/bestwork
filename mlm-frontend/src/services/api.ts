@@ -135,6 +135,10 @@ export interface AdminDashboard {
   total_revenue: number;
   total_commissions_paid: number;
   total_withdrawals: number;
+  monthly_commissions: number;
+  pending_commissions: number;
+  net_profit: number;
+  registration_growth: { date: string; count: number }[];
   recent_users: User[];
   recent_withdraw_requests: WithdrawRequest[];
 }

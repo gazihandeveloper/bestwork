@@ -412,6 +412,7 @@ func (s *DashboardService) GetAdminDashboard(ctx context.Context) (*models.Admin
 	d := &models.AdminDashboard{
 		RecentUsers:            make([]models.User, 0),
 		RecentWithdrawRequests: make([]models.WithdrawRequest, 0),
+		RegistrationGrowth:     make([]models.GrowthPoint, 0),
 	}
 
 	// Sayaçlar
@@ -467,6 +468,44 @@ func (s *DashboardService) GetAdminDashboard(ctx context.Context) (*models.Admin
 			return nil, fmt.Errorf("çekim talebi okunamadı: %w", err)
 		}
 		d.RecentWithdrawRequests = append(d.RecentWithdrawRequests, wr)
+	}
+
+	// Bu ay dağıtılan komisyon
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount), 0) FROM commissions
+		 WHERE status = 'paid' AND created_at >= date_trunc('month', NOW())`).Scan(&d.MonthlyCommissions); err != nil {
+		return nil, fmt.Errorf("aylık komisyon okunamadı: %w", err)
+	}
+
+	// Ödenmeyi bekleyen hakedişler (onaylı çekimler - ödenmemiş)
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount), 0) FROM withdraw_requests
+		 WHERE status = 'approved' AND processed_at IS NULL`).Scan(&d.PendingCommissions); err != nil {
+		return nil, fmt.Errorf("bekleyen hakediş okunamadı: %w", err)
+	}
+
+	// Net kâr ≈ ciro - ödenen komisyon - çekimler
+	d.NetProfit = d.TotalRevenue - d.TotalCommissionsPaid - d.TotalWithdrawals
+
+	// Son 14 gün günlük yeni üye sayısı (büyüme grafiği)
+	gRows, err := s.db.Query(ctx, `
+		SELECT to_char(created_at, 'YYYY-MM-DD') AS day, COUNT(*)::bigint
+		FROM users
+		WHERE created_at >= NOW() - INTERVAL '14 days'
+		GROUP BY day ORDER BY day`)
+	if err != nil {
+		return nil, fmt.Errorf("büyüme verisi okunamadı: %w", err)
+	}
+	defer gRows.Close()
+	for gRows.Next() {
+		var p models.GrowthPoint
+		if err := gRows.Scan(&p.Date, &p.Count); err != nil {
+			return nil, fmt.Errorf("büyüme satırı okunamadı: %w", err)
+		}
+		d.RegistrationGrowth = append(d.RegistrationGrowth, p)
+	}
+	if err := gRows.Err(); err != nil {
+		return nil, fmt.Errorf("büyüme satırları okunamadı: %w", err)
 	}
 
 	return d, wRows.Err()

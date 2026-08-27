@@ -87,8 +87,18 @@ type AdminDashboard struct {
 	TotalRevenue           float64           `json:"total_revenue"`
 	TotalCommissionsPaid   float64           `json:"total_commissions_paid"`
 	TotalWithdrawals       float64           `json:"total_withdrawals"`
+	MonthlyCommissions     float64           `json:"monthly_commissions"`   // bu ay dağıtılan komisyon
+	PendingCommissions     float64           `json:"pending_commissions"`   // ödenmeyi bekleyen hakedişler
+	NetProfit              float64           `json:"net_profit"`            // ciro - komisyon - çekimler
+	RegistrationGrowth     []GrowthPoint     `json:"registration_growth"`   // son 14 gün günlük kayıt
 	RecentUsers            []User            `json:"recent_users"`
 	RecentWithdrawRequests []WithdrawRequest `json:"recent_withdraw_requests"`
+}
+
+// GrowthPoint bir gündeki yeni üye sayısını gösterir (grafik için).
+type GrowthPoint struct {
+	Date  string `json:"date"`  // YYYY-MM-DD
+	Count int64  `json:"count"` // o gün kayıt olan üye sayısı
 }
 
 // UserInfoCard ağaç kartlarındaki "i" bilgi modalı için kullanıcı detayıdır.

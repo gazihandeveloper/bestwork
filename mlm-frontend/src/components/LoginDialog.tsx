@@ -53,15 +53,15 @@ export default function LoginDialog() {
     setError("");
     setSubmitting(true);
     try {
-      await login(loginValue, password);
+      const loggedUser = await login(loginValue, password);
       setOpen(false);
       const next = window.localStorage.getItem(NEXT_KEY);
       window.localStorage.removeItem(NEXT_KEY);
       if (next && next.startsWith("/")) {
         router.push(next);
       } else {
-        // Giriş yapar yapmaz dashboard'a git
-        router.push("/dashboard");
+        // Admin → yönetim paneli, diğerleri → dashboard
+        router.push(loggedUser?.role === "admin" ? "/admin/dashboard" : "/dashboard");
       }
     } catch (err) {
       setError(getErrorMessage(err));
