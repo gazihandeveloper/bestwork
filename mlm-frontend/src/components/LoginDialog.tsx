@@ -61,7 +61,7 @@ export default function LoginDialog() {
         router.push(next);
       } else {
         // Admin → yönetim paneli, diğerleri → dashboard
-        router.push(loggedUser?.role === "admin" ? "/admin/dashboard" : "/dashboard");
+        router.push(loggedUser?.role === "admin" ? "/bwy" : "/dashboard");
       }
     } catch (err) {
       setError(getErrorMessage(err));

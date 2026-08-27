@@ -12,10 +12,6 @@ import {
   Network,
   ShoppingCart,
   Package,
-  Image,
-  Gift,
-  Building2,
-  ShieldCheck,
   Home,
   Mail,
   ChevronDown,
@@ -76,22 +72,6 @@ const groups: MenuGroup[] = [
     title: "İletişim",
     icon: <Mail />,
     items: [{ path: "/contact", label: "Destek / İletişim", icon: <Mail /> }],
-  },
-  {
-    title: "Admin",
-    icon: <ShieldCheck />,
-    adminOnly: true,
-    items: [
-      { path: "/admin/dashboard", label: "Admin Panel", icon: <ShieldCheck /> },
-      { path: "/admin/pending", label: "Bekleyenler Yönetimi", icon: <Users /> },
-      { path: "/admin/products", label: "Ürün Yönetimi", icon: <Package /> },
-      // eslint-disable-next-line jsx-a11y/alt-text -- lucide dekoratif ikon, <img> değil
-      { path: "/admin/hero-slides", label: "Hero Slider", icon: <Image /> },
-      { path: "/admin/benefits", label: "Avantaj Kartları", icon: <Gift /> },
-      { path: "/admin/corporate", label: "Kurumsal İçerik", icon: <Building2 /> },
-      { path: "/admin/withdrawals", label: "Çekim Talepleri", icon: <Receipt /> },
-      { path: "/admin/payment-notifications", label: "Ödeme Bildirimleri", icon: <Landmark /> },
-    ],
   },
 ];
 
