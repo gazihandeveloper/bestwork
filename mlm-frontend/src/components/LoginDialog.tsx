@@ -46,7 +46,8 @@ export default function LoginDialog() {
       window.localStorage.removeItem(NEXT_KEY);
       if (next && next.startsWith("/")) {
         router.push(next);
-      } else if (window.location.pathname === BASE_PATH + "/login") {
+      } else {
+        // Giriş yapar yapmaz dashboard'a git
         router.push("/dashboard");
       }
     } catch (err) {
