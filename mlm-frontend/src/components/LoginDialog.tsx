@@ -97,8 +97,8 @@ export default function LoginDialog() {
   const confirmReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetError("");
-    if (newPassword.length < 12) {
-      setResetError("Yeni şifre en az 12 karakter olmalıdır.");
+    if (newPassword.length < 8) {
+      setResetError("Yeni şifre en az 8 karakter olmalıdır.");
       return;
     }
     if (newPassword !== newPassword2) {
@@ -237,7 +237,7 @@ export default function LoginDialog() {
             <div>
               <Input
                 type="password"
-                placeholder="Yeni şifre (en az 12 karakter)"
+                placeholder="Yeni şifre (en az 8 karakter)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required

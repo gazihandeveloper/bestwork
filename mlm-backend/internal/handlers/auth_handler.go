@@ -350,7 +350,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 type ResetPasswordRequest struct {
 	Login       string `json:"login" binding:"required"`
 	Code        string `json:"code" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=12,max=72"`
+	NewPassword string `json:"new_password" binding:"required,min=8,max=72"`
 }
 
 // ResetPassword tek kullanımlık kodu doğrular ve şifreyi günceller.
