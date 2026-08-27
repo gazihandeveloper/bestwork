@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-const FloatingNavbar = dynamic(() => import("@/components/FloatingNavbar"), { ssr: true });
 const BackofficeMenu = dynamic(() => import("@/components/BackofficeMenu"), { ssr: true });
 
 // Backoffice düzeni: üstte yatay menü, içerik ortalanmış. Üst yüzen menü (SiteNav)
@@ -27,7 +26,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
-      <FloatingNavbar />
     </div>
   );
 }

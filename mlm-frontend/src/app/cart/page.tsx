@@ -18,6 +18,7 @@ const tl = (v: number) =>
 
 // Kariyer/paket seviyeleri — hedef PV ve renkler
 const LEVELS = [
+  { name: "İLK ADIM", pv: 125, color: "#017cc6" }, // mavi
   { name: "STARTER", pv: 250, color: "#017cc6" }, // mavi
   { name: "BRONZ GİRİŞİMCİ", pv: 500, color: "#b4552d" }, // bronz
   { name: "GÜMÜŞ GİRİŞİMCİ", pv: 1300, color: "#9e9e9e" }, // gümüş
@@ -164,7 +165,7 @@ function CartContent() {
             {/* Paket seviyeleri — ürünlerin üstünde, yan yana (Platin'de ömür boyu gizli) */}
             {user && !platinDone && (
               <div className="mb-3">
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-5">
+                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-6">
                   {LEVELS.map((lv, i) => {
                     // Kademeli dolum: her paket kendi bölgesinde (önceki paket dolunca başlar)
                     const prevPv = i === 0 ? 0 : LEVELS[i - 1].pv;
@@ -238,9 +239,10 @@ function CartContent() {
                     <button
                       type="button"
                       onClick={() => router.push(`/product/${c.product.id}`)}
-                      className="truncate text-left text-sm font-semibold hover:text-primary"
+                      className="block w-full truncate text-left text-sm font-semibold hover:text-primary"
+                      title={c.product.name}
                     >
-                      {c.product.name}
+                      {c.product.name.length > 28 ? `${c.product.name.slice(0, 28)}…` : c.product.name}
                     </button>
                     <p className="text-muted-foreground text-xs">
                       {tl(c.product.price)} × {c.quantity} = {tl(c.product.price * c.quantity)}
