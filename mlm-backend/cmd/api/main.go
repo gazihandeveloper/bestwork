@@ -132,6 +132,8 @@ func main() {
 		api.POST("/auth/register", middleware.RateLimit(database.GetRedis(), "register", 10, time.Hour), authHandler.Register)
 		api.POST("/auth/login", middleware.RateLimit(database.GetRedis(), "login", 5, time.Minute), authHandler.Login)
 		api.POST("/auth/logout", authHandler.Logout)
+		api.POST("/auth/forgot-password", middleware.RateLimit(database.GetRedis(), "forgot-password", 3, time.Minute), authHandler.ForgotPassword)
+		api.POST("/auth/reset-password", middleware.RateLimit(database.GetRedis(), "reset-password", 5, time.Minute), authHandler.ResetPassword)
 		api.GET("/referral/check", authHandler.CheckReferral)
 		api.GET("/theme", authHandler.ThemeByLogin)
 		api.POST("/tickets", middleware.AuthRequired(userService), ticketHandler.Create)

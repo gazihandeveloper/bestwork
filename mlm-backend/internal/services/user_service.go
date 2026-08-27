@@ -394,3 +394,65 @@ func (s *UserService) SetThemeColor(ctx context.Context, userID int64, color str
 	}
 	return nil
 }
+
+// ErrResetTokenInvalid tek kullanımlık sıfırlama kodunun geçersiz/süresi dolmuş olduğunu belirtir.
+var ErrResetTokenInvalid = errors.New("sıfırlama kodu geçersiz veya süresi dolmuş")
+
+// StorePasswordReset geçerli kullanıcı için tek kullanımlık sıfırlama kodunu (hash'li)
+// ve süresini kaydeder. Süre saniye cinsindendir (varsayılan 900 = 15 dk).
+func (s *UserService) StorePasswordReset(ctx context.Context, userID int64, codeHash string, ttlSeconds int64) error {
+	expires := time.Now().UTC().Add(time.Duration(ttlSeconds) * time.Second)
+	if _, err := s.db.Exec(ctx,
+		`UPDATE users SET password_reset_token = $2, password_reset_expires = $3, updated_at = NOW() WHERE id = $1`,
+		userID, codeHash, expires); err != nil {
+		return fmt.Errorf("sıfırlama kodu kaydedilemedi: %w", err)
+	}
+	return nil
+}
+
+// ResetPasswordWithCode tek kullanımlık kodu doğrular ve yeni şifreyi kaydeder.
+// Kod doğruysa token temizlenir; geçersiz/süresi dolmuşsa ErrResetTokenInvalid döner.
+func (s *UserService) ResetPasswordWithCode(ctx context.Context, login, code, newPassword string) error {
+	if err := auth.ValidatePassword(newPassword); err != nil {
+		return err
+	}
+
+	var (
+		userID        int64
+		storedHash    *string
+		storedExpires *time.Time
+	)
+	err := s.db.QueryRow(ctx,
+		`SELECT id, password_reset_token, password_reset_expires FROM users WHERE email = $1 OR member_code = $2 OR phone = $3`,
+		strings.ToLower(strings.TrimSpace(login)),
+		strings.ToUpper(strings.TrimSpace(login)),
+		strings.TrimSpace(login),
+	).Scan(&userID, &storedHash, &storedExpires)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrUserNotFound
+		}
+		return fmt.Errorf("kullanıcı aranamadı: %w", err)
+	}
+
+	if storedHash == nil || storedExpires == nil || time.Now().UTC().After(*storedExpires) {
+		return ErrResetTokenInvalid
+	}
+	if !auth.CheckPassword(code, *storedHash) {
+		return ErrResetTokenInvalid
+	}
+
+	hash, err := auth.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("şifre hash'lenemedi: %w", err)
+	}
+
+	if _, err := s.db.Exec(ctx,
+		`UPDATE users SET password_hash = $2, password_reset_token = NULL, password_reset_expires = NULL, updated_at = NOW() WHERE id = $1`,
+		userID, hash); err != nil {
+		return fmt.Errorf("şifre güncellenemedi: %w", err)
+	}
+
+	log.WithField("user_id", userID).Info("Şifre sıfırlama koduyla değiştirildi")
+	return nil
+}

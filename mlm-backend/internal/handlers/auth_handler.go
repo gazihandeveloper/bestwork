@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"errors"
 	"net/http"
 	"strings"
@@ -272,4 +273,112 @@ func (h *AuthHandler) ThemeByLogin(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"theme_color": nil})
+}
+
+// ResetTTL sıfırlama kodunun geçerlilik süresi (15 dakika).
+const ResetTTL = 15 * 60
+
+// newResetCode 6 haneli, okunabilir tek kullanımlık sıfırlama kodu üretir.
+func newResetCode() string {
+	const digits = "0123456789"
+	b := make([]byte, 6)
+	if _, err := rand.Read(b); err != nil {
+		// Entropi hatası pratikte oluşmaz; zaman bazlı yedek üret.
+		return "000000"
+	}
+	for i := range b {
+		b[i] = digits[int(b[i])%len(digits)]
+	}
+	return string(b)
+}
+
+// ForgotPasswordRequest şifre sıfırlama isteğinin JSON gövdesidir.
+type ForgotPasswordRequest struct {
+	Login string `json:"login" binding:"required"`
+}
+
+// ForgotPassword "Şifremi unuttum" akışını başlatır: kullanıcıyı bulur,
+// tek kullanımlık kodu üretip hash'li olarak kaydeder ve döndürür.
+// (E-posta/SMS altyapısı kurulana dek kod doğrudan yanıtta iletilir.)
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "E-posta, üye numarası veya telefon zorunludur"})
+		return
+	}
+
+	login := strings.TrimSpace(req.Login)
+	if login == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "E-posta, üye numarası veya telefon zorunludur"})
+		return
+	}
+
+	// Hesabı bul (bulunamazsa bile istek süresi dolmadan cevap ver — bilgi sızdırma).
+	var user *models.User
+	var err error
+	if strings.HasPrefix(strings.ToUpper(login), "TR90") {
+		user, err = h.users.GetUserByMemberCode(c.Request.Context(), login)
+	} else {
+		user, err = h.users.GetUserByEmail(c.Request.Context(), login)
+		if errors.Is(err, services.ErrUserNotFound) {
+			user, err = h.users.GetUserByPhone(c.Request.Context(), login)
+		}
+	}
+	if err != nil || user == nil {
+		c.JSON(http.StatusOK, gin.H{"ok": true, "code": ""})
+		return
+	}
+
+	code := newResetCode()
+	codeHash, err := auth.HashPassword(code)
+	if err != nil {
+		log.WithError(err).Error("Sıfırlama kodu hash'lenemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir hata oluştu, tekrar deneyin"})
+		return
+	}
+
+	if err := h.users.StorePasswordReset(c.Request.Context(), user.ID, codeHash, ResetTTL); err != nil {
+		log.WithError(err).Error("Sıfırlama kodu kaydedilemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir hata oluştu, tekrar deneyin"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"ok": true, "code": code})
+}
+
+// ResetPasswordRequest sıfırlama kodunu ve yeni şifreyi taşır.
+type ResetPasswordRequest struct {
+	Login       string `json:"login" binding:"required"`
+	Code        string `json:"code" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=12,max=72"`
+}
+
+// ResetPassword tek kullanımlık kodu doğrular ve şifreyi günceller.
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "E-posta, kod ve yeni şifre zorunludur"})
+		return
+	}
+
+	if err := auth.ValidatePassword(req.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.users.ResetPasswordWithCode(c.Request.Context(), strings.TrimSpace(req.Login), strings.TrimSpace(req.Code), req.NewPassword)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrUserNotFound):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Hesap bulunamadı"})
+		case errors.Is(err, services.ErrResetTokenInvalid):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Kod geçersiz veya süresi dolmuş"})
+		default:
+			log.WithError(err).Error("Şifre sıfırlanamadı")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Şifre sıfırlanamadı"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Şifreniz sıfırlandı"})
 }
