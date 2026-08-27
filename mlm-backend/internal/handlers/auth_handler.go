@@ -330,7 +330,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	}
 
 	code := newResetCode()
-	codeHash, err := auth.HashPassword(code)
+	codeHash, err := auth.HashToken(code)
 	if err != nil {
 		log.WithError(err).Error("Sıfırlama kodu hash'lenemedi")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir hata oluştu, tekrar deneyin"})

@@ -33,6 +33,16 @@ func HashPassword(plain string) (string, error) {
 	return string(hash), nil
 }
 
+// HashToken kısa, tek kullanımlık kodları (sıfırlama kodu vb.) şifre politikasına
+// takılmadan bcrypt ile hash'ler.
+func HashToken(plain string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(plain), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
 // CheckPassword düz metin şifrenin hash ile eşleşip eşleşmediğini döndürür.
 func CheckPassword(plain, hash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(plain)) == nil
