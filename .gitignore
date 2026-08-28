@@ -10,3 +10,5 @@ bin/
 .sshpass.sh
 
 .git-credentials
+
+.tools/

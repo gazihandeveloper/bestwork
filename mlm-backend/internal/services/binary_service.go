@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	log "github.com/sirupsen/logrus"
@@ -140,6 +141,10 @@ func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 		}
 	}
 
+	// Flashout/cap: settings'ten günlük ve haftalık üst kazanç limitleri (0 = kapalı).
+	// Limiti aşan kısım kesilir ve flashout_logs'a ihlal kaydı yazılır.
+	binaryBonus = applyFlashoutCaps(ctx, q, memberID, binaryBonus)
+
 	// Eşleşen CV her iki bacaktan düşülür (bonus 0 olsa bile tüketilir)
 	if _, err := q.Exec(ctx,
 		`UPDATE users SET total_cv_left = total_cv_left - $1, total_cv_right = total_cv_right - $1, updated_at = NOW() WHERE id = $2`,
@@ -188,6 +193,67 @@ func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 
 	// Matching bonusunu üst hatta dağıt
 	return DistributeMatchingBonus(ctx, q, memberID, binaryBonus)
+}
+
+// applyFlashoutCaps binary bonusuna günlük/haftalık flashout limitlerini
+// uygular. Settings'te limit 0 veya yoksa o dönem sınırsızdır. Limiti aşan
+// kısım kesilir ve flashout_logs'a ihlal kaydı yazılır.
+func applyFlashoutCaps(ctx context.Context, q DBTX, memberID int64, bonus float64) float64 {
+	if bonus <= 0 {
+		return bonus
+	}
+
+	caps := []struct {
+		key    string
+		period string
+		start  string // SQL zaman ifadesi
+	}{
+		{"flashout_daily_limit", "daily", "date_trunc('day', NOW())"},
+		{"flashout_weekly_limit", "weekly", "date_trunc('week', NOW())"},
+	}
+
+	for _, cap := range caps {
+		var raw string
+		if err := q.QueryRow(ctx, `SELECT value FROM settings WHERE key = $1`, cap.key).Scan(&raw); err != nil {
+			continue // anahtar yok = limit yok
+		}
+		limit, err := strconv.ParseFloat(raw, 64)
+		if err != nil || limit <= 0 {
+			continue
+		}
+
+		var earned float64
+		if err := q.QueryRow(ctx, `
+			SELECT COALESCE(SUM(amount), 0) FROM commissions
+			WHERE user_id = $1 AND type = 'binary' AND status = 'paid' AND paid_at >= `+cap.start,
+			memberID).Scan(&earned); err != nil {
+			continue
+		}
+
+		remaining := limit - earned
+		if remaining <= 0 {
+			if bonus > 0 {
+				logFlashoutViolation(ctx, q, memberID, cap.period, limit, earned, bonus)
+			}
+			bonus = 0
+			continue
+		}
+		if bonus > remaining {
+			logFlashoutViolation(ctx, q, memberID, cap.period, limit, earned, bonus-remaining)
+			bonus = remaining
+		}
+	}
+	return bonus
+}
+
+// logFlashoutViolation flashout limitinin aşan kısmını flashout_logs'a yazar.
+func logFlashoutViolation(ctx context.Context, q DBTX, memberID int64, period string, limit, earned, capped float64) {
+	if _, err := q.Exec(ctx, `
+		INSERT INTO flashout_logs (user_id, period, limit_amount, earned_amount, capped_amount)
+		VALUES ($1, $2, $3, $4, $5)`,
+		memberID, period, limit, earned, capped); err != nil {
+		log.WithError(err).WithField("member_id", memberID).Warn("Flashout ihlali kaydedilemedi")
+	}
 }
 
 // DistributeMatchingBonus binary kazanan üyenin sponsor zincirine 5 nesil

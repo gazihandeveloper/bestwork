@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -489,4 +491,127 @@ func (s *OrderService) getOrderItems(ctx context.Context, orderID int64) ([]mode
 		items = append(items, it)
 	}
 	return items, rows.Err()
+}
+
+// AdminOrder admin sipariş listesindeki bir satırı temsil eder (üye bilgisiyle).
+type AdminOrder struct {
+	ID            int64     `json:"id"`
+	UserID        int64     `json:"user_id"`
+	UserName      string    `json:"user_name"`
+	MemberCode    string    `json:"member_code"`
+	TotalAmount   float64   `json:"total_amount"`
+	TotalPV       int64     `json:"total_pv"`
+	TotalCV       int64     `json:"total_cv"`
+	Status        string    `json:"status"`
+	PaymentMethod string    `json:"payment_method"`
+	OrderType     string    `json:"order_type"`
+	TrackingCode  *string   `json:"tracking_code"`
+	AdminNote     *string   `json:"admin_note"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+const adminOrderColumns = `o.id, o.user_id, u.name, u.member_code, o.total_amount, o.total_pv, o.total_cv,
+	o.status, o.payment_method, o.order_type, o.tracking_code, o.admin_note, o.created_at`
+
+// ListAllOrders tüm üyelerin siparişlerini filtreli ve sayfalı döndürür (admin).
+// status/orderType boşsa filtre uygulanmaz; q üye adı/üye no/e-posta arar.
+func (s *OrderService) ListAllOrders(ctx context.Context, limit, offset int, status, orderType, q string) ([]AdminOrder, int64, error) {
+	where := ""
+	args := make([]any, 0, 5)
+	if status != "" {
+		where += ` WHERE o.status = $` + itoa(len(args)+1)
+		args = append(args, status)
+	}
+	if orderType != "" {
+		if where == "" {
+			where += " WHERE"
+		} else {
+			where += " AND"
+		}
+		where += ` o.order_type = $` + itoa(len(args)+1)
+		args = append(args, orderType)
+	}
+	if q != "" {
+		if where == "" {
+			where += " WHERE"
+		} else {
+			where += " AND"
+		}
+		where += ` (u.name ILIKE $` + itoa(len(args)+1) + ` OR u.member_code ILIKE $` + itoa(len(args)+1) + ` OR u.email ILIKE $` + itoa(len(args)+1) + `)`
+		args = append(args, "%"+q+"%")
+	}
+
+	var total int64
+	if err := s.db.QueryRow(ctx,
+		`SELECT COUNT(*) FROM orders o JOIN users u ON u.id = o.user_id`+where, args...).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("siparişler sayılamadı: %w", err)
+	}
+
+	args = append(args, limit, offset)
+	query := fmt.Sprintf(`
+		SELECT %s FROM orders o
+		JOIN users u ON u.id = o.user_id%s
+		ORDER BY o.id DESC LIMIT $%d OFFSET $%d`,
+		adminOrderColumns, where, len(args)-1, len(args))
+
+	rows, err := s.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("siparişler listelenemedi: %w", err)
+	}
+	defer rows.Close()
+
+	orders := make([]AdminOrder, 0)
+	for rows.Next() {
+		var o AdminOrder
+		if err := rows.Scan(&o.ID, &o.UserID, &o.UserName, &o.MemberCode, &o.TotalAmount, &o.TotalPV, &o.TotalCV,
+			&o.Status, &o.PaymentMethod, &o.OrderType, &o.TrackingCode, &o.AdminNote, &o.CreatedAt); err != nil {
+			return nil, 0, fmt.Errorf("sipariş satırı okunamadı: %w", err)
+		}
+		orders = append(orders, o)
+	}
+	return orders, total, rows.Err()
+}
+
+// UpdateOrderStatus sipariş durumunu günceller (kargo kodu/notuyla) ve
+// denetim kaydı yazar.
+func (s *OrderService) UpdateOrderStatus(ctx context.Context, adminID int64, adminName string, orderID int64, status, trackingCode, note string) error {
+	status = strings.TrimSpace(status)
+	if status != "pending" && status != "paid" && status != "shipped" && status != "cancelled" {
+		return errors.New("geçersiz sipariş durumu: pending, paid, shipped veya cancelled olmalıdır")
+	}
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("transaction başlatılamadı: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	tag, err := tx.Exec(ctx, `
+		UPDATE orders SET status = $1,
+			tracking_code = CASE WHEN $2 = '' THEN tracking_code ELSE $2 END,
+			admin_note = CASE WHEN $3 = '' THEN admin_note ELSE $3 END
+		WHERE id = $4`,
+		status, trackingCode, note, orderID)
+	if err != nil {
+		return fmt.Errorf("sipariş durumu güncellenemedi: %w", err)
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrOrderNotFound
+	}
+
+	if err := logInTx(ctx, tx, adminID, adminName, "order_status", "order", &orderID, note, map[string]any{
+		"status":        status,
+		"tracking_code": trackingCode,
+	}); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("transaction tamamlanamadı: %w", err)
+	}
+	return nil
+}
+
+func itoa(n int) string {
+	return strconv.Itoa(n)
 }

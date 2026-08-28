@@ -50,7 +50,8 @@ func main() {
 	// Servis ve handler örnekleri
 	userService := services.NewUserService(database.GetDB())
 	authHandler := handlers.NewAuthHandler(userService, cfg.CookieSecure)
-	userHandler := handlers.NewUserHandler(userService)
+	kycService := services.NewKYCService(database.GetDB())
+	userHandler := handlers.NewUserHandler(userService, kycService)
 
 	productService := services.NewProductService(database.GetDB())
 	orderService := services.NewOrderService(database.GetDB())
@@ -71,11 +72,15 @@ func main() {
 	benefitService := services.NewBenefitService(database.GetDB())
 	settingService := services.NewSettingService(database.GetDB())
 	ticketService := services.NewTicketService(database.GetDB())
+	auditService := services.NewAuditService(database.GetDB())
+	adminStatsService := services.NewAdminStatsService(database.GetDB())
+	treeAdminService := services.NewTreeAdminService(database.GetDB())
+	jobService := services.NewJobService(database.GetDB())
 	productHandler := handlers.NewProductHandler(productService)
 	orderHandler := handlers.NewOrderHandler(orderService)
 	pendingPoolHandler := handlers.NewPendingPoolHandler(pendingPoolService)
 	walletHandler := handlers.NewWalletHandler(walletService)
-	adminHandler := handlers.NewAdminHandler(walletService, chipService, monthlyCloseService, pendingPoolService, paymentNotificationService)
+	adminHandler := handlers.NewAdminHandler(walletService, chipService, monthlyCloseService, pendingPoolService, paymentNotificationService, userService, orderService, auditService, adminStatsService, kycService, treeAdminService, jobService)
 	packageHandler := handlers.NewPackageHandler(packageService)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 	commissionHandler := handlers.NewCommissionHandler(commissionService)
@@ -96,6 +101,11 @@ func main() {
 	// Ortak admin yetki zinciri
 	adminOnly := func() []gin.HandlerFunc {
 		return []gin.HandlerFunc{middleware.AuthRequired(userService), middleware.AdminRequired(userService)}
+	}
+	// Kilitli işlemler (ağaç taşıma, manuel rütbe, manuel bakiye, PV düzeltme)
+	// yalnızca super_admin rolüne açıktır (RBAC).
+	superAdminOnly := func() []gin.HandlerFunc {
+		return []gin.HandlerFunc{middleware.AuthRequired(userService), middleware.SuperAdminRequired(userService)}
 	}
 
 	// Gin router ve endpoint kayıtları
@@ -156,6 +166,8 @@ func main() {
 		protected.PUT("/theme", userHandler.UpdateTheme)
 		protected.GET("/sponsored", userHandler.Sponsored)
 		protected.GET("/career", userHandler.Career)
+		protected.GET("/kyc", userHandler.ListMyKYC)
+		protected.POST("/kyc", userHandler.SubmitKYC)
 
 		api.POST("/auth/change-password", middleware.AuthRequired(userService), middleware.RateLimit(database.GetRedis(), "change-password", 5, 15*time.Minute), authHandler.ChangePassword)
 
@@ -273,6 +285,35 @@ func main() {
 
 		adminBinaryTransactions := append(adminOnly(), binaryTransactionHandler.ListAll)
 		api.GET("/admin/binary-transactions", adminBinaryTransactions...)
+
+		// Yönetim paneli genişletme endpoint'leri (üye, sipariş, cüzdan, ağaç,
+		// denetim logları, raporlar, KYC, fraud — adminOnly/superAdminOnly korumalı)
+		api.GET("/admin/users", append(adminOnly(), adminHandler.ListUsers)...)
+		api.PUT("/admin/users/:id/rank", append(superAdminOnly(), adminHandler.UpdateUserRank)...)
+		api.POST("/admin/users/:id/adjust-pv-cv", append(superAdminOnly(), adminHandler.AdjustPVAndCV)...)
+		api.GET("/admin/orders", append(adminOnly(), adminHandler.ListOrders)...)
+		api.PUT("/admin/orders/:id/status", append(adminOnly(), adminHandler.UpdateOrderStatus)...)
+		api.PATCH("/admin/orders/:id/status", append(adminOnly(), adminHandler.UpdateOrderStatus)...)
+		api.GET("/admin/wallet/:user_id", append(adminOnly(), adminHandler.AdminWallet)...)
+		api.GET("/admin/wallet/:user_id/transactions", append(adminOnly(), adminHandler.AdminWalletTransactions)...)
+		api.POST("/admin/wallet/adjust", append(superAdminOnly(), adminHandler.AdminWalletAdjust)...)
+		api.POST("/admin/tree/move", append(superAdminOnly(), adminHandler.TreeMove)...)
+		api.GET("/admin/audit-logs", append(adminOnly(), adminHandler.ListAuditLogs)...)
+		api.GET("/admin/correction-logs", append(adminOnly(), adminHandler.ListCorrectionLogs)...)
+		api.GET("/admin/binary-balance", append(adminOnly(), adminHandler.BinaryBalance)...)
+		api.GET("/admin/top-earners", append(adminOnly(), adminHandler.TopEarners)...)
+		api.POST("/admin/bonus/simulate", append(adminOnly(), adminHandler.SimulateBonus)...)
+		api.POST("/admin/bonus/run", append(adminOnly(), adminHandler.RunBonusJob)...)
+		api.GET("/admin/jobs", append(adminOnly(), adminHandler.ListJobs)...)
+		api.GET("/admin/jobs/:id", append(adminOnly(), adminHandler.GetJob)...)
+		api.GET("/admin/flashout", append(adminOnly(), adminHandler.GetFlashout)...)
+		api.PUT("/admin/flashout", append(adminOnly(), adminHandler.SetFlashout)...)
+		api.GET("/admin/flashout/logs", append(adminOnly(), adminHandler.FlashoutLogs)...)
+		api.GET("/admin/kyc", append(adminOnly(), adminHandler.ListKYC)...)
+		api.POST("/admin/kyc/:id/approve", append(adminOnly(), adminHandler.SetKYCStatus)...)
+		api.POST("/admin/kyc/:id/reject", append(adminOnly(), adminHandler.SetKYCStatus)...)
+		api.POST("/admin/fraud/scan", append(adminOnly(), adminHandler.FraudScan)...)
+		api.GET("/admin/fraud/matches", append(adminOnly(), adminHandler.FraudMatches)...)
 	}
 
 	srv := &http.Server{

@@ -14,9 +14,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const publicPaths = ["/", "/shop", "/product", "/login", "/register"];
   const isPublic = publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
-  // Admin paneli izole: /bwy ve /admin kendi düzenini kullanır (backoffice menüsü yok)
-  const isAdmin = pathname === "/bwy" || pathname.startsWith("/bwy/") ||
-    pathname === "/admin" || pathname.startsWith("/admin/");
+  // Admin araç sayfaları (/admin) kendi düzenini kullanır; /bwy kaldırıldı —
+  // yönetim ana sayfası artık /dashboard içinde (AdminHome)
+  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
 
   if (isPublic) {
     return <>{children}</>;

@@ -18,11 +18,18 @@ type AdminHandler struct {
 	monthlyClose *services.MonthlyCloseService
 	pendingPool  *services.PendingPoolService
 	payments     *services.PaymentNotificationService
+	users        *services.UserService
+	orders       *services.OrderService
+	audit        *services.AuditService
+	stats        *services.AdminStatsService
+	kyc          *services.KYCService
+	tree         *services.TreeAdminService
+	jobs         *services.JobService
 }
 
 // NewAdminHandler yeni bir AdminHandler örneği döndürür.
-func NewAdminHandler(wallets *services.WalletService, chips *services.ChipService, monthlyClose *services.MonthlyCloseService, pendingPool *services.PendingPoolService, payments *services.PaymentNotificationService) *AdminHandler {
-	return &AdminHandler{wallets: wallets, chips: chips, monthlyClose: monthlyClose, pendingPool: pendingPool, payments: payments}
+func NewAdminHandler(wallets *services.WalletService, chips *services.ChipService, monthlyClose *services.MonthlyCloseService, pendingPool *services.PendingPoolService, payments *services.PaymentNotificationService, users *services.UserService, orders *services.OrderService, audit *services.AuditService, stats *services.AdminStatsService, kyc *services.KYCService, tree *services.TreeAdminService, jobs *services.JobService) *AdminHandler {
+	return &AdminHandler{wallets: wallets, chips: chips, monthlyClose: monthlyClose, pendingPool: pendingPool, payments: payments, users: users, orders: orders, audit: audit, stats: stats, kyc: kyc, tree: tree, jobs: jobs}
 }
 
 // ListPaymentNotifications tüm ödeme bildirimlerini döndürür (admin).
@@ -76,6 +83,10 @@ func (h *AdminHandler) ApprovePaymentNotification(c *gin.Context) {
 		return
 	}
 
+	if err := h.audit.Log(c.Request.Context(), adminID, "payment_approve", "payment_notification", &id, "", nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (ödeme onayı)")
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Ödeme bildirimi onaylandı"})
 }
 
@@ -101,6 +112,10 @@ func (h *AdminHandler) RejectPaymentNotification(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ödeme bildirimi reddedilemedi"})
 		}
 		return
+	}
+
+	if err := h.audit.Log(c.Request.Context(), adminID, "payment_reject", "payment_notification", &id, "", nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (ödeme reddi)")
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Ödeme bildirimi reddedildi"})
@@ -151,6 +166,11 @@ func (h *AdminHandler) PlacePendingUser(c *gin.Context) {
 		return
 	}
 
+	if err := h.audit.Log(c.Request.Context(), c.GetInt64("user_id"), "pool_place", "user", &req.UserID, "",
+		map[string]any{"sponsor_id": req.SponsorID, "position": req.Position}); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (havuz yerleştirme)")
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Kullanıcı ağaca yerleştirildi"})
 }
 
@@ -190,6 +210,10 @@ func (h *AdminHandler) ApproveWithdrawal(c *gin.Context) {
 		return
 	}
 
+	if err := h.audit.Log(c.Request.Context(), c.GetInt64("user_id"), "withdraw_approve", "withdraw_request", &id, "", nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (çekim onayı)")
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Çekim talebi onaylandı"})
 }
 
@@ -215,6 +239,10 @@ func (h *AdminHandler) RejectWithdrawal(c *gin.Context) {
 		return
 	}
 
+	if err := h.audit.Log(c.Request.Context(), c.GetInt64("user_id"), "withdraw_reject", "withdraw_request", &id, "", nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (çekim reddi)")
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Çekim talebi reddedildi"})
 }
 
@@ -230,6 +258,10 @@ func (h *AdminHandler) MonthlyClose(c *gin.Context) {
 		log.WithError(err).Error("Aylık kapanış başarısız")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Aylık kapanış başarısız"})
 		return
+	}
+
+	if err := h.audit.Log(c.Request.Context(), c.GetInt64("user_id"), "monthly_close", "monthly_job", nil, "", map[string]any{"executed": true}); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (aylık kapanış)")
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Aylık kapanış tamamlandı", "executed": true})

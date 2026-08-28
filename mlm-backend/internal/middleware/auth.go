@@ -48,7 +48,7 @@ func AuthRequired(users *services.UserService) gin.HandlerFunc {
 }
 
 // AdminRequired AuthRequired'dan sonra çalışır; kullanıcının role alanını
-// veritabanından kontrol eder ve admin değilse 403 döndürür.
+// veritabanından kontrol eder ve admin/super_admin değilse 403 döndürür.
 func AdminRequired(_ *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt64("user_id")
@@ -58,8 +58,29 @@ func AdminRequired(_ *services.UserService) gin.HandlerFunc {
 		}
 
 		role, ok := c.Get("user_role")
-		if !ok || role != "admin" {
+		if !ok || (role != "admin" && role != "super_admin") {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Bu işlem için admin yetkisi gerekli"})
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// SuperAdminRequired AuthRequired'dan sonra çalışır; yalnızca super_admin
+// rolüne izin verir. Ağaç taşıma, manuel rütbe ve manuel bakiye gibi kilitli
+// işlemler bu middleware ile korunur (RBAC).
+func SuperAdminRequired(_ *services.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt64("user_id")
+		if userID == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Geçersiz kullanıcı kimliği"})
+			return
+		}
+
+		role, ok := c.Get("user_role")
+		if !ok || role != "super_admin" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Bu işlem için süper yönetici yetkisi gerekli"})
 			return
 		}
 

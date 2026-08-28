@@ -7,7 +7,9 @@ import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 // Sayfa koruması: giriş yapılmamışsa /login'e yönlendirir.
-// adminOnly ile admin rolü de zorunlu kılınabilir.
+// adminOnly ile admin/super_admin rolü de zorunlu kılınabilir.
+const isAdminRole = (role?: string) => role === "admin" || role === "super_admin";
+
 export default function RequireAuth({ children, adminOnly = false }: { children: ReactNode; adminOnly?: boolean }) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function RequireAuth({ children, adminOnly = false }: { children:
     if (!loading && !user) {
       router.replace("/login");
     }
-    if (!loading && adminOnly && (!user || user.role !== "admin")) {
+    if (!loading && adminOnly && (!user || !isAdminRole(user.role))) {
       router.replace("/dashboard");
     }
   }, [loading, user, adminOnly, router]);
@@ -30,7 +32,7 @@ export default function RequireAuth({ children, adminOnly = false }: { children:
   }
 
   if (!user) return null;
-  if (adminOnly && user.role !== "admin") return null;
+  if (adminOnly && !isAdminRole(user.role)) return null;
 
   return <>{children}</>;
 }

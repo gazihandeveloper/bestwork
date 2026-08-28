@@ -63,7 +63,7 @@ function ProfileContent() {
             <Copy className="size-3.5" />
           </Badge>
           <Badge className="bg-secondary text-secondary-foreground">
-            {user?.role === "admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"}
+            {user?.role === "admin" || user?.role === "super_admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"}
           </Badge>
         </div>
 

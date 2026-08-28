@@ -4,11 +4,11 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-// Eski admin paneli → yeni izole /bwy paneline yönlendirir.
+// Eski admin paneli girişi → artık yönetim ana sayfası üye dashboard'unun içinde (AdminHome).
 export default function AdminDashboardRedirect() {
   const router = useRouter();
   useEffect(() => {
-    router.replace("/bwy");
+    router.replace("/dashboard");
   }, [router]);
   return (
     <div className="flex justify-center py-20">

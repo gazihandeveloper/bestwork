@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 
@@ -454,5 +455,193 @@ func (s *UserService) ResetPasswordWithCode(ctx context.Context, login, code, ne
 	}
 
 	log.WithField("user_id", userID).Info("Şifre sıfırlama koduyla değiştirildi")
+	return nil
+}
+
+// ListUsers üyeleri arama ve sayfalama ile döndürür (admin).
+// q ad/e-posta/üye no/telefonda arar; role verilirse role göre filtreler.
+func (s *UserService) ListUsers(ctx context.Context, q, role string, limit, offset int) ([]models.User, int64, error) {
+	where := ""
+	args := make([]any, 0, 3)
+	if role != "" {
+		where = ` WHERE role = $1`
+		args = append(args, strings.ToLower(strings.TrimSpace(role)))
+	}
+	if q != "" {
+		like := "%" + strings.TrimSpace(q) + "%"
+		if where == "" {
+			where = " WHERE"
+		} else {
+			where += " AND"
+		}
+		where += ` (name ILIKE $` + strconv.Itoa(len(args)+1) + ` OR email ILIKE $` + strconv.Itoa(len(args)+1) +
+			` OR member_code ILIKE $` + strconv.Itoa(len(args)+1) + ` OR phone ILIKE $` + strconv.Itoa(len(args)+1) + `)`
+		args = append(args, like)
+	}
+
+	var total int64
+	if err := s.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`+where, args...).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("üyeler sayılamadı: %w", err)
+	}
+
+	args = append(args, limit, offset)
+	query := fmt.Sprintf(`SELECT `+userColumns+` FROM users%s ORDER BY id DESC LIMIT $%d OFFSET $%d`,
+		where, len(args)-1, len(args))
+
+	rows, err := s.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("üyeler listelenemedi: %w", err)
+	}
+	defer rows.Close()
+
+	users := make([]models.User, 0)
+	for rows.Next() {
+		u, err := scanUserRow(rows)
+		if err != nil {
+			return nil, 0, fmt.Errorf("üye okunamadı: %w", err)
+		}
+		users = append(users, *u)
+	}
+	return users, total, rows.Err()
+}
+
+// UpdateUserRank üyenin rütbesini manuel günceller (gerekçesiyle denetim
+// loguna yazılır) ve rank_progress geçmişini günceller.
+func (s *UserService) UpdateUserRank(ctx context.Context, adminID int64, adminName string, userID int64, rankID int, reason string) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("transaction başlatılamadı: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var exists bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`, userID).Scan(&exists); err != nil {
+		return fmt.Errorf("üye kontrolü başarısız: %w", err)
+	}
+	if !exists {
+		return ErrUserNotFound
+	}
+
+	var rankExists bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM ranks WHERE id = $1)`, rankID).Scan(&rankExists); err != nil {
+		return fmt.Errorf("rütbe kontrolü başarısız: %w", err)
+	}
+	if !rankExists {
+		return errors.New("rütbe bulunamadı")
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE users SET current_rank_id = $1, updated_at = NOW() WHERE id = $2`, rankID, userID); err != nil {
+		return fmt.Errorf("rütbe güncellenemedi: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE rank_progress SET is_active = false WHERE user_id = $1 AND is_active = true`, userID); err != nil {
+		return fmt.Errorf("rütbe geçmişi güncellenemedi: %w", err)
+	}
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO rank_progress (user_id, rank_id) VALUES ($1, $2)`, userID, rankID); err != nil {
+		return fmt.Errorf("rütbe geçmişi yazılamadı: %w", err)
+	}
+
+	if err := logInTx(ctx, tx, adminID, adminName, "rank_update", "user", &userID, reason, map[string]any{
+		"rank_id": rankID,
+	}); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("transaction tamamlanamadı: %w", err)
+	}
+
+	log.WithFields(log.Fields{"user_id": userID, "rank_id": rankID}).Info("Rütbe manuel güncellendi")
+	return nil
+}
+
+// AdjustPVAndCV üyenin birikmiş PV/CV'sini manuel düzeltir (düzeltme loglu).
+// Düzeltme sonrası üst hattaki tüm ataların bacak toplamları kanonik olarak
+// yeniden hesaplanır ve canlı binary eşleşmesi çalıştırılır.
+func (s *UserService) AdjustPVAndCV(ctx context.Context, adminID int64, adminName string, userID int64, deltaPV, deltaCV int64, reason string) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("transaction başlatılamadı: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var (
+		parentID *int64
+		curPV    int64
+		curCV    int64
+	)
+	err = tx.QueryRow(ctx,
+		`SELECT parent_id, total_pv_accumulated, total_cv_accumulated FROM users WHERE id = $1 FOR UPDATE`, userID).
+		Scan(&parentID, &curPV, &curCV)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrUserNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("üye okunamadı: %w", err)
+	}
+
+	newPV := curPV + deltaPV
+	newCV := curCV + deltaCV
+	if newPV < 0 {
+		newPV = 0
+	}
+	if newCV < 0 {
+		newCV = 0
+	}
+
+	if _, err := tx.Exec(ctx, `
+		UPDATE users SET total_pv_accumulated = $1, total_cv_accumulated = $2, updated_at = NOW()
+		WHERE id = $3`, newPV, newCV, userID); err != nil {
+		return fmt.Errorf("PV/CV düzeltilemedi: %w", err)
+	}
+
+	// Üst hattaki ataların bacak toplamlarını kanonik yeniden hesapla + eşleştir
+	if parentID != nil {
+		affected := make(map[int64]bool)
+		current := *parentID
+		for current != 0 {
+			if affected[current] {
+				break
+			}
+			affected[current] = true
+			var next *int64
+			if err := tx.QueryRow(ctx, `SELECT parent_id FROM users WHERE id = $1`, current).Scan(&next); err != nil {
+				return fmt.Errorf("üst hat okunamadı: %w", err)
+			}
+			if next == nil {
+				break
+			}
+			current = *next
+		}
+		for ancestorID := range affected {
+			if err := recomputeLegsInTx(ctx, tx, ancestorID); err != nil {
+				return err
+			}
+		}
+		for ancestorID := range affected {
+			if err := MatchBinary(ctx, tx, ancestorID); err != nil {
+				return fmt.Errorf("binary eşleşme çalıştırılamadı: %w", err)
+			}
+		}
+	}
+
+	if err := logInTx(ctx, tx, adminID, adminName, "pv_adjust", "user", &userID, reason, map[string]any{
+		"delta_pv": deltaPV,
+		"delta_cv": deltaCV,
+		"new_pv":   newPV,
+		"new_cv":   newCV,
+	}); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("transaction tamamlanamadı: %w", err)
+	}
+
+	log.WithFields(log.Fields{"user_id": userID, "delta_pv": deltaPV, "delta_cv": deltaCV}).
+		Info("PV/CV manuel düzeltildi")
 	return nil
 }

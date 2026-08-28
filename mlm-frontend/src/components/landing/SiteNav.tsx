@@ -147,10 +147,10 @@ export default function SiteNav() {
               ) : user ? (
                 <>
                   <Link
-                    href={user.role === "admin" ? "/bwy" : "/dashboard"}
+                    href="/dashboard"
                     className="text-foreground hover:bg-accent rounded-full px-3.5 py-2 text-[15px] font-medium tracking-tight transition-colors whitespace-nowrap"
                   >
-                    {user.role === "admin" ? "Yönetim" : user.name.toLocaleUpperCase("tr-TR")}
+                    {user.role === "admin" || user.role === "super_admin" ? "Yönetim" : user.name.toLocaleUpperCase("tr-TR")}
                   </Link>
                   <button aria-label="Çıkış yap" className={iconBtn} onClick={logout}>
                     <LogOut className="size-5" />
@@ -234,8 +234,8 @@ export default function SiteNav() {
             ) : user ? (
               <>
                 <Button asChild className="w-full font-medium" onClick={() => setMobileOpen(false)}>
-                  <Link href={user.role === "admin" ? "/bwy" : "/dashboard"}>
-                    {user.role === "admin" ? "Yönetim Paneli" : user.name.toLocaleUpperCase("tr-TR")}
+                  <Link href="/dashboard">
+                    {user.role === "admin" || user.role === "super_admin" ? "Yönetim Paneli" : user.name.toLocaleUpperCase("tr-TR")}
                   </Link>
                 </Button>
                 <Button

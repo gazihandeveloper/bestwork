@@ -355,6 +355,29 @@ export async function uploadFile(file: File): Promise<string> {
   return data.file_path;
 }
 
+// KYC (kimlik doğrulama) belgeleri
+export interface KycDocument {
+  id: number;
+  user_id: number;
+  user_name: string;
+  member_code: string;
+  document_type: string;
+  file_path: string;
+  status: string;
+  admin_note: string | null;
+  submitted_at: string;
+  processed_at: string | null;
+}
+
+export async function submitKyc(documentType: "identity" | "address", filePath: string): Promise<void> {
+  await api.post("/user/kyc", { document_type: documentType, file_path: filePath });
+}
+
+export async function listMyKyc(): Promise<KycDocument[]> {
+  const { data } = await api.get<{ kyc: KycDocument[] }>("/user/kyc");
+  return data.kyc ?? [];
+}
+
 // Bekleyenler havuzu
 export interface PendingPoolEntry {
   user: User;

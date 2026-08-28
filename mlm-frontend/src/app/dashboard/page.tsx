@@ -26,6 +26,8 @@ import {
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
+import KycCard from "@/components/dashboard/KycCard";
+import AdminHome from "@/components/dashboard/AdminHome";
 import { BASE_PATH } from "@/lib/api";
 import type { UserDashboard, Rank, User } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -187,7 +189,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, big
 
 function DashboardContent() {
   const router = useRouter();
-  const { user: contextUser } = useAuth();
+  const { user: contextUser, isAdmin } = useAuth();
   const [me, setMe] = useState<User | null>(contextUser);
   const [data, setData] = useState<UserDashboard | null>(null);
   const [ranks, setRanks] = useState<Rank[]>([]);
@@ -227,6 +229,8 @@ function DashboardContent() {
   };
 
   useEffect(() => {
+    // Yönetim (admin) ana sayfası ayrı bileşende; üye verileri yalnızca üyeler için
+    if (isAdmin) return;
     Promise.all([getDashboard(), getRanks(), listSponsored(), listPendingUsers()])
       .then(([d, r, sp, pend]) => {
         setData(d);
@@ -252,6 +256,16 @@ function DashboardContent() {
       window.removeEventListener("focus", onFocus);
     };
   }, []);
+
+  // Yönetim (admin) ana sayfası: site tasarımıyla uyumlu KPI özeti.
+  // Üye verileri yalnızca üyeler için çekildiğinden admin burada dallanır.
+  if (isAdmin) {
+    return (
+      <div className="w-full py-3">
+        <AdminHome />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -313,118 +327,120 @@ function DashboardContent() {
   return (
     <div className="w-full py-3">
       <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12">
-        {/* Sol profil sidebar */}
-        <div className="flex md:col-span-3">
-          <div className="flex h-full w-full flex-col md:sticky md:top-24">
-            <div className="border-border bg-card flex h-full w-full flex-col overflow-hidden rounded border">
-              {/* Profil görseli — pastel zemin, hover'da kamera */}
-              <div className="bg-secondary-light/60 group relative flex h-[210px] w-full shrink-0 items-center justify-center">
-                {profileImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={fileUrl(profileImage) ?? ""}
-                    alt={contextUser?.name ?? "Profil"}
-                    className="block size-[140px] rounded-full border-4 border-background object-cover object-center shadow-sm transition-opacity group-hover:opacity-80"
-                  />
-                ) : (
-                  <span className="bg-accent text-foreground flex size-[140px] items-center justify-center rounded-full border-4 border-background text-4xl font-extrabold shadow-sm">
-                    {initials}
-                  </span>
-                )}
-                <label
-                  aria-label="Profil fotoğrafını değiştir"
-                  className="absolute inset-0 flex cursor-pointer items-center justify-center"
-                >
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png"
-                    hidden
-                    onChange={(e) => handleImageUpload(e.target.files?.[0])}
-                  />
-                  <span className="bg-background/90 text-foreground flex size-11 items-center justify-center rounded-full shadow-lg opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
-                    {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
-                  </span>
-                </label>
-              </div>
-
-              {/* İçerik — isim soyisim, nötr */}
-              <div className="flex flex-col items-center gap-1.5 p-3 pt-2.5 text-center">
-                <h2 className="text-foreground text-xl leading-snug font-extrabold">
-                  {contextUser?.name.toLocaleUpperCase("tr-TR")}
-                </h2>
-
-                <div className="border-border flex items-center gap-1 rounded border px-2 py-0.5">
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "size-2 rounded-full",
-                      me?.is_active ? "bg-[#2E7D32]" : "bg-destructive"
-                    )}
-                  />
-                  <span className={cn("text-sm font-bold", me?.is_active ? "text-[#2E7D32]" : "text-destructive")}>
-                    Aktif
-                  </span>
+        {/* Sol profil sidebar — yalnızca üyeler için; yönetim (admin) backoffice'i farklı */}
+        {!isAdmin && (
+          <div className="flex md:col-span-3">
+            <div className="flex h-full w-full flex-col md:sticky md:top-24">
+              <div className="border-border bg-card flex h-full w-full flex-col overflow-hidden rounded border">
+                {/* Profil görseli — pastel zemin, hover'da kamera */}
+                <div className="bg-secondary-light/60 group relative flex h-[210px] w-full shrink-0 items-center justify-center">
+                  {profileImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={fileUrl(profileImage) ?? ""}
+                      alt={contextUser?.name ?? "Profil"}
+                      className="block size-[140px] rounded-full border-4 border-background object-cover object-center shadow-sm transition-opacity group-hover:opacity-80"
+                    />
+                  ) : (
+                    <span className="bg-accent text-foreground flex size-[140px] items-center justify-center rounded-full border-4 border-background text-4xl font-extrabold shadow-sm">
+                      {initials}
+                    </span>
+                  )}
+                  <label
+                    aria-label="Profil fotoğrafını değiştir"
+                    className="absolute inset-0 flex cursor-pointer items-center justify-center"
+                  >
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      hidden
+                      onChange={(e) => handleImageUpload(e.target.files?.[0])}
+                    />
+                    <span className="bg-background/90 text-foreground flex size-11 items-center justify-center rounded-full shadow-lg opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
+                      {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
+                    </span>
+                  </label>
                 </div>
 
-                <div className="mt-0.5 flex w-full flex-col gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyText(me?.member_code ?? "", "üye-id")}
-                    className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
-                  >
-                    Üye No: {me?.member_code}
-                    <Copy className="size-3.5" />
-                  </Button>
-                  {d.user.rank && (
+                {/* İçerik — isim soyisim, nötr */}
+                <div className="flex flex-col items-center gap-1.5 p-3 pt-2.5 text-center">
+                  <h2 className="text-foreground text-xl leading-snug font-extrabold">
+                    {contextUser?.name.toLocaleUpperCase("tr-TR")}
+                  </h2>
+
+                  <div className="border-border flex items-center gap-1 rounded border px-2 py-0.5">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "size-2 rounded-full",
+                        me?.is_active ? "bg-[#2E7D32]" : "bg-destructive"
+                      )}
+                    />
+                    <span className={cn("text-sm font-bold", me?.is_active ? "text-[#2E7D32]" : "text-destructive")}>
+                      Aktif
+                    </span>
+                  </div>
+
+                  <div className="mt-0.5 flex w-full flex-col gap-1">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => router.push("/career")}
+                      onClick={() => copyText(me?.member_code ?? "", "üye-id")}
                       className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
                     >
-                      Rütbe: {d.user.rank}
+                      Üye No: {me?.member_code}
+                      <Copy className="size-3.5" />
                     </Button>
-                  )}
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="text-primary border-primary w-full rounded normal-case font-bold hover:bg-primary/5"
-                  >
-                    <Link href="/success-report">
-                      <BarChart3 className="size-4" />
-                      Başarı Raporu
-                    </Link>
-                  </Button>
+                    {d.user.rank && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push("/career")}
+                        className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
+                      >
+                        Rütbe: {d.user.rank}
+                      </Button>
+                    )}
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="text-primary border-primary w-full rounded normal-case font-bold hover:bg-primary/5"
+                    >
+                      <Link href="/success-report">
+                        <BarChart3 className="size-4" />
+                        Başarı Raporu
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Üye kayıt linki — alt */}
-              <div className="mt-auto border-t border-border px-3 pt-2.5 pb-3">
-                <p className="text-muted-foreground mb-1 block text-center text-[10px] font-bold tracking-[1.2px] uppercase">
-                  Üye Kayıt Linkiniz
-                </p>
-                <div className="border-border flex items-center gap-1 rounded border px-1.5 py-1">
-                  <LinkIcon className="text-muted-foreground size-4 shrink-0" />
-                  <span className="text-muted-foreground font-mono text-xs flex-grow truncate">{referralLink}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyText(referralLink, "link")}
-                    className="rounded px-2 text-[11px] normal-case"
-                  >
-                    <Copy className="size-3.5" />
-                    {copied === "link" ? "Kopyalandı!" : "Kopyala"}
-                  </Button>
+                {/* Üye kayıt linki — alt */}
+                <div className="mt-auto border-t border-border px-3 pt-2.5 pb-3">
+                  <p className="text-muted-foreground mb-1 block text-center text-[10px] font-bold tracking-[1.2px] uppercase">
+                    Üye Kayıt Linkiniz
+                  </p>
+                  <div className="border-border flex items-center gap-1 rounded border px-1.5 py-1">
+                    <LinkIcon className="text-muted-foreground size-4 shrink-0" />
+                    <span className="text-muted-foreground font-mono text-xs flex-grow truncate">{referralLink}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyText(referralLink, "link")}
+                      className="rounded px-2 text-[11px] normal-case"
+                    >
+                      <Copy className="size-3.5" />
+                      {copied === "link" ? "Kopyalandı!" : "Kopyala"}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* İstatistik blokları */}
-        <div className="md:col-span-9">
+        <div className={cn("md:col-span-9", isAdmin && "md:col-span-12")}>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
             <StatBlock
               label="Ünvan"
@@ -590,6 +606,9 @@ function DashboardContent() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* KYC — Kimlik Doğrulama */}
+      <KycCard />
 
       {/* Bildirim */}
       {msg && (

@@ -37,10 +37,10 @@ func (h *SponsorTreeHandler) Get(c *gin.Context) {
 		}
 		userID = id
 
-		// Başkasının ağacı yalnızca admin tarafından görülebilir
+		// Başkasının ağacı yalnızca admin/süper admin tarafından görülebilir
 		if userID != requesterID {
 			requester, err := h.users.GetUserByID(c.Request.Context(), requesterID)
-			if err != nil || requester.Role != "admin" {
+			if err != nil || (requester.Role != "admin" && requester.Role != "super_admin") {
 				c.JSON(http.StatusForbidden, gin.H{"error": "Başka kullanıcının ağacını görme yetkiniz yok"})
 				return
 			}

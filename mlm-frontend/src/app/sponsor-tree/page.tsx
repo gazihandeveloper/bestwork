@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 function roleMeta(role: string): { label: string; badge: string; icon: React.ReactNode } {
-  if (role === "admin")
+  if (role === "admin" || role === "super_admin")
     return { label: "Admin", badge: "border-amber-500/60 text-amber-600", icon: <Shield className="size-3.5" /> };
   if (role === "customer")
     return { label: "Müşteri", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <ShoppingBag className="size-3.5" /> };

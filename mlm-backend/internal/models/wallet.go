@@ -10,5 +10,6 @@ type Wallet struct {
 	TotalEarned    float64   `json:"total_earned"`
 	TotalWithdrawn float64   `json:"total_withdrawn"`
 	ChipBalance    float64   `json:"chip_balance"`
+	BlockedBalance float64   `json:"blocked_balance"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
