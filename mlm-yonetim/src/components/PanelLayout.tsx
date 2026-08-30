@@ -30,7 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
       { text: "Üyeler", href: "/uyeler" },
       { text: "Ağaç Görüntüleyici", href: "/agac" },
       { text: "Bekleyenler", href: "/bekleyenler" },
-      { text: "Rütbe Yönetimi", href: "/rutbeler" },
+      { text: "Kariyer Yönetimi", href: "/rutbeler" },
     ],
   },
   {
@@ -87,7 +87,7 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
       <nav className="bw-nav" aria-label="Ana menü">
         <div className="bw-nav-inner">
           <Link href="/" className="bw-nav-brand">
-            Admin Paneli
+            BestWork Admin Paneli
           </Link>
 
           <div className={cn("bw-nav-menu", mobileOpen && "open")}>

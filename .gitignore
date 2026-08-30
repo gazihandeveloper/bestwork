@@ -12,3 +12,4 @@ bin/
 .git-credentials
 
 .tools/
+*.tsbuildinfo

@@ -629,7 +629,7 @@ export default function AgacPage() {
                   <div>{card.package || "—"}</div>
                 </div>
                 <div className="col-md-4">
-                  <div className="text-muted small">Rütbe</div>
+                  <div className="text-muted small">Kariyer</div>
                   <div>{card.rank || "—"}</div>
                 </div>
                 <div className="col-md-4">

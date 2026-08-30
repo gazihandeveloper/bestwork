@@ -86,7 +86,7 @@ const pvFmt = (v: number) => v.toLocaleString("tr-TR");
 // Denetim logları eylem etiketleri + renkleri.
 const ACTION_META: Record<string, { label: string; cls: string }> = {
   wallet_adjust: { label: "Cüzdan Düzeltmesi", cls: "text-bg-warning" },
-  rank_update: { label: "Rütbe Güncelleme", cls: "text-bg-info" },
+  rank_update: { label: "Kariyer Güncelleme", cls: "text-bg-info" },
   tree_move: { label: "Ağaç Taşıma", cls: "text-bg-primary" },
   pv_adjust: { label: "PV/CV Düzeltmesi", cls: "text-bg-warning" },
   bonus_rollback: { label: "Bonus Geri Alımı", cls: "text-bg-danger" },
@@ -106,7 +106,7 @@ const TARGET_LABEL: Record<string, string> = {
   wallet: "Cüzdan",
   settings: "Ayarlar",
   tree: "Ağaç",
-  rank: "Rütbe",
+  rank: "Kariyer",
   package: "Paket",
   product: "Ürün",
   payment: "Ödeme",
@@ -149,7 +149,7 @@ async function listCorrectionLogsApi(limit: number, offset: number): Promise<Log
 const AUDIT_FILTERS: { key: string; label: string }[] = [
   { key: "", label: "Tümü" },
   { key: "wallet_adjust", label: "Cüzdan Düzeltmesi" },
-  { key: "rank_update", label: "Rütbe" },
+  { key: "rank_update", label: "Kariyer" },
   { key: "tree_move", label: "Ağaç Taşıma" },
   { key: "pv_adjust", label: "PV/CV" },
   { key: "bonus_rollback", label: "Bonus Geri Alımı" },
@@ -598,7 +598,7 @@ export default function RaporlarPage() {
       {/* ── 5) Düzeltme Logları ── */}
       <PageCard
         title="Düzeltme Logları"
-        subtitle="Bakiye/puan düzeltmesi, rütbe değişikliği, ağaç taşıma ve bonus geri alımları."
+        subtitle="Bakiye/puan düzeltmesi, kariyer değişikliği, ağaç taşıma ve bonus geri alımları."
         actions={
           <button type="button" className="btn btn-sm btn-outline-secondary" onClick={loadCorrections} disabled={corrBusy}>
             <MaterialIcon name="RefreshCw" size={14} className="me-1" />

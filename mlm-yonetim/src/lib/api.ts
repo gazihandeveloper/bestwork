@@ -374,7 +374,7 @@ export async function updateSettings(settings: Record<string, string>): Promise<
   await api.put("/admin/settings", { settings });
 }
 
-// ── Seviyeler (rütbeler) ───────────────────────────────────────────────────
+// ── Seviyeler (kariyerler) ───────────────────────────────────────────────────
 export interface Rank {
   id: number;
   name: string;

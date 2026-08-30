@@ -12,7 +12,7 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Admin Paneli",
+  title: "BestWork Admin Paneli",
   description: "BestWork MLM izole yönetim paneli",
 };
 

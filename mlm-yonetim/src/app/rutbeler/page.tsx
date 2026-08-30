@@ -130,10 +130,13 @@ export default function SeviyelerPage() {
   if (error && ranks === null) return <PanelLayout><ErrorAlert>{error}</ErrorAlert></PanelLayout>;
   if (ranks === null) return <PanelLayout><Loading /></PanelLayout>;
 
+  // Ambassador üstte, Jade altta (azalan kariyer sırası).
+  const sortedRanks = [...ranks].sort((a, b) => b.id - a.id);
+
   return (
     <PanelLayout>
       <PageHeader
-        title="Seviyeler (Rütbeler)"
+        title="Seviyeler (Kariyerler)"
         subtitle="Kariyer merdivenini yönetin — PV eşiği, alt kariyer şartı, kişisel aktiflik ve aylık binary limit."
       />
 
@@ -266,7 +269,7 @@ export default function SeviyelerPage() {
                 </tr>
               </thead>
               <tbody>
-                {ranks.map((r) => {
+                {sortedRanks.map((r) => {
                   const downline = r.required_downline_count && r.required_downline_count > 0
                     ? `${r.required_downline_count} × ${rankName(r.required_downline_rank_id)}`
                     : "—";

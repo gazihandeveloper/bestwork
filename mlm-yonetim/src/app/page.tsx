@@ -363,7 +363,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="card-body">
                   {rankDist.length === 0 ? (
-                    <p className="text-muted text-center py-4 mb-0">Rütbe verisi yok.</p>
+                    <p className="text-muted text-center py-4 mb-0">Kariyer verisi yok.</p>
                   ) : (
                     <DashboardCharts variant="career" period={revPeriod} revenue={revenue} commissions={commissions} growth={growth} rankDist={rankDist} />
                   )}
