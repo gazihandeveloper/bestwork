@@ -4,10 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"mlm-backend/internal/models"
 	"mlm-backend/internal/services"
 )
 
@@ -23,12 +25,47 @@ func NewHeroSlideHandler(slides *services.HeroSlideService) *HeroSlideHandler {
 
 // HeroSlideRequest slider oluşturma/güncelleme JSON gövdesidir.
 type HeroSlideRequest struct {
-	Title     string `json:"title" binding:"required"`
-	Subtitle  string `json:"subtitle"`
-	ImagePath string `json:"image_path" binding:"required"`
-	Link      string `json:"link"`
-	SortOrder int    `json:"sort_order"`
-	IsActive  bool   `json:"is_active"`
+	Title               string `json:"title" binding:"required"`
+	Subtitle            string `json:"subtitle"`
+	Description         string `json:"description"`
+	ImagePath           string `json:"image_path" binding:"required"`
+	Link                string `json:"link"`
+	PrimaryButtonText   string `json:"primary_button_text"`
+	PrimaryButtonLink   string `json:"primary_button_link"`
+	SecondaryButtonText string `json:"secondary_button_text"`
+	SecondaryButtonLink string `json:"secondary_button_link"`
+	ShowButtons         *bool  `json:"show_buttons"`
+	SortOrder           int    `json:"sort_order"`
+	IsActive            bool   `json:"is_active"`
+}
+
+// toModel istek gövdesini models.HeroSlide'a çevirir.
+func (r HeroSlideRequest) toModel() *models.HeroSlide {
+	ptr := func(v string) *string {
+		v = strings.TrimSpace(v)
+		if v == "" {
+			return nil
+		}
+		return &v
+	}
+	show := true
+	if r.ShowButtons != nil {
+		show = *r.ShowButtons
+	}
+	return &models.HeroSlide{
+		Title:               strings.TrimSpace(r.Title),
+		Subtitle:            ptr(r.Subtitle),
+		Description:         ptr(r.Description),
+		ImagePath:           strings.TrimSpace(r.ImagePath),
+		Link:                ptr(r.Link),
+		PrimaryButtonText:   ptr(r.PrimaryButtonText),
+		PrimaryButtonLink:   ptr(r.PrimaryButtonLink),
+		SecondaryButtonText: ptr(r.SecondaryButtonText),
+		SecondaryButtonLink: ptr(r.SecondaryButtonLink),
+		ShowButtons:         show,
+		SortOrder:           r.SortOrder,
+		IsActive:            r.IsActive,
+	}
 }
 
 // List aktif sliderları sıralı döndürür (herkese açık).
@@ -61,7 +98,7 @@ func (h *HeroSlideHandler) Create(c *gin.Context) {
 		return
 	}
 
-	slide, err := h.slides.CreateSlide(c.Request.Context(), req.Title, req.Subtitle, req.ImagePath, req.Link, req.SortOrder, req.IsActive)
+	slide, err := h.slides.CreateSlide(c.Request.Context(), req.toModel())
 	if err != nil {
 		log.WithError(err).Error("Slider eklenemedi")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -95,18 +132,19 @@ func (h *HeroSlideHandler) Update(c *gin.Context) {
 		return
 	}
 
-	slide.Title = req.Title
-	slide.Subtitle = nil
-	if v := req.Subtitle; v != "" {
-		slide.Subtitle = &v
-	}
-	slide.ImagePath = req.ImagePath
-	slide.Link = nil
-	if v := req.Link; v != "" {
-		slide.Link = &v
-	}
-	slide.SortOrder = req.SortOrder
-	slide.IsActive = req.IsActive
+	m := req.toModel()
+	slide.Title = m.Title
+	slide.Subtitle = m.Subtitle
+	slide.Description = m.Description
+	slide.ImagePath = m.ImagePath
+	slide.Link = m.Link
+	slide.PrimaryButtonText = m.PrimaryButtonText
+	slide.PrimaryButtonLink = m.PrimaryButtonLink
+	slide.SecondaryButtonText = m.SecondaryButtonText
+	slide.SecondaryButtonLink = m.SecondaryButtonLink
+	slide.ShowButtons = m.ShowButtons
+	slide.SortOrder = m.SortOrder
+	slide.IsActive = m.IsActive
 
 	if err := h.slides.UpdateSlide(c.Request.Context(), slide); err != nil {
 		log.WithError(err).Error("Slider güncellenemedi")

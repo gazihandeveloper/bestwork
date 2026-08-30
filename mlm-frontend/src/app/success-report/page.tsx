@@ -12,15 +12,7 @@ import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
-import {
-  TrendingUp,
-  TrendingDown,
-  Trophy,
-  ArrowLeft,
-  CheckCircle2,
-  Lock,
-  Diamond,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
@@ -198,7 +190,7 @@ function CompareCard({
         </Typography>
         <Chip
           size="small"
-          icon={up ? <TrendingUp /> : <TrendingDown />}
+          icon={up ? <MaterialIcon name="TrendingUp" /> : <MaterialIcon name="trending_down" />}
           label={`${up ? "+" : ""}${delta.toFixed(0)}%`}
           color={up ? "success" : "error"}
           variant="filled"
@@ -243,11 +235,11 @@ function CareerTimeline({ ranks, career }: { ranks: Rank[]; career: CareerProgre
               }}
             >
               {c.achieved ? (
-                <CheckCircle2 className="size-[22px]" />
+                <MaterialIcon name="check_circle" className="size-[22px]" />
               ) : c.active ? (
-                <Trophy className="size-5" />
+                <MaterialIcon name="Trophy" className="size-5" />
               ) : (
-                <Lock className="size-[18px]" />
+                <MaterialIcon name="Lock" className="size-[18px]" />
               )}
             </Box>
             <Typography
@@ -368,7 +360,7 @@ function ReportContent() {
 
   return (
     <Container maxWidth={false} sx={{ py: 3 }}>
-      <Button component={Link} href="/profile" startIcon={<ArrowLeft />} size="small" sx={{ mb: 1 }}>
+      <Button component={Link} href="/profile" startIcon={<MaterialIcon name="ArrowLeft" />} size="small" sx={{ mb: 1 }}>
         Profilime Dön
       </Button>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
@@ -385,7 +377,7 @@ function ReportContent() {
             boxShadow: 3,
           }}
         >
-          <Trophy className="size-[30px]" />
+          <MaterialIcon name="Trophy" className="size-[30px]" />
         </Box>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 900, color: "primary.dark" }}>
@@ -400,13 +392,13 @@ function ReportContent() {
       {/* Geçen aya göre kıyaslama */}
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="AYLIK KAZANÇ" icon={<TrendingUp />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
+          <CompareCard title="AYLIK KAZANÇ" icon={<MaterialIcon name="TrendingUp" />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="TOPLAM PV" icon={<Diamond />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" />
+          <CompareCard title="TOPLAM PV" icon={<MaterialIcon name="diamond" />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" />
         </Grid>
         <Grid size={{ xs: 12, sm: 4 }}>
-          <CompareCard title="TOPLAM CV" icon={<Diamond />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" />
+          <CompareCard title="TOPLAM CV" icon={<MaterialIcon name="diamond" />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" />
         </Grid>
       </Grid>
 

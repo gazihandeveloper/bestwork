@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { getSettings } from "@/services/api";
 import { Reveal } from "./Reveal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,10 +17,10 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 };
 
 const contactItems = [
-  { key: "corporate_address", label: "Adres", icon: <MapPin className="size-5" /> },
-  { key: "corporate_phone", label: "Telefon", icon: <Phone className="size-5" /> },
-  { key: "corporate_email", label: "E-posta", icon: <Mail className="size-5" /> },
-  { key: "corporate_hours", label: "Çalışma Saatleri", icon: <Clock className="size-5" /> },
+  { key: "corporate_address", label: "Adres", icon: <MaterialIcon name="MapPin" className="size-5" /> },
+  { key: "corporate_phone", label: "Telefon", icon: <MaterialIcon name="Phone" className="size-5" /> },
+  { key: "corporate_email", label: "E-posta", icon: <MaterialIcon name="Mail" className="size-5" /> },
+  { key: "corporate_hours", label: "Çalışma Saatleri", icon: <MaterialIcon name="Clock" className="size-5" /> },
 ];
 
 // Kurumsal bölümü — içerik DB'den (GET /api/settings) gelir, admin panelinden düzenlenir.

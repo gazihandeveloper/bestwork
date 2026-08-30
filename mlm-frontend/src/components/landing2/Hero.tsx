@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { listHeroSlides, fileUrl } from "@/services/api";
 import type { HeroSlide } from "@/services/api";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -100,8 +100,11 @@ export default function Hero() {
           {slides.map((s, i) => {
             const isActive = i === activeIndex;
             const image = fileUrl(s.image_path);
-            const primaryHref = s.link ?? "/shop";
-            const secondaryHref = s.link ?? "/register";
+            const badgeText = s.title || "BestWork Fırsatları";
+            const heading = s.subtitle || s.title;
+            const primaryHref = s.primary_button_link ?? s.link ?? "/shop";
+            const secondaryHref = s.secondary_button_link ?? s.link ?? "/register";
+            const showButtons = s.show_buttons !== false;
 
             return (
               <div
@@ -155,37 +158,39 @@ export default function Hero() {
                   }}
                 />
 
-                {/* Sol içerik: rozet + başlık + alt yazı + CTA'lar */}
+                {/* Sol içerik: rozet + başlık + alt yazı + CTA'lar (şeffaf, orijinal) */}
                 <div className="absolute inset-y-0 left-0 z-10 flex w-full max-w-2xl flex-col items-start justify-center px-6 sm:px-10 md:px-14 lg:px-20">
                   <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[11px] font-bold tracking-[0.14em] text-white uppercase backdrop-blur-md sm:text-xs">
-                    <Sparkles className="size-3.5" />
-                    BestWork Fırsatları
+                    <MaterialIcon name="Sparkles" className="size-3.5" />
+                    {badgeText}
                   </span>
                   <h2 className="text-[2rem] leading-[1.1] font-black tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.6)] sm:text-4xl md:text-5xl lg:text-[3.5rem]">
-                    {s.title}
+                    {heading}
                   </h2>
-                  {s.subtitle ? (
+                  {s.description ? (
                     <p className="mt-3 max-w-xl text-sm leading-relaxed font-medium text-white/90 sm:text-base md:mt-4 md:text-lg">
-                      {s.subtitle}
+                      {s.description}
                     </p>
                   ) : null}
-                  <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-8">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="bg-white px-5! text-primary-dark shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-[1.03] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
-                    >
-                      <Link href={primaryHref}>Alışverişe Başla</Link>
-                    </Button>
-                    <Button
-                      asChild
-                      size="lg"
-                      variant="outline"
-                      className="border-white/60 bg-white/10 px-5! text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
-                    >
-                      <Link href={secondaryHref}>Üye Ol</Link>
-                    </Button>
-                  </div>
+                  {showButtons && (
+                    <div className="mt-6 flex flex-wrap items-center gap-3 md:mt-8">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="bg-white px-5! text-primary-dark shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-[1.03] hover:bg-white/90 focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
+                      >
+                        <Link href={primaryHref}>{s.primary_button_text || "Alışverişe Başla"}</Link>
+                      </Button>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="border-white/60 bg-white/10 px-5! text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/20 hover:text-white focus-visible:ring-white/80 focus-visible:ring-offset-0 sm:px-7!"
+                      >
+                        <Link href={secondaryHref}>{s.secondary_button_text || "Üye Ol"}</Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -200,7 +205,7 @@ export default function Hero() {
                 onClick={goPrev}
                 className="absolute top-1/2 left-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/35 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:left-6 md:size-12"
               >
-                <ChevronLeft className="size-6 md:size-7" />
+                <MaterialIcon name="ChevronLeft" className="size-6 md:size-7" />
               </button>
               <button
                 type="button"
@@ -208,7 +213,7 @@ export default function Hero() {
                 onClick={goNext}
                 className="absolute top-1/2 right-4 z-20 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white opacity-80 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white/35 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none md:right-6 md:size-12"
               >
-                <ChevronRight className="size-6 md:size-7" />
+                <MaterialIcon name="ChevronRight" className="size-6 md:size-7" />
               </button>
 
               {/* Alt kontrol çubuğu: noktalar + sayaç */}

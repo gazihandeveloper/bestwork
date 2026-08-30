@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import { CheckCircle2, AlertCircle, Info, TriangleAlert, X } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 
 interface AppSnackbarProps {
   open: boolean;
@@ -19,10 +19,10 @@ const severityStyles: Record<NonNullable<AppSnackbarProps["severity"]>, string> 
 };
 
 const severityIcons: Record<NonNullable<AppSnackbarProps["severity"]>, ReactNode> = {
-  success: <CheckCircle2 className="size-5 shrink-0" />,
-  error: <AlertCircle className="size-5 shrink-0" />,
-  info: <Info className="size-5 shrink-0" />,
-  warning: <TriangleAlert className="size-5 shrink-0" />,
+  success: <MaterialIcon name="check_circle" className="size-5 shrink-0" />,
+  error: <MaterialIcon name="error" className="size-5 shrink-0" />,
+  info: <MaterialIcon name="Info" className="size-5 shrink-0" />,
+  warning: <MaterialIcon name="warning" className="size-5 shrink-0" />,
 };
 
 // Ortak Snackbar bileşeni: tüm sayfalarda tutarlı bildirim stili sağlar.
@@ -55,7 +55,7 @@ export default function AppSnackbar({ open, message, severity = "success", onClo
         onClick={onClose}
         className="ml-1 shrink-0 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
       >
-        <X className="size-4" />
+        <MaterialIcon name="X" className="size-4" />
       </button>
     </div>
   );

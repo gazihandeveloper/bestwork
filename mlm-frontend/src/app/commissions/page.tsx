@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Medal, Network, Receipt, Users, Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { api, getErrorMessage } from "@/lib/api";
 import { getDashboard } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
@@ -15,9 +15,9 @@ const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
 
 const TYPE_META: Record<string, { label: string; badge: string; icon: React.ReactNode }> = {
-  referral: { label: "Referans", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <Users size={15} /> },
-  binary: { label: "Binary", badge: "border-[#0288D1]/50 text-[#0277BD]", icon: <Network size={15} /> },
-  matching: { label: "Matching", badge: "border-amber-500/50 text-amber-600", icon: <Medal size={15} /> },
+  referral: { label: "Referans", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <MaterialIcon name="Users" size={15} /> },
+  binary: { label: "Binary", badge: "border-[#0288D1]/50 text-[#0277BD]", icon: <MaterialIcon name="Network" size={15} /> },
+  matching: { label: "Matching", badge: "border-amber-500/50 text-amber-600", icon: <MaterialIcon name="military_tech" size={15} /> },
 };
 
 function CommissionsContent() {
@@ -129,11 +129,11 @@ function CommissionsContent() {
 
       {loading ? (
         <div className="flex justify-center py-6">
-          <Loader2 className="text-primary size-8 animate-spin" />
+          <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
         </div>
       ) : commissions.length === 0 ? (
         <div className="border-border bg-card rounded border p-4">
-          <EmptyState icon={<Receipt size={48} />} message="Bu filtrede komisyon kaydı yok." />
+          <EmptyState icon={<MaterialIcon name="Receipt" size={48} />} message="Bu filtrede komisyon kaydı yok." />
         </div>
       ) : (
         <div className="border-border bg-card overflow-hidden rounded border">
@@ -152,7 +152,7 @@ function CommissionsContent() {
                   const meta = TYPE_META[c.type] ?? {
                     label: c.type,
                     badge: "border-border text-muted-foreground",
-                    icon: <Receipt size={15} />,
+                    icon: <MaterialIcon name="Receipt" size={15} />,
                   };
                   return (
                     <tr

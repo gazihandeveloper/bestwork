@@ -197,6 +197,273 @@ func (s *AdminStatsService) FlashoutLogs(ctx context.Context, limit, offset int)
 	return logs, total, rows.Err()
 }
 
+// RevenuePoint dönem bazlı ciro serisindeki bir noktayı temsil eder.
+type RevenuePoint struct {
+	Date    string  `json:"date"`
+	Revenue float64 `json:"revenue"`
+}
+
+// RevenueByPeriod ödenmiş siparişlerden dönem bazlı ciro serisi üretir.
+// period: "daily" | "weekly" | "monthly" (varsayılan monthly).
+func (s *AdminStatsService) RevenueByPeriod(ctx context.Context, period string, limit int) ([]RevenuePoint, error) {
+	if period == "" {
+		period = "monthly"
+	}
+	trunc := "day"
+	switch period {
+	case "daily":
+		trunc = "day"
+	case "weekly":
+		trunc = "week"
+	case "monthly":
+		trunc = "month"
+	default:
+		return nil, fmt.Errorf("geçersiz dönem: daily, weekly veya monthly olmalıdır")
+	}
+	if limit <= 0 {
+		limit = 12
+	}
+	if limit > 60 {
+		limit = 60
+	}
+
+	query := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(total_amount), 0)
+		FROM orders
+		WHERE status != 'cancelled'
+		GROUP BY date_trunc('%s', created_at)
+		ORDER BY d ASC
+		LIMIT $1`, trunc, trunc)
+
+	rows, err := s.db.Query(ctx, query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("ciro serisi okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	points := make([]RevenuePoint, 0)
+	for rows.Next() {
+		var p RevenuePoint
+		if err := rows.Scan(&p.Date, &p.Revenue); err != nil {
+			return nil, fmt.Errorf("ciro satırı okunamadı: %w", err)
+		}
+		points = append(points, p)
+	}
+	return points, rows.Err()
+}
+
+// CommissionSeries dönem bazlı ödenmiş komisyon serisini döndürür.
+func (s *AdminStatsService) CommissionSeries(ctx context.Context, period string, limit int) ([]RevenuePoint, error) {
+	if period == "" {
+		period = "monthly"
+	}
+	trunc := "day"
+	switch period {
+	case "daily":
+		trunc = "day"
+	case "weekly":
+		trunc = "week"
+	case "monthly":
+		trunc = "month"
+	default:
+		return nil, fmt.Errorf("geçersiz dönem: daily, weekly veya monthly olmalıdır")
+	}
+	if limit <= 0 {
+		limit = 12
+	}
+	if limit > 60 {
+		limit = 60
+	}
+
+	query := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', paid_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(amount), 0)
+		FROM commissions
+		WHERE status = 'paid'
+		GROUP BY date_trunc('%s', paid_at)
+		ORDER BY d ASC
+		LIMIT $1`, trunc, trunc)
+
+	rows, err := s.db.Query(ctx, query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("komisyon serisi okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	points := make([]RevenuePoint, 0)
+	for rows.Next() {
+		var p RevenuePoint
+		if err := rows.Scan(&p.Date, &p.Revenue); err != nil {
+			return nil, fmt.Errorf("komisyon satırı okunamadı: %w", err)
+		}
+		points = append(points, p)
+	}
+	return points, rows.Err()
+}
+
+// RankDistribution üyelerin kariyer (rütbe) dağılımını döndürür.
+type RankDist struct {
+	RankName string `json:"rank_name"`
+	Count    int64  `json:"count"`
+}
+
+func (s *AdminStatsService) RankDistribution(ctx context.Context) ([]RankDist, error) {
+	rows, err := s.db.Query(ctx, `
+		SELECT COALESCE(r.name, 'Ranksız') AS name, COUNT(u.id) AS cnt
+		FROM users u
+		LEFT JOIN ranks r ON r.id = u.current_rank_id
+		GROUP BY r.name
+		ORDER BY cnt DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("kariyer dağılımı okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	dist := make([]RankDist, 0)
+	for rows.Next() {
+		var d RankDist
+		if err := rows.Scan(&d.RankName, &d.Count); err != nil {
+			return nil, fmt.Errorf("kariyer satırı okunamadı: %w", err)
+		}
+		dist = append(dist, d)
+	}
+	return dist, rows.Err()
+}
+
+// TopProduct en çok satan ürün/paket katkısını temsil eder.
+type TopProduct struct {
+	Name    string  `json:"name"`
+	Qty     int64   `json:"quantity"`
+	Revenue float64 `json:"revenue"`
+}
+
+// TopProducts iptal edilmemiş sipariş kalemlerinden en çok satan ürünleri döndürür.
+func (s *AdminStatsService) TopProducts(ctx context.Context, limit int) ([]TopProduct, error) {
+	if limit <= 0 {
+		limit = 5
+	}
+	rows, err := s.db.Query(ctx, `
+		SELECT p.name, COALESCE(SUM(oi.quantity), 0) AS qty,
+		       COALESCE(SUM(oi.price * oi.quantity), 0) AS revenue
+		FROM order_items oi
+		JOIN products p ON p.id = oi.product_id
+		JOIN orders o ON o.id = oi.order_id
+		WHERE o.status != 'cancelled'
+		GROUP BY p.name
+		ORDER BY revenue DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("en çok satan ürünler okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]TopProduct, 0)
+	for rows.Next() {
+		var t TopProduct
+		if err := rows.Scan(&t.Name, &t.Qty, &t.Revenue); err != nil {
+			return nil, fmt.Errorf("ürün satırı okunamadı: %w", err)
+		}
+		items = append(items, t)
+	}
+	return items, rows.Err()
+}
+
+// FraudDuplicate çoklu hesap şüphesi grubunu temsil eder.
+type FraudDuplicate struct {
+	Field    string `json:"field"`
+	Value    string `json:"value"`
+	Count    int64  `json:"count"`
+	Accounts []int64 `json:"accounts"`
+}
+
+// FraudDuplicates aynı telefon/IBAN/TC ile açılmış hesap gruplarını döndürür.
+func (s *AdminStatsService) FraudDuplicates(ctx context.Context, limit int) ([]FraudDuplicate, error) {
+	if limit <= 0 {
+		limit = 8
+	}
+	groups := make([]FraudDuplicate, 0, limit)
+
+	// Telefon
+	rows, err := s.db.Query(ctx, `
+		SELECT phone, COUNT(*) AS c, ARRAY_AGG(id) AS ids
+		FROM users
+		WHERE phone IS NOT NULL AND phone <> ''
+		GROUP BY phone
+		HAVING COUNT(*) > 1
+		ORDER BY c DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("telefon tekrarı okunamadı: %w", err)
+	}
+	for rows.Next() {
+		var g FraudDuplicate
+		var ids []int64
+		if err := rows.Scan(&g.Value, &g.Count, &ids); err != nil {
+			rows.Close()
+			return nil, fmt.Errorf("telefon satırı okunamadı: %w", err)
+		}
+		g.Field = "phone"
+		g.Accounts = ids
+		groups = append(groups, g)
+	}
+	rows.Close()
+
+	// IBAN
+	rows, err = s.db.Query(ctx, `
+		SELECT ba.iban, COUNT(*) AS c, ARRAY_AGG(u.id) AS ids
+		FROM bank_accounts ba
+		JOIN users u ON u.id = ba.user_id
+		GROUP BY ba.iban
+		HAVING COUNT(*) > 1
+		ORDER BY c DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("IBAN tekrarı okunamadı: %w", err)
+	}
+	for rows.Next() {
+		var g FraudDuplicate
+		var ids []int64
+		if err := rows.Scan(&g.Value, &g.Count, &ids); err != nil {
+			rows.Close()
+			return nil, fmt.Errorf("IBAN satırı okunamadı: %w", err)
+		}
+		g.Field = "iban"
+		g.Accounts = ids
+		groups = append(groups, g)
+	}
+	rows.Close()
+
+	// TC Kimlik (profile JSONB)
+	rows, err = s.db.Query(ctx, `
+		SELECT u.profile->>'tc' AS tc, COUNT(*) AS c, ARRAY_AGG(u.id) AS ids
+		FROM users u
+		WHERE u.profile->>'tc' IS NOT NULL AND u.profile->>'tc' <> ''
+		GROUP BY u.profile->>'tc'
+		HAVING COUNT(*) > 1
+		ORDER BY c DESC
+		LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("TC tekrarı okunamadı: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var g FraudDuplicate
+		var ids []int64
+		if err := rows.Scan(&g.Value, &g.Count, &ids); err != nil {
+			return nil, fmt.Errorf("TC satırı okunamadı: %w", err)
+		}
+		g.Field = "tc"
+		g.Accounts = ids
+		groups = append(groups, g)
+	}
+
+	if len(groups) > limit {
+		groups = groups[:limit]
+	}
+	return groups, rows.Err()
+}
+
 // FraudMatch multi-hesap taramasında bulunan bir eşleşmeyi temsil eder.
 type FraudMatch struct {
 	UserID       int64  `json:"user_id"`
@@ -278,4 +545,45 @@ func (s *AdminStatsService) FraudScan(ctx context.Context, field, value string) 
 		matches[i].Count = n
 	}
 	return matches, nil
+}
+
+// FinancialSummary sistem bilançosu ve cross-check özetini döndürür.
+func (s *AdminStatsService) FinancialSummary(ctx context.Context) (map[string]any, error) {
+	var totalRevenue, totalCommissions, totalWalletBalance, totalEarned float64
+	var totalUsers, activeUsers int64
+
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(total_amount),0) FROM orders WHERE status IN ('paid','shipped','preparing')`).Scan(&totalRevenue); err != nil {
+		return nil, fmt.Errorf("ciro okunamadı: %w", err)
+	}
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount),0) FROM commissions WHERE status = 'paid'`).Scan(&totalCommissions); err != nil {
+		return nil, fmt.Errorf("komisyonlar okunamadı: %w", err)
+	}
+	if err := s.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(balance),0), COALESCE(SUM(total_earned),0) FROM wallets`).Scan(&totalWalletBalance, &totalEarned); err != nil {
+		return nil, fmt.Errorf("cüzdanlar okunamadı: %w", err)
+	}
+	if err := s.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&totalUsers); err != nil {
+		return nil, fmt.Errorf("üye sayısı okunamadı: %w", err)
+	}
+	if err := s.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE is_active = true`).Scan(&activeUsers); err != nil {
+		return nil, fmt.Errorf("aktif üye sayısı okunamadı: %w", err)
+	}
+
+	payoutRatio := 0.0
+	if totalRevenue > 0 {
+		payoutRatio = round2(totalCommissions / totalRevenue * 100)
+	}
+
+	return map[string]any{
+		"total_revenue":       round2(totalRevenue),
+		"total_commissions":   round2(totalCommissions),
+		"total_wallet_balance": round2(totalWalletBalance),
+		"total_earned":        round2(totalEarned),
+		"net_profit":          round2(totalRevenue - totalCommissions),
+		"payout_ratio":        payoutRatio,
+		"total_users":         totalUsers,
+		"active_users":        activeUsers,
+	}, nil
 }

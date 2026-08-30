@@ -22,10 +22,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   // HttpOnly cookie'deki oturumu sunucudan geri yükle.
+  // /user/me/status herkese açık ve 401 fırlatmaz → konsol 401 hatası üretilmez.
   useEffect(() => {
     apiService
-      .getMe()
-      .then(setUser)
+      .getSessionStatus()
+      .then((d) => setUser(d.authenticated ? d.user : null))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);

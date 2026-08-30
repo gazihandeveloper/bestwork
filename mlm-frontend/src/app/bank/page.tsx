@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Landmark, Pencil, Trash2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
 import EmptyState from "@/components/EmptyState";
@@ -139,7 +139,7 @@ function BankContent() {
           <div className="border-border bg-card rounded border p-4">
             <h2 className="mb-2.5 text-lg font-bold">Hesaplarım ({accounts.length})</h2>
             {accounts.length === 0 && (
-              <EmptyState icon={<Landmark size={48} />} message="Henüz banka hesabı eklemediniz." />
+              <EmptyState icon={<MaterialIcon name="account_balance" size={48} />} message="Henüz banka hesabı eklemediniz." />
             )}
             {accounts.map((a) => (
               <div
@@ -167,14 +167,14 @@ function BankContent() {
                     onClick={() => openEdit(a)}
                     className="text-primary hover:bg-primary/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
                   >
-                    <Pencil className="size-4" />
+                    <MaterialIcon name="Pencil" className="size-4" />
                   </button>
                   <button
                     aria-label="sil"
                     onClick={() => onDelete(a.id)}
                     className="text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
                   >
-                    <Trash2 className="size-4" />
+                    <MaterialIcon name="Trash2" className="size-4" />
                   </button>
                 </div>
               </div>

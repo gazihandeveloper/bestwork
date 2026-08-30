@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { listSponsored, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
@@ -23,7 +23,7 @@ function SponsoredContent() {
   if (loading) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }

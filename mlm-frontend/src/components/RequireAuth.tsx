@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -26,7 +26,7 @@ export default function RequireAuth({ children, adminOnly = false }: { children:
   if (loading) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="size-10 animate-spin text-primary" />
+        <MaterialIcon name="Loader2" className="size-10 animate-spin text-primary" />
       </div>
     );
   }

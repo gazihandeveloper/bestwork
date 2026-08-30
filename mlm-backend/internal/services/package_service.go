@@ -27,7 +27,7 @@ type DBTX interface {
 // GetAllPackages tüm paketleri required_pv'ye göre artan sırada döndürür.
 func GetAllPackages(ctx context.Context, q DBTX) ([]models.Package, error) {
 	rows, err := q.Query(ctx, `SELECT id, name, price, referral_bonus_rate, binary_bonus_rate,
-		matching_bonus_rate, discount_rate, required_pv, created_at
+		matching_bonus_rate, discount_rate, required_pv, cv, created_at
 		FROM packages ORDER BY required_pv ASC`)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func GetAllPackages(ctx context.Context, q DBTX) ([]models.Package, error) {
 	for rows.Next() {
 		var p models.Package
 		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.ReferralBonusRate, &p.BinaryBonusRate,
-			&p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CreatedAt); err != nil {
+			&p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CV, &p.CreatedAt); err != nil {
 			return nil, err
 		}
 		packages = append(packages, p)
@@ -102,11 +102,11 @@ func NewPackageService(db *pgxpool.Pool) *PackageService {
 	return &PackageService{db: db}
 }
 
-const packageColumns = `id, name, price, referral_bonus_rate, binary_bonus_rate, matching_bonus_rate, discount_rate, required_pv, created_at`
+const packageColumns = `id, name, price, referral_bonus_rate, binary_bonus_rate, matching_bonus_rate, discount_rate, required_pv, cv, created_at`
 
 // CreatePackage yeni paket ekler.
-func (s *PackageService) CreatePackage(ctx context.Context, name string, price, refRate, binRate, matchRate, discRate float64, requiredPV int64) (*models.Package, error) {
-	if name == "" || price <= 0 || requiredPV < 0 || !validRate(refRate) || !validRate(binRate) || !validRate(matchRate) || !validRate(discRate) {
+func (s *PackageService) CreatePackage(ctx context.Context, name string, price, refRate, binRate, matchRate, discRate float64, requiredPV, cv int64) (*models.Package, error) {
+	if name == "" || price <= 0 || requiredPV < 0 || cv < 0 || !validRate(refRate) || !validRate(binRate) || !validRate(matchRate) || !validRate(discRate) {
 		return nil, errors.New("geçersiz paket bilgileri")
 	}
 
@@ -118,11 +118,12 @@ func (s *PackageService) CreatePackage(ctx context.Context, name string, price, 
 		MatchingBonusRate: matchRate,
 		DiscountRate:      discRate,
 		RequiredPV:        requiredPV,
+		CV:                cv,
 	}
 	err := s.db.QueryRow(ctx,
-		`INSERT INTO packages (name, price, referral_bonus_rate, binary_bonus_rate, matching_bonus_rate, discount_rate, required_pv)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
-		p.Name, p.Price, p.ReferralBonusRate, p.BinaryBonusRate, p.MatchingBonusRate, p.DiscountRate, p.RequiredPV).
+		`INSERT INTO packages (name, price, referral_bonus_rate, binary_bonus_rate, matching_bonus_rate, discount_rate, required_pv, cv)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at`,
+		p.Name, p.Price, p.ReferralBonusRate, p.BinaryBonusRate, p.MatchingBonusRate, p.DiscountRate, p.RequiredPV, p.CV).
 		Scan(&p.ID, &p.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("paket eklenemedi: %w", err)
@@ -134,7 +135,7 @@ func (s *PackageService) CreatePackage(ctx context.Context, name string, price, 
 func (s *PackageService) GetPackageByID(ctx context.Context, id int) (*models.Package, error) {
 	var p models.Package
 	err := s.db.QueryRow(ctx, `SELECT `+packageColumns+` FROM packages WHERE id = $1`, id).
-		Scan(&p.ID, &p.Name, &p.Price, &p.ReferralBonusRate, &p.BinaryBonusRate, &p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CreatedAt)
+		Scan(&p.ID, &p.Name, &p.Price, &p.ReferralBonusRate, &p.BinaryBonusRate, &p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CV, &p.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrPackageNotFound
@@ -155,7 +156,7 @@ func (s *PackageService) ListPackages(ctx context.Context) ([]models.Package, er
 	packages := make([]models.Package, 0)
 	for rows.Next() {
 		var p models.Package
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.ReferralBonusRate, &p.BinaryBonusRate, &p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.ReferralBonusRate, &p.BinaryBonusRate, &p.MatchingBonusRate, &p.DiscountRate, &p.RequiredPV, &p.CV, &p.CreatedAt); err != nil {
 			return nil, fmt.Errorf("paket okunamadı: %w", err)
 		}
 		packages = append(packages, p)
@@ -165,13 +166,13 @@ func (s *PackageService) ListPackages(ctx context.Context) ([]models.Package, er
 
 // UpdatePackage paketin tüm değişebilir alanlarını günceller.
 func (s *PackageService) UpdatePackage(ctx context.Context, p *models.Package) error {
-	if p.Name == "" || p.Price <= 0 || p.RequiredPV < 0 || !validRate(p.ReferralBonusRate) || !validRate(p.BinaryBonusRate) || !validRate(p.MatchingBonusRate) || !validRate(p.DiscountRate) {
+	if p.Name == "" || p.Price <= 0 || p.RequiredPV < 0 || p.CV < 0 || !validRate(p.ReferralBonusRate) || !validRate(p.BinaryBonusRate) || !validRate(p.MatchingBonusRate) || !validRate(p.DiscountRate) {
 		return errors.New("geçersiz paket bilgileri")
 	}
 	tag, err := s.db.Exec(ctx,
 		`UPDATE packages SET name = $1, price = $2, referral_bonus_rate = $3, binary_bonus_rate = $4,
-			matching_bonus_rate = $5, discount_rate = $6, required_pv = $7 WHERE id = $8`,
-		p.Name, p.Price, p.ReferralBonusRate, p.BinaryBonusRate, p.MatchingBonusRate, p.DiscountRate, p.RequiredPV, p.ID)
+			matching_bonus_rate = $5, discount_rate = $6, required_pv = $7, cv = $8 WHERE id = $9`,
+		p.Name, p.Price, p.ReferralBonusRate, p.BinaryBonusRate, p.MatchingBonusRate, p.DiscountRate, p.RequiredPV, p.CV, p.ID)
 	if err != nil {
 		return fmt.Errorf("paket güncellenemedi: %w", err)
 	}

@@ -8,48 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"mlm-backend/internal/auth"
 	"mlm-backend/internal/services"
 )
 
 // UserHandler kullanıcı endpoint'lerini yönetir.
 type UserHandler struct {
 	users *services.UserService
-	kyc   *services.KYCService
 }
 
 // NewUserHandler yeni bir UserHandler örneği döndürür.
-func NewUserHandler(users *services.UserService, kyc *services.KYCService) *UserHandler {
-	return &UserHandler{users: users, kyc: kyc}
-}
-
-// SubmitKYC üyenin yeni bir KYC belgesi göndermesini sağlar.
-// Dosya önce POST /upload ile yüklenir; buraya dönen yol gönderilir.
-func (h *UserHandler) SubmitKYC(c *gin.Context) {
-	userID := c.GetInt64("user_id")
-	var req struct {
-		DocumentType string `json:"document_type" binding:"required"`
-		FilePath     string `json:"file_path" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
-		return
-	}
-	if err := h.kyc.Submit(c.Request.Context(), userID, req.DocumentType, req.FilePath); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "KYC belgesi alındı, inceleme bekleniyor"})
-}
-
-// ListMyKYC üyenin kendi KYC belgelerini ve durumlarını döndürür.
-func (h *UserHandler) ListMyKYC(c *gin.Context) {
-	docs, err := h.kyc.ListByUser(c.Request.Context(), c.GetInt64("user_id"))
-	if err != nil {
-		log.WithError(err).Error("KYC belgeleri listelenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "KYC belgeleri listelenemedi"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"kyc": docs})
+func NewUserHandler(users *services.UserService) *UserHandler {
+	return &UserHandler{users: users}
 }
 
 // Me JWT'den alınan user_id ile kullanıcının bilgilerini döndürür.
@@ -67,6 +37,37 @@ func (h *UserHandler) Me(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+// Status herkese açık oturum kontrolüdür: geçerli oturum varsa {authenticated:true,user},
+// yoksa/geçersizse 200 {authenticated:false,user:null} döner — 401 fırlatmaz.
+// (Herkese açık sayfalarda getMe'nin 401 konsol hatası üretmemesi için.)
+func (h *UserHandler) Status(c *gin.Context) {
+	tokenString := ""
+	if header := c.GetHeader("Authorization"); strings.HasPrefix(header, "Bearer ") {
+		tokenString = strings.TrimPrefix(header, "Bearer ")
+	} else if cookieToken, err := c.Cookie("mlm_session"); err == nil && cookieToken != "" {
+		tokenString = cookieToken
+	}
+
+	if tokenString == "" {
+		c.JSON(http.StatusOK, gin.H{"authenticated": false, "user": nil})
+		return
+	}
+
+	claims, err := auth.ParseToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"authenticated": false, "user": nil})
+		return
+	}
+
+	user, err := h.users.GetUserByID(c.Request.Context(), claims.UserID)
+	if err != nil || !user.IsActive {
+		c.JSON(http.StatusOK, gin.H{"authenticated": false, "user": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"authenticated": true, "user": user})
 }
 
 // LookupByCode üye kodundan kullanıcının temel bilgilerini döndürür (ağaçta arama/navigasyon için).

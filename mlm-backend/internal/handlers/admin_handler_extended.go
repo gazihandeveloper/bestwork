@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"mlm-backend/internal/database"
 	"mlm-backend/internal/services"
 )
 
@@ -314,47 +314,6 @@ func (h *AdminHandler) SetFlashout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Flashout kuralları güncellendi"})
 }
 
-// ListKYC KYC belgelerini sayfalı döndürür (admin).
-func (h *AdminHandler) ListKYC(c *gin.Context) {
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	docs, total, err := h.kyc.List(c.Request.Context(), c.Query("status"), limit, offset)
-	if err != nil {
-		log.WithError(err).Error("KYC kayıtları listelenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "KYC kayıtları listelenemedi"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"kyc": docs, "total": total, "limit": limit, "offset": offset})
-}
-
-// SetKYCStatus KYC belgesini onaylar veya reddeder (admin, denetim loglu).
-// Durum body'den okunur; body yoksa URL'den (/approve|/reject) türetilir.
-func (h *AdminHandler) SetKYCStatus(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz belge ID"})
-		return
-	}
-	var req struct {
-		Status string `json:"status"`
-		Note   string `json:"note"`
-	}
-	_ = c.ShouldBindJSON(&req) // body opsiyonel
-	status := req.Status
-	if status == "" {
-		if strings.HasSuffix(c.Request.URL.Path, "/approve") {
-			status = "approved"
-		} else {
-			status = "rejected"
-		}
-	}
-	if err := h.kyc.SetStatus(c.Request.Context(), c.GetInt64("user_id"), "", id, status, req.Note); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "KYC durumu güncellendi"})
-}
-
 // FraudScan multi-hesap taraması yapar (admin).
 func (h *AdminHandler) FraudScan(c *gin.Context) {
 	var req struct {
@@ -391,6 +350,17 @@ func (h *AdminHandler) FlashoutLogs(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"logs": logs, "total": total, "limit": limit, "offset": offset})
+}
+
+// Revenue dönem bazlı ciro serisini döndürür (admin).
+func (h *AdminHandler) Revenue(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "12"))
+	points, err := h.stats.RevenueByPeriod(c.Request.Context(), c.Query("period"), limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"points": points})
 }
 
 // AdjustPVAndCV üyenin birikmiş PV/CV'sini manuel düzeltir (super admin).
@@ -476,4 +446,194 @@ func (h *AdminHandler) ListJobs(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"jobs": jobs})
+}
+
+// CommissionSeries dönem bazlı ödenmiş komisyon serisini döndürür (admin).
+func (h *AdminHandler) CommissionSeries(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "12"))
+	points, err := h.stats.CommissionSeries(c.Request.Context(), c.Query("period"), limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"points": points})
+}
+
+// RankDistribution kariyer dağılımını döndürür (admin).
+func (h *AdminHandler) RankDistribution(c *gin.Context) {
+	dist, err := h.stats.RankDistribution(c.Request.Context())
+	if err != nil {
+		log.WithError(err).Error("Kariyer dağılımı okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kariyer dağılımı okunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"distribution": dist})
+}
+
+// RecomputeCareers tüm üyelerin kariyerlerini (rütbelerini) yeniden hesaplar (admin).
+// Kariyer motorunu manuel tetiklemek için kullanılır; aylık kapanışta otomatik çalışır.
+func (h *AdminHandler) RecomputeCareers(c *gin.Context) {
+	tx, err := database.GetDB().Begin(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "İşlem başlatılamadı"})
+		return
+	}
+	defer tx.Rollback(c.Request.Context())
+
+	processed, err := services.RecomputeAllCareers(c.Request.Context(), tx)
+	if err != nil {
+		log.WithError(err).Error("Kariyerler yeniden hesaplanamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kariyerler yeniden hesaplanamadı"})
+		return
+	}
+	if err := tx.Commit(c.Request.Context()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kariyer hesaplama commit edilemedi"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Kariyerler yeniden hesaplandı", "processed": processed})
+}
+
+// TopProducts en çok satan ürünleri döndürür (admin).
+func (h *AdminHandler) TopProducts(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
+	items, err := h.stats.TopProducts(c.Request.Context(), limit)
+	if err != nil {
+		log.WithError(err).Error("En çok satan ürünler okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "En çok satan ürünler okunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"products": items})
+}
+
+// FraudDuplicates çoklu hesap şüphesi gruplarını döndürür (admin).
+func (h *AdminHandler) FraudDuplicates(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "8"))
+	groups, err := h.stats.FraudDuplicates(c.Request.Context(), limit)
+	if err != nil {
+		log.WithError(err).Error("Çoklu hesap grupları okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Çoklu hesap grupları okunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"groups": groups})
+}
+
+// UpdateUserStatus üyeyi dondurur veya aktifleştirir (admin, denetim loglu).
+func (h *AdminHandler) UpdateUserStatus(c *gin.Context) {
+	adminID := c.GetInt64("user_id")
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz üye ID"})
+		return
+	}
+	var req struct {
+		IsActive bool   `json:"is_active"`
+		Reason   string `json:"reason"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		return
+	}
+	if err := h.users.UpdateUserStatus(c.Request.Context(), userID, req.IsActive); err != nil {
+		switch {
+		case errors.Is(err, services.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			log.WithError(err).Error("Üye durumu güncellenemedi")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	action := "user_freeze"
+	if req.IsActive {
+		action = "user_activate"
+	}
+	if err := h.audit.Log(c.Request.Context(), adminID, action, "user", &userID, req.Reason, nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (üye durumu)")
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Üye durumu güncellendi"})
+}
+
+// FinancialSummary sistem bilançosu ve cross-check özetini döndürür (admin).
+func (h *AdminHandler) FinancialSummary(c *gin.Context) {
+	summary, err := h.stats.FinancialSummary(c.Request.Context())
+	if err != nil {
+		log.WithError(err).Error("Finansal özet okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Finansal özet okunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"summary": summary})
+}
+
+// TransferWallet iki üye arasında bakiye transferi yapar (admin, denetim loglu).
+func (h *AdminHandler) TransferWallet(c *gin.Context) {
+	adminID := c.GetInt64("user_id")
+	var req struct {
+		FromUserID int64   `json:"from_user_id" binding:"required"`
+		ToUserID   int64   `json:"to_user_id" binding:"required"`
+		Amount     float64 `json:"amount" binding:"required,gt=0"`
+		Reason     string  `json:"reason"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		return
+	}
+	if err := h.wallets.TransferWallet(c.Request.Context(), adminID, "", req.FromUserID, req.ToUserID, req.Amount, req.Reason); err != nil {
+		switch {
+		case errors.Is(err, services.ErrWalletNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrInsufficientBalance):
+			c.JSON(http.StatusConflict, gin.H{"error": "Gönderenin yeterli bakiyesi yok"})
+		default:
+			log.WithError(err).Error("Bakiye transferi başarısız")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Transfer tamamlandı"})
+}
+
+// ListTransfers iç transfer hareketlerini döndürür (admin).
+func (h *AdminHandler) ListTransfers(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	items, total, err := h.wallets.ListTransfers(c.Request.Context(), limit, offset)
+	if err != nil {
+		log.WithError(err).Error("Transferler listelenemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Transferler listelenemedi"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"transfers": items, "total": total})
+}
+
+// UpdateUserRole üyenin rolünü değiştirir (süper admin, denetim loglu).
+func (h *AdminHandler) UpdateUserRole(c *gin.Context) {
+	adminID := c.GetInt64("user_id")
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz üye ID"})
+		return
+	}
+	var req struct {
+		Role   string `json:"role" binding:"required"`
+		Reason string `json:"reason"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		return
+	}
+	if err := h.users.UpdateUserRole(c.Request.Context(), userID, req.Role); err != nil {
+		switch {
+		case errors.Is(err, services.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			log.WithError(err).Error("Üye rolü güncellenemedi")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	if err := h.audit.Log(c.Request.Context(), adminID, "user_role_change", "user", &userID, req.Reason, nil); err != nil {
+		log.WithError(err).Warn("Denetim kaydı yazılamadı (rol değişimi)")
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Rol güncellendi"})
 }

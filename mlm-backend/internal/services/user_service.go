@@ -645,3 +645,33 @@ func (s *UserService) AdjustPVAndCV(ctx context.Context, adminID int64, adminNam
 		Info("PV/CV manuel düzeltildi")
 	return nil
 }
+
+// UpdateUserStatus üyenin aktiflik durumunu değiştirir (dondur/aktifleştir).
+func (s *UserService) UpdateUserStatus(ctx context.Context, userID int64, isActive bool) error {
+	tag, err := s.db.Exec(ctx, `UPDATE users SET is_active = $1, updated_at = NOW() WHERE id = $2`, isActive, userID)
+	if err != nil {
+		return fmt.Errorf("üye durumu güncellenemedi: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+// UpdateUserRole üyenin rolünü değiştirir (yalnızca süper admin; denetim loglanır).
+func (s *UserService) UpdateUserRole(ctx context.Context, userID int64, role string) error {
+	role = strings.ToLower(strings.TrimSpace(role))
+	switch role {
+	case "super_admin", "admin", "user", "customer":
+	default:
+		return fmt.Errorf("geçersiz rol: %s", role)
+	}
+	tag, err := s.db.Exec(ctx, `UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2`, role, userID)
+	if err != nil {
+		return fmt.Errorf("üye rolü güncellenemedi: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}

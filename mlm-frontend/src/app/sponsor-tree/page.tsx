@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Users, ShoppingBag, Shield } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { listSponsored, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 
 function roleMeta(role: string): { label: string; badge: string; icon: React.ReactNode } {
   if (role === "admin" || role === "super_admin")
-    return { label: "Admin", badge: "border-amber-500/60 text-amber-600", icon: <Shield className="size-3.5" /> };
+    return { label: "Admin", badge: "border-amber-500/60 text-amber-600", icon: <MaterialIcon name="Shield" className="size-3.5" /> };
   if (role === "customer")
-    return { label: "Müşteri", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <ShoppingBag className="size-3.5" /> };
-  return { label: "Üye", badge: "border-[#0288D1]/50 text-[#0277BD]", icon: <Users className="size-3.5" /> };
+    return { label: "Müşteri", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <MaterialIcon name="ShoppingBag" className="size-3.5" /> };
+  return { label: "Üye", badge: "border-[#0288D1]/50 text-[#0277BD]", icon: <MaterialIcon name="Users" className="size-3.5" /> };
 }
 
 // Sponsor ve ekip listesi — tek sorgu (hızlı, 524 zaman aşımı yok).
@@ -44,7 +44,7 @@ function SponsorTreeContent() {
 
       {loading ? (
         <div className="flex justify-center py-10">
-          <Loader2 className="text-primary size-10 animate-spin" />
+          <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
         </div>
       ) : users.length === 0 ? (
         <div className="border-border bg-card rounded border p-4">

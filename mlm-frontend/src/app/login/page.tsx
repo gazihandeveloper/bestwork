@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ function LoginContent() {
           <Button type="submit" size="lg" disabled={submitting} className="mt-1 w-full">
             {submitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <MaterialIcon name="Loader2" className="size-4 animate-spin" />
                 Giriş yapılıyor...
               </>
             ) : (

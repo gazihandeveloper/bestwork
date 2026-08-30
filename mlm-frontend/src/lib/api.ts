@@ -30,7 +30,8 @@ api.interceptors.response.use(
     if (error?.response?.status === 401 && typeof window !== "undefined") {
       const path = pathUnderBase(window.location.pathname);
       // Herkese açık sayfalar: oturum yokluğunda yönlendirme yapma.
-      const publicPaths = ["/", "/login", "/register", "/shop"];
+      // /product ürün detayı da herkese açıktır (mağaza vitrini); satın alma login ister.
+      const publicPaths = ["/", "/login", "/register", "/shop", "/product"];
       const isPublicPage = publicPaths.some(
         (p) => path === p || path.startsWith(p + "/")
       );

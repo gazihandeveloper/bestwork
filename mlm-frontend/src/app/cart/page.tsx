@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
@@ -132,7 +132,7 @@ function CartContent() {
           className="text-muted-foreground hover:bg-accent rounded px-2"
           aria-label="Alışverişe dön"
         >
-          <ArrowLeft className="size-4" />
+          <MaterialIcon name="ArrowLeft" className="size-4" />
         </Button>
         <div>
           <h1 className="text-primary-dark text-2xl font-extrabold">
@@ -152,7 +152,7 @@ function CartContent() {
 
       {items.length === 0 ? (
         <div className="border-border bg-card rounded border py-16 text-center">
-          <ShoppingBag className="text-muted-foreground mx-auto mb-3 size-14" />
+          <MaterialIcon name="ShoppingBag" className="text-muted-foreground mx-auto mb-3 size-14" />
           <p className="text-muted-foreground mb-3">Sepetiniz boş.</p>
           <Button variant="outline" onClick={() => router.push("/shop")}>
             Alışverişe Başla
@@ -232,7 +232,7 @@ function CartContent() {
                         className="block h-full w-full object-cover"
                       />
                     ) : (
-                      <ShoppingBag className="text-primary-dark" />
+                      <MaterialIcon name="ShoppingBag" className="text-primary-dark" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ function CartContent() {
                       onClick={() => setItems(decrementCart(c.product.id))}
                       className="text-primary hover:bg-accent flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
                     >
-                      <Minus className="size-4" />
+                      <MaterialIcon name="Minus" className="size-4" />
                     </button>
                     <span className="min-w-5 text-center text-sm font-bold">{c.quantity}</span>
                     <button
@@ -268,7 +268,7 @@ function CartContent() {
                       disabled={c.quantity >= c.product.stock}
                       className="text-primary hover:bg-accent flex size-8 cursor-pointer items-center justify-center rounded transition-colors disabled:pointer-events-none disabled:opacity-40"
                     >
-                      <Plus className="size-4" />
+                      <MaterialIcon name="Plus" className="size-4" />
                     </button>
                   </div>
                 </div>
@@ -315,7 +315,7 @@ function CartContent() {
       {successOrder !== null && (
         <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
           <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded px-5 py-3 text-sm font-semibold">
-            <Check className="size-5 shrink-0" />
+            <MaterialIcon name="Check" className="size-5 shrink-0" />
             <span className="flex-1 truncate">Sipariş #{successOrder} oluşturuldu (beklemede).</span>
             <Link href="/payment-notifications" className="font-bold underline underline-offset-2">
               Ödeme Bildirimi Yap

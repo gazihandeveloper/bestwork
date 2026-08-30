@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { cn } from "@/lib/utils";
 
 const Sheet = DialogPrimitive.Root;
@@ -66,7 +66,7 @@ function SheetCloseButton() {
       aria-label="Kapat"
       className="text-muted-foreground hover:text-foreground flex size-9 cursor-pointer items-center justify-center rounded transition-colors hover:bg-accent"
     >
-      <X className="size-5" />
+      <MaterialIcon name="X" className="size-5" />
     </DialogPrimitive.Close>
   );
 }

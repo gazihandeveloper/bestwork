@@ -2,20 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  User,
-  Landmark,
-  Users,
-  Lock,
-  Receipt,
-  Medal,
-  Network,
-  ShoppingCart,
-  Package,
-  Home,
-  Mail,
-  ChevronDown,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -35,43 +22,43 @@ interface MenuGroup {
 const groups: MenuGroup[] = [
   {
     title: "Kişisel",
-    icon: <User />,
+    icon: <MaterialIcon name="person" className="size-4" />,
     items: [
-      { path: "/profile", label: "Üyelik Bilgilerim", icon: <User /> },
-      { path: "/beneficiary", label: "Varis Bilgileri", icon: <Users /> },
-      { path: "/bank", label: "Banka Bilgilerim", icon: <Landmark /> },
-      { path: "/sponsored", label: "Sponsor Olduklarım", icon: <Users /> },
-      { path: "/change-password", label: "Şifre Değiştir", icon: <Lock /> },
+      { path: "/profile", label: "Üyelik Bilgilerim", icon: <MaterialIcon name="person" className="size-4" /> },
+      { path: "/beneficiary", label: "Varis Bilgileri", icon: <MaterialIcon name="Users" className="size-4" /> },
+      { path: "/bank", label: "Banka Bilgilerim", icon: <MaterialIcon name="account_balance" className="size-4" /> },
+      { path: "/sponsored", label: "Sponsor Olduklarım", icon: <MaterialIcon name="Users" className="size-4" /> },
+      { path: "/change-password", label: "Şifre Değiştir", icon: <MaterialIcon name="Lock" className="size-4" /> },
     ],
   },
   {
     title: "Prim",
-    icon: <Receipt />,
+    icon: <MaterialIcon name="Receipt" className="size-4" />,
     items: [
-      { path: "/commissions", label: "Prim Detayları", icon: <Receipt /> },
-      { path: "/leadership-bonus", label: "Liderlik Primi", icon: <Medal /> },
-      { path: "/binary-transactions", label: "Binary Hareketleri", icon: <Network /> },
-      { path: "/career", label: "Kariyer Takibi", icon: <Medal /> },
-      { path: "/tree", label: "Binary Ağacı", icon: <Network /> },
-      { path: "/sponsor-tree", label: "Referans ve Ekip Ağacı", icon: <Users /> },
-      { path: "/pending", label: "Yerleşim Bekleyenler", icon: <Users /> },
+      { path: "/commissions", label: "Prim Detayları", icon: <MaterialIcon name="Receipt" className="size-4" /> },
+      { path: "/leadership-bonus", label: "Liderlik Primi", icon: <MaterialIcon name="military_tech" className="size-4" /> },
+      { path: "/binary-transactions", label: "Binary Hareketleri", icon: <MaterialIcon name="Network" className="size-4" /> },
+      { path: "/career", label: "Kariyer Takibi", icon: <MaterialIcon name="military_tech" className="size-4" /> },
+      { path: "/tree", label: "Binary Ağacı", icon: <MaterialIcon name="Network" className="size-4" /> },
+      { path: "/sponsor-tree", label: "Referans ve Ekip Ağacı", icon: <MaterialIcon name="Users" className="size-4" /> },
+      { path: "/pending", label: "Yerleşim Bekleyenler", icon: <MaterialIcon name="Users" className="size-4" /> },
     ],
   },
   {
     title: "İşlemlerim",
-    icon: <ShoppingCart />,
+    icon: <MaterialIcon name="ShoppingCart" className="size-4" />,
     items: [
-      { path: "/shop", label: "Alışveriş", icon: <ShoppingCart /> },
-      { path: "/orders", label: "Siparişlerim", icon: <Package /> },
-      { path: "/payment-notifications", label: "EFT/HAVALE Bildirimleri", icon: <Landmark /> },
-      { path: "/retail-earnings", label: "Müşteri Kazancı", icon: <Receipt /> },
-      { path: "/opportunities", label: "İş Fırsatları", icon: <Medal /> },
+      { path: "/shop", label: "Alışveriş", icon: <MaterialIcon name="ShoppingCart" className="size-4" /> },
+      { path: "/orders", label: "Siparişlerim", icon: <MaterialIcon name="Package" className="size-4" /> },
+      { path: "/payment-notifications", label: "EFT/HAVALE Bildirimleri", icon: <MaterialIcon name="account_balance" className="size-4" /> },
+      { path: "/retail-earnings", label: "Müşteri Kazancı", icon: <MaterialIcon name="Receipt" className="size-4" /> },
+      { path: "/opportunities", label: "İş Fırsatları", icon: <MaterialIcon name="military_tech" className="size-4" /> },
     ],
   },
   {
     title: "İletişim",
-    icon: <Mail />,
-    items: [{ path: "/contact", label: "Destek / İletişim", icon: <Mail /> }],
+    icon: <MaterialIcon name="Mail" className="size-4" />,
+    items: [{ path: "/contact", label: "Destek / İletişim", icon: <MaterialIcon name="Mail" className="size-4" /> }],
   },
 ];
 
@@ -165,7 +152,7 @@ export default function BackofficeMenu() {
                 : "text-foreground hover:bg-accent"
             )}
           >
-            <Home />
+            <MaterialIcon name="Home" className="size-4" />
             Anasayfa
           </button>
 
@@ -188,7 +175,8 @@ export default function BackofficeMenu() {
                 >
                   {g.icon}
                   {g.title}
-                  <ChevronDown
+                  <MaterialIcon
+                    name="ChevronDown"
                     className={cn("transition-transform duration-200", open && "rotate-180")}
                   />
                 </button>

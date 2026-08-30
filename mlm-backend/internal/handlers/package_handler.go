@@ -30,6 +30,7 @@ type PackageRequest struct {
 	MatchingBonusRate float64 `json:"matching_bonus_rate" binding:"gte=0,lte=1"`
 	DiscountRate      float64 `json:"discount_rate" binding:"gte=0,lte=1"`
 	RequiredPV        int64   `json:"required_pv" binding:"gte=0"`
+	CV                int64   `json:"cv" binding:"gte=0"`
 }
 
 // List tüm paketleri döndürür (herkese açık).
@@ -52,7 +53,7 @@ func (h *PackageHandler) Create(c *gin.Context) {
 	}
 
 	p, err := h.packages.CreatePackage(c.Request.Context(), req.Name, req.Price,
-		req.ReferralBonusRate, req.BinaryBonusRate, req.MatchingBonusRate, req.DiscountRate, req.RequiredPV)
+		req.ReferralBonusRate, req.BinaryBonusRate, req.MatchingBonusRate, req.DiscountRate, req.RequiredPV, req.CV)
 	if err != nil {
 		log.WithError(err).Error("Paket oluşturulamadı")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -94,6 +95,7 @@ func (h *PackageHandler) Update(c *gin.Context) {
 	p.MatchingBonusRate = req.MatchingBonusRate
 	p.DiscountRate = req.DiscountRate
 	p.RequiredPV = req.RequiredPV
+	p.CV = req.CV
 
 	if err := h.packages.UpdatePackage(c.Request.Context(), p); err != nil {
 		log.WithError(err).Error("Paket güncellenemedi")

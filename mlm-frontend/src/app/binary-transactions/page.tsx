@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Network, RefreshCcw, TrendingDown, TrendingUp, Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { listBinaryTransactions, getErrorMessage } from "@/services/api";
 import type { BinaryTransactionsResponse } from "@/services/api";
 import RequireAuth from "@/components/RequireAuth";
@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const TYPE_META: Record<string, { label: string; badge: string; icon: React.ReactNode }> = {
-  add: { label: "Ekleme", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <TrendingUp size={15} /> },
-  deduct: { label: "Eşleşme Düşümü", badge: "border-destructive/50 text-destructive", icon: <TrendingDown size={15} /> },
-  reset: { label: "Sıfırlama", badge: "border-amber-500/50 text-amber-600", icon: <RefreshCcw size={15} /> },
+  add: { label: "Ekleme", badge: "border-[#2E7D32]/50 text-[#2E7D32]", icon: <MaterialIcon name="TrendingUp" size={15} /> },
+  deduct: { label: "Eşleşme Düşümü", badge: "border-destructive/50 text-destructive", icon: <MaterialIcon name="trending_down" size={15} /> },
+  reset: { label: "Sıfırlama", badge: "border-amber-500/50 text-amber-600", icon: <MaterialIcon name="RefreshCcw" size={15} /> },
 };
 
 function BinaryTransactionsContent() {
@@ -142,11 +142,11 @@ function BinaryTransactionsContent() {
 
       {loading ? (
         <div className="flex justify-center py-6">
-          <Loader2 className="text-primary size-8 animate-spin" />
+          <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
         </div>
       ) : data && data.transactions.length === 0 ? (
         <div className="border-border bg-card rounded border p-4">
-          <EmptyState icon={<Network size={48} />} message="Henüz binary hareketi yok." />
+          <EmptyState icon={<MaterialIcon name="Network" size={48} />} message="Henüz binary hareketi yok." />
         </div>
       ) : (
         <div className="border-border bg-card overflow-hidden rounded border">
@@ -167,7 +167,7 @@ function BinaryTransactionsContent() {
                   const meta = TYPE_META[t.transaction_type] ?? {
                     label: t.transaction_type,
                     badge: "border-border text-muted-foreground",
-                    icon: <Network size={15} />,
+                    icon: <MaterialIcon name="Network" size={15} />,
                   };
                   return (
                     <tr

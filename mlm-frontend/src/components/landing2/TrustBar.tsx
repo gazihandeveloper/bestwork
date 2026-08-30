@@ -1,17 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Truck, ShieldCheck, Gift, Headphones } from "lucide-react";
+import { MaterialIcon, materialName } from "@/components/MaterialIcon";
 import { listBenefits } from "@/services/api";
 import type { Benefit } from "@/services/api";
 
-// İkon anahtarları (admin panelindeki seçimle eşleşir)
-const ICONS: Record<string, React.ReactNode> = {
-  shipping: <Truck className="size-7" strokeWidth={1.75} aria-hidden />,
-  payment: <ShieldCheck className="size-7" strokeWidth={1.75} aria-hidden />,
-  pv: <Gift className="size-7" strokeWidth={1.75} aria-hidden />,
-  support: <Headphones className="size-7" strokeWidth={1.75} aria-hidden />,
+// Eski kayıtlardaki anahtarlar → lucide adları
+const ICON_ALIAS: Record<string, string> = {
+  shipping: "truck",
+  payment: "shield-check",
+  pv: "gift",
+  support: "headphones",
 };
+
+const toPascal = (name: string) =>
+  name.split("-").map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
+
+function TrustIcon({ name }: { name: string }) {
+  const resolved = ICON_ALIAS[name] ?? name;
+  return <MaterialIcon name={materialName(toPascal(resolved))} className="size-7" />;
+}
 
 const fallbackBenefits: Benefit[] = [
   { id: -1, title: "Kargo Bedava", description: "500 TL ve üzeri siparişlerde", icon: "shipping", sort_order: 1, is_active: true, created_at: "" },
@@ -52,7 +60,7 @@ export default function TrustBar() {
             key={item.id}
             className="flex flex-col items-center gap-2 text-center md:flex-row md:items-center md:gap-3.5 md:px-5 md:text-left"
           >
-            <span className="shrink-0 text-primary">{ICONS[item.icon] ?? ICONS.shipping}</span>
+            <span className="shrink-0 text-primary"><TrustIcon name={item.icon} /></span>
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="text-sm font-bold text-foreground">{item.title}</span>
               <span className="text-xs leading-relaxed text-muted-foreground">{item.description}</span>

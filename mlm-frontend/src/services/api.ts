@@ -86,7 +86,22 @@ export interface Product {
   description: string | null;
   image_path: string | null;
   category: string | null;
+  category_id?: number | null;
+  category_name?: string | null;
   sku: string | null;
+  created_at?: string;
+}
+
+// Kategoriler (shop filtresi; GET /categories yalnızca is_active=true döner)
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+  description: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface PopularProduct extends Product {
@@ -233,6 +248,12 @@ export async function getMe(): Promise<User> {
   return data.user;
 }
 
+// Herkese açık sessiz oturum kontrolü — 401 fırlatmaz; authenticated:false döner.
+export async function getSessionStatus(): Promise<{ authenticated: boolean; user: User | null }> {
+  const { data } = await api.get<{ authenticated: boolean; user: User | null }>("/user/me/status");
+  return data;
+}
+
 // Üye kodundan kullanıcının temel bilgilerini getirir (ağaçta arama/navigasyon için).
 export async function lookupUserByCode(code: string): Promise<{ id: number; name: string; member_code: string }> {
   const { data } = await api.get<{ user: { id: number; name: string; member_code: string } }>("/user/lookup", {
@@ -355,29 +376,6 @@ export async function uploadFile(file: File): Promise<string> {
   return data.file_path;
 }
 
-// KYC (kimlik doğrulama) belgeleri
-export interface KycDocument {
-  id: number;
-  user_id: number;
-  user_name: string;
-  member_code: string;
-  document_type: string;
-  file_path: string;
-  status: string;
-  admin_note: string | null;
-  submitted_at: string;
-  processed_at: string | null;
-}
-
-export async function submitKyc(documentType: "identity" | "address", filePath: string): Promise<void> {
-  await api.post("/user/kyc", { document_type: documentType, file_path: filePath });
-}
-
-export async function listMyKyc(): Promise<KycDocument[]> {
-  const { data } = await api.get<{ kyc: KycDocument[] }>("/user/kyc");
-  return data.kyc ?? [];
-}
-
 // Bekleyenler havuzu
 export interface PendingPoolEntry {
   user: User;
@@ -444,6 +442,12 @@ export async function getProduct(id: number): Promise<Product> {
   return data.product;
 }
 
+// Aktif kategoriler (public). sort_order'a göre sıralanmış döner.
+export async function listCategories(): Promise<Category[]> {
+  const { data } = await api.get<{ categories: Category[] }>("/categories");
+  return data.categories;
+}
+
 // Son N günde en çok satın alınan ürünler
 export async function listPopularProducts(limit = 3, days = 7): Promise<PopularProduct[]> {
   const { data } = await api.get<{ products: PopularProduct[] }>("/products/popular", {
@@ -474,8 +478,14 @@ export interface HeroSlide {
   id: number;
   title: string;
   subtitle: string | null;
+  description: string | null;
   image_path: string;
   link: string | null;
+  primary_button_text: string | null;
+  primary_button_link: string | null;
+  secondary_button_text: string | null;
+  secondary_button_link: string | null;
+  show_buttons: boolean;
   sort_order: number;
   is_active: boolean;
   created_at: string;

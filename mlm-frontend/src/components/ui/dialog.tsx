@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { cn } from "@/lib/utils";
 
 const Dialog = DialogPrimitive.Root;
@@ -50,7 +50,7 @@ function DialogContent({
             aria-label="Kapat"
             className="text-muted-foreground hover:text-foreground absolute top-3.5 right-3.5 flex size-8 cursor-pointer items-center justify-center rounded transition-colors hover:bg-accent"
           >
-            <X className="size-4" />
+            <MaterialIcon name="X" className="size-4" />
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

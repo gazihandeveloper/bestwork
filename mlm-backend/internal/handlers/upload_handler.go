@@ -28,6 +28,7 @@ var allowedUploadTypes = map[string]map[string]bool{
 	".jpg":  {"image/jpeg": true},
 	".jpeg": {"image/jpeg": true},
 	".png":  {"image/png": true},
+	".webp": {"image/webp": true},
 	".pdf":  {"application/pdf": true},
 }
 

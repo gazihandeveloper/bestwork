@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { BASE_PATH, getErrorMessage } from "@/lib/api";
 import { api } from "@/lib/api";
@@ -169,7 +169,7 @@ export default function LoginDialog() {
               <Button type="submit" size="lg" disabled={submitting} className="w-full">
                 {submitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <MaterialIcon name="Loader2" className="size-4 animate-spin" />
                     Giriş yapılıyor...
                   </>
                 ) : (
@@ -213,7 +213,7 @@ export default function LoginDialog() {
             )}
             {resetInfo && (
               <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] flex items-center gap-2 rounded border px-3 py-2 text-sm font-medium">
-                <MailCheck className="size-4 shrink-0" />
+                <MaterialIcon name="MailCheck" className="size-4 shrink-0" />
                 {resetInfo}
               </div>
             )}
@@ -255,7 +255,7 @@ export default function LoginDialog() {
             <Button type="submit" size="lg" disabled={resetSubmitting} className="w-full">
               {resetSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <MaterialIcon name="Loader2" className="size-4 animate-spin" />
                   Sıfırlanıyor...
                 </>
               ) : (
@@ -267,14 +267,14 @@ export default function LoginDialog() {
               onClick={() => setResetStep("request")}
               className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center justify-center gap-1 text-sm font-semibold transition-colors"
             >
-              <ArrowLeft className="size-3.5" />
+              <MaterialIcon name="ArrowLeft" className="size-3.5" />
               Geri dön
             </button>
           </form>
         ) : (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
             <div className="bg-[#2E7D32]/10 flex size-14 items-center justify-center rounded-full">
-              <ShieldCheck className="text-[#2E7D32] size-7" />
+              <MaterialIcon name="ShieldCheck" className="text-[#2E7D32] size-7" />
             </div>
             <p className="font-semibold">Şifreniz başarıyla sıfırlandı.</p>
             <p className="text-muted-foreground text-sm">Yeni şifrenizle giriş yapabilirsiniz.</p>

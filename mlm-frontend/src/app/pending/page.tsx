@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, X } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { listPendingUsers, placePendingUser, getErrorMessage } from "@/services/api";
 import type { User } from "@/services/api";
@@ -51,7 +51,7 @@ function PendingContent() {
   if (loading) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }
@@ -89,7 +89,7 @@ function PendingContent() {
               <div>
                 <div className="flex items-center gap-1">
                   <h3 className="text-base font-bold">{u.name}</h3>
-                  {overdue && <AlertTriangle className="text-destructive size-4" />}
+                  {overdue && <MaterialIcon name="AlertTriangle" className="text-destructive size-4" />}
                 </div>
                 <p className="text-muted-foreground text-sm">{u.email} · {u.member_code}</p>
                 <div className="mt-0.5 flex flex-wrap gap-0.5">
@@ -135,14 +135,14 @@ function PendingContent() {
       {snackbar && (
         <div className="fixed bottom-5 left-1/2 z-[1400] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
           <div className="bg-foreground text-background flex items-center gap-2 rounded px-4 py-3 text-sm font-semibold shadow-lg">
-            <CheckCircle2 className="size-5 shrink-0" />
+            <MaterialIcon name="check_circle" className="size-5 shrink-0" />
             <span className="flex-1">{snackbar}</span>
             <button
               aria-label="Kapat"
               className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
               onClick={() => setSnackbar("")}
             >
-              <X className="size-4" />
+              <MaterialIcon name="X" className="size-4" />
             </button>
           </div>
         </div>

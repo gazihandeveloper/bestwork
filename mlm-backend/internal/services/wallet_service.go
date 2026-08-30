@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -173,11 +174,11 @@ func (s *WalletService) ListWalletTransactions(ctx context.Context, userID int64
 	txs := make([]WalletTransaction, 0)
 	for rows.Next() {
 		var t WalletTransaction
-		var createdAt string
+		var createdAt time.Time
 		if err := rows.Scan(&t.ID, &t.WalletID, &t.Amount, &t.Type, &t.Reason, &t.AdminID, &createdAt); err != nil {
 			return nil, fmt.Errorf("cüzdan hareketi okunamadı: %w", err)
 		}
-		t.CreatedAt = createdAt
+		t.CreatedAt = createdAt.Format("2006-01-02 15:04:05")
 		txs = append(txs, t)
 	}
 	return txs, rows.Err()
@@ -341,4 +342,123 @@ func (s *WalletService) RejectWithdrawRequest(ctx context.Context, requestID int
 	log.WithFields(log.Fields{"request_id": requestID}).Info("Çekim talebi reddedildi")
 
 	return nil
+}
+
+// TransferWallet iki üye arasında bakiye transferi yapar (admin, denetim loglu).
+func (s *WalletService) TransferWallet(ctx context.Context, adminID int64, adminName string, fromUserID, toUserID int64, amount float64, reason string) error {
+	amount = round2(amount)
+	if moneyToCents(amount) <= 0 {
+		return errors.New("tutar 0'dan büyük olmalıdır")
+	}
+	if fromUserID == toUserID {
+		return errors.New("gönderen ve alıcı aynı olamaz")
+	}
+
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("transaction başlatılamadı: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var fromW, toW models.Wallet
+	if err := tx.QueryRow(ctx,
+		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, blocked_balance, updated_at
+		 FROM wallets WHERE user_id = $1 FOR UPDATE`, fromUserID).
+		Scan(&fromW.ID, &fromW.UserID, &fromW.Balance, &fromW.TotalEarned, &fromW.TotalWithdrawn, &fromW.ChipBalance, &fromW.BlockedBalance, &fromW.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrWalletNotFound
+		}
+		return fmt.Errorf("gönderen cüzdan okunamadı: %w", err)
+	}
+	if moneyToCents(fromW.Balance) < moneyToCents(amount) {
+		return ErrInsufficientBalance
+	}
+	if err := tx.QueryRow(ctx,
+		`SELECT id, user_id, balance, total_earned, total_withdrawn, chip_balance, blocked_balance, updated_at
+		 FROM wallets WHERE user_id = $1 FOR UPDATE`, toUserID).
+		Scan(&toW.ID, &toW.UserID, &toW.Balance, &toW.TotalEarned, &toW.TotalWithdrawn, &toW.ChipBalance, &toW.BlockedBalance, &toW.UpdatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrWalletNotFound
+		}
+		return fmt.Errorf("alıcı cüzdan okunamadı: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx, `UPDATE wallets SET balance = balance - $1, updated_at = NOW() WHERE id = $2`, amount, fromW.ID); err != nil {
+		return fmt.Errorf("gönderen bakiye düşülemedi: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE id = $2`, amount, toW.ID); err != nil {
+		return fmt.Errorf("alıcı bakiye eklenemedi: %w", err)
+	}
+
+	var reasonPtr *string
+	if reason != "" {
+		r := reason
+		reasonPtr = &r
+	}
+	neg := -amount
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO wallet_transactions (wallet_id, amount, type, reason, admin_id) VALUES ($1,$2,'transfer_out',$3,$4)`,
+		fromW.ID, neg, reasonPtr, adminID); err != nil {
+		return fmt.Errorf("gönderen hareket yazılamadı: %w", err)
+	}
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO wallet_transactions (wallet_id, amount, type, reason, admin_id) VALUES ($1,$2,'transfer_in',$3,$4)`,
+		toW.ID, amount, reasonPtr, adminID); err != nil {
+		return fmt.Errorf("alıcı hareket yazılamadı: %w", err)
+	}
+
+	fromID := fromUserID
+	if err := logInTx(ctx, tx, adminID, adminName, "wallet_transfer", "user", &fromID, reason, map[string]any{
+		"from": fromUserID, "to": toUserID, "amount": amount,
+	}); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("transaction tamamlanamadı: %w", err)
+	}
+	return nil
+}
+
+// TransferLog iç transfer hareketini kullanıcı bilgisiyle temsil eder.
+type TransferLog struct {
+	ID        int64   `json:"id"`
+	UserID    int64   `json:"user_id"`
+	UserName  string  `json:"user_name"`
+	Amount    float64 `json:"amount"`
+	Type      string  `json:"type"`
+	Reason    *string `json:"reason"`
+	CreatedAt string  `json:"created_at"`
+}
+
+// ListTransfers iç transfer hareketlerini (transfer_in/transfer_out) döndürür.
+func (s *WalletService) ListTransfers(ctx context.Context, limit, offset int) ([]TransferLog, int64, error) {
+	var total int64
+	if err := s.db.QueryRow(ctx,
+		`SELECT COUNT(*) FROM wallet_transactions WHERE type IN ('transfer_in','transfer_out')`).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("transferler sayılamadı: %w", err)
+	}
+	rows, err := s.db.Query(ctx, `
+		SELECT wt.id, w.user_id, u.name, wt.amount, wt.type, wt.reason, wt.created_at
+		FROM wallet_transactions wt
+		JOIN wallets w ON w.id = wt.wallet_id
+		JOIN users u ON u.id = w.user_id
+		WHERE wt.type IN ('transfer_in','transfer_out')
+		ORDER BY wt.id DESC LIMIT $1 OFFSET $2`, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("transferler listelenemedi: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]TransferLog, 0)
+	for rows.Next() {
+		var t TransferLog
+		var createdAt time.Time
+		if err := rows.Scan(&t.ID, &t.UserID, &t.UserName, &t.Amount, &t.Type, &t.Reason, &createdAt); err != nil {
+			return nil, 0, fmt.Errorf("transfer okunamadı: %w", err)
+		}
+		t.CreatedAt = createdAt.Format("2006-01-02 15:04:05")
+		out = append(out, t)
+	}
+	return out, total, rows.Err()
 }

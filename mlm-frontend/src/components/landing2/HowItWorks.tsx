@@ -1,11 +1,10 @@
-import { UserPlus, ShoppingCart, Users } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 
 interface Step {
   number: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 const steps: Step[] = [
@@ -13,19 +12,19 @@ const steps: Step[] = [
     number: "01",
     title: "Üye Ol",
     description: "Saniyeler içinde ücretsiz üye olun, üye numaranız otomatik oluşur.",
-    icon: UserPlus,
+    icon: "UserPlus",
   },
   {
     number: "02",
     title: "Alışveriş Yap",
     description: "PV/CV puan kazandıran ürünlerden sipariş verin.",
-    icon: ShoppingCart,
+    icon: "ShoppingCart",
   },
   {
     number: "03",
     title: "Ağını Kur & Kazan",
     description: "Ekibini büyüt, binary komisyonlarla her ay kazan.",
-    icon: Users,
+    icon: "Users",
   },
 ];
 
@@ -54,7 +53,7 @@ export default function HowItWorks() {
             className="border-primary/25 absolute top-8 right-[16.6667%] left-[16.6667%] hidden border-t-2 border-dashed md:block"
           />
 
-          {steps.map(({ number, title, description, icon: Icon }) => (
+          {steps.map(({ number, title, description, icon }) => (
             <div key={number} className="relative flex flex-col items-center text-center">
               <span
                 aria-hidden
@@ -64,7 +63,7 @@ export default function HowItWorks() {
               </span>
 
               <div className="bg-secondary text-primary-dark relative z-10 flex size-16 items-center justify-center rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
-                <Icon className="size-7" />
+                <MaterialIcon name={icon} className="size-7" />
               </div>
 
               <h3 className="mt-5 text-lg font-bold">{title}</h3>

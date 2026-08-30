@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { listLeadershipBonuses, getErrorMessage } from "@/services/api";
 import type { Commission } from "@/services/api";
@@ -53,7 +53,7 @@ function LeadershipBonusContent() {
 
       {loading ? (
         <div className="flex justify-center py-6">
-          <Loader2 className="text-primary size-8 animate-spin" />
+          <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
         </div>
       ) : items.length === 0 ? (
         <div className="border-border bg-card rounded border p-4">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Trash2, Users } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
 import { listBeneficiaries, createBeneficiary, deleteBeneficiary, getErrorMessage } from "@/services/api";
@@ -131,7 +131,7 @@ function BeneficiaryContent() {
           <div className="border-border bg-card rounded border p-4">
             <h2 className="mb-2.5 text-lg font-bold">Varislerim ({items.length})</h2>
             {items.length === 0 && (
-              <EmptyState icon={<Users size={48} />} message="Henüz varis eklemediniz." />
+              <EmptyState icon={<MaterialIcon name="Users" size={48} />} message="Henüz varis eklemediniz." />
             )}
             {items.map((b) => (
               <div
@@ -147,7 +147,7 @@ function BeneficiaryContent() {
                   onClick={() => handleDelete(b.id)}
                   className="text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
                 >
-                  <Trash2 className="size-4" />
+                  <MaterialIcon name="Trash2" className="size-4" />
                 </button>
               </div>
             ))}

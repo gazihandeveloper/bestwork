@@ -53,9 +53,16 @@ func (s *MonthlyCloseService) ProcessMonthlyClose() error {
 	return closeErr
 }
 
-// processClose tüm aktif kullanıcılar için sırayla binary eşleşme ve
-// rütbe güncellemesi yapar (transaction içinde).
+// processClose önce tüm kariyerleri yeniden hesaplar (matching primi taze
+// unvanlara göre ödensin), ardından tüm aktif kullanıcılar için binary eşleşme
+// yapar (transaction içinde).
 func (s *MonthlyCloseService) processClose(ctx context.Context, q DBTX) error {
+	// 1) Kariyerleri yeniden hesapla.
+	if _, err := RecomputeAllCareers(ctx, q); err != nil {
+		return fmt.Errorf("kariyer hesaplama başarısız: %w", err)
+	}
+
+	// 2) Binary eşleşme (binary + matching).
 	rows, err := q.Query(ctx, `SELECT id FROM users WHERE is_active = true ORDER BY id`)
 	if err != nil {
 		return fmt.Errorf("kullanıcılar listelenemedi: %w", err)
@@ -76,11 +83,8 @@ func (s *MonthlyCloseService) processClose(ctx context.Context, q DBTX) error {
 		if err := MatchBinary(ctx, q, userID); err != nil {
 			return fmt.Errorf("binary eşleşme başarısız (user %d): %w", userID, err)
 		}
-		if err := UpdateUserRankFromLegs(ctx, q, userID); err != nil {
-			return fmt.Errorf("rütbe güncelleme başarısız (user %d): %w", userID, err)
-		}
 	}
 
-	log.WithField("users_processed", len(userIDs)).Info("Aylık kapanış: binary eşleşme ve rütbe güncelleme tamamlandı")
+	log.WithField("users_processed", len(userIDs)).Info("Aylık kapanış: kariyer + binary eşleşme tamamlandı")
 	return nil
 }

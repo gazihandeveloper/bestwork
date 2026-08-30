@@ -9,7 +9,7 @@ import (
 )
 
 // TokenTTL belirteçlerin ve oturum cookie'sinin geçerlilik süresidir.
-const TokenTTL = time.Hour
+const TokenTTL = 24 * time.Hour
 
 // secret JWT imzalama anahtarıdır; uygulama başlarken config'ten set edilir.
 var secret []byte

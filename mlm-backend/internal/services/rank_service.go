@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	log "github.com/sirupsen/logrus"
 
 	"mlm-backend/internal/models"
 )
@@ -14,10 +13,14 @@ import (
 // ErrRankNotFound rütbe bulunamadığında döndürülür.
 var ErrRankNotFound = errors.New("rütbe bulunamadı")
 
-// GetAllRanks tüm rütbeleri eşik değerlerine göre artan sırada döndürür.
+// rankColumns tüm rank alanlarını listeler (kariyer kolonları dahil).
+const rankColumns = `id, name, required_left_pv, required_right_pv, monthly_binary_limit,
+	required_downline_rank_id, required_downline_count, personal_activity_pv, created_at`
+
+// GetAllRanks tüm rütbeleri (kariyer seviyeleri) id'ye göre artan sırada döndürür.
+// id sırası kariyer merdiveni sırasıdır (Jade → Ambassador).
 func GetAllRanks(ctx context.Context, q DBTX) ([]models.Rank, error) {
-	rows, err := q.Query(ctx, `SELECT id, name, required_left_pv, required_right_pv, monthly_binary_limit, created_at
-		FROM ranks ORDER BY required_left_pv ASC, required_right_pv ASC`)
+	rows, err := q.Query(ctx, `SELECT `+rankColumns+` FROM ranks ORDER BY id ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +29,8 @@ func GetAllRanks(ctx context.Context, q DBTX) ([]models.Rank, error) {
 	ranks := make([]models.Rank, 0)
 	for rows.Next() {
 		var r models.Rank
-		if err := rows.Scan(&r.ID, &r.Name, &r.RequiredLeftPV, &r.RequiredRightPV, &r.MonthlyBinaryLimit, &r.CreatedAt); err != nil {
+		if err := rows.Scan(&r.ID, &r.Name, &r.RequiredLeftPV, &r.RequiredRightPV, &r.MonthlyBinaryLimit,
+			&r.RequiredDownlineRankID, &r.RequiredDownlineCount, &r.PersonalActivityPV, &r.CreatedAt); err != nil {
 			return nil, err
 		}
 		ranks = append(ranks, r)
@@ -37,9 +41,9 @@ func GetAllRanks(ctx context.Context, q DBTX) ([]models.Rank, error) {
 // GetRankByID ID'ye göre rütbeyi döndürür.
 func GetRankByID(ctx context.Context, q DBTX, id int) (*models.Rank, error) {
 	var r models.Rank
-	err := q.QueryRow(ctx, `SELECT id, name, required_left_pv, required_right_pv, monthly_binary_limit, created_at
-		FROM ranks WHERE id = $1`, id).
-		Scan(&r.ID, &r.Name, &r.RequiredLeftPV, &r.RequiredRightPV, &r.MonthlyBinaryLimit, &r.CreatedAt)
+	err := q.QueryRow(ctx, `SELECT `+rankColumns+` FROM ranks WHERE id = $1`, id).
+		Scan(&r.ID, &r.Name, &r.RequiredLeftPV, &r.RequiredRightPV, &r.MonthlyBinaryLimit,
+			&r.RequiredDownlineRankID, &r.RequiredDownlineCount, &r.PersonalActivityPV, &r.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrRankNotFound
@@ -49,71 +53,52 @@ func GetRankByID(ctx context.Context, q DBTX, id int) (*models.Rank, error) {
 	return &r, nil
 }
 
-// UpdateUserRankFromLegs kullanıcının sol/sağ bacak PV toplamlarına göre
-// hak ettiği en yüksek rütbeyi bulur; değişiklik varsa günceller ve
-// rank_progress tablosuna kayıt ekler.
-func UpdateUserRankFromLegs(ctx context.Context, q DBTX, userID int64) error {
-	var (
-		leftPV, rightPV int64
-		currentRankID   *int
-	)
+// CreateRank yeni bir seviye (kariyer) ekler (admin).
+func CreateRank(ctx context.Context, q DBTX, r *models.Rank) (*models.Rank, error) {
+	if r.Name == "" || r.RequiredLeftPV < 0 || r.RequiredRightPV < 0 || r.MonthlyBinaryLimit < 0 || r.RequiredDownlineCount < 0 {
+		return nil, errors.New("geçersiz seviye bilgileri")
+	}
 	err := q.QueryRow(ctx,
-		`SELECT total_pv_left, total_pv_right, current_rank_id FROM users WHERE id = $1 FOR UPDATE`, userID).
-		Scan(&leftPV, &rightPV, &currentRankID)
+		`INSERT INTO ranks (name, required_left_pv, required_right_pv, monthly_binary_limit,
+			required_downline_rank_id, required_downline_count, personal_activity_pv)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
+		r.Name, r.RequiredLeftPV, r.RequiredRightPV, r.MonthlyBinaryLimit,
+		r.RequiredDownlineRankID, r.RequiredDownlineCount, r.PersonalActivityPV).
+		Scan(&r.ID, &r.CreatedAt)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return ErrUserNotFound
-		}
-		return fmt.Errorf("kullanıcı okunamadı: %w", err)
+		return nil, fmt.Errorf("seviye eklenemedi: %w", err)
 	}
+	return r, nil
+}
 
-	ranks, err := GetAllRanks(ctx, q)
+// UpdateRank seviyenin tüm değişebilir alanlarını günceller (admin).
+func UpdateRank(ctx context.Context, q DBTX, r *models.Rank) error {
+	if r.Name == "" || r.RequiredLeftPV < 0 || r.RequiredRightPV < 0 || r.MonthlyBinaryLimit < 0 || r.RequiredDownlineCount < 0 {
+		return errors.New("geçersiz seviye bilgileri")
+	}
+	tag, err := q.Exec(ctx,
+		`UPDATE ranks SET name = $1, required_left_pv = $2, required_right_pv = $3, monthly_binary_limit = $4,
+			required_downline_rank_id = $5, required_downline_count = $6, personal_activity_pv = $7
+		 WHERE id = $8`,
+		r.Name, r.RequiredLeftPV, r.RequiredRightPV, r.MonthlyBinaryLimit,
+		r.RequiredDownlineRankID, r.RequiredDownlineCount, r.PersonalActivityPV, r.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("seviye güncellenemedi: %w", err)
 	}
-
-	// Şartları sağlayan en yüksek rütbeyi bul
-	var newRank *models.Rank
-	for i := range ranks {
-		if leftPV >= ranks[i].RequiredLeftPV && rightPV >= ranks[i].RequiredRightPV {
-			newRank = &ranks[i]
-		}
+	if tag.RowsAffected() == 0 {
+		return ErrRankNotFound
 	}
+	return nil
+}
 
-	// Uygun rütbe yoksa veya değişiklik yoksa dokunma
-	if newRank == nil {
-		return nil
+// DeleteRank seviyeyi siler (kullanıcılar tarafından referans ediliyorsa hata döner).
+func DeleteRank(ctx context.Context, q DBTX, id int) error {
+	tag, err := q.Exec(ctx, `DELETE FROM ranks WHERE id = $1`, id)
+	if err != nil {
+		return fmt.Errorf("seviye silinemedi (kullanıcılar bu seviyeyi kullanıyor olabilir): %w", err)
 	}
-	if currentRankID != nil && *currentRankID == newRank.ID {
-		return nil
+	if tag.RowsAffected() == 0 {
+		return ErrRankNotFound
 	}
-
-	// Ara rütbeler dahil TÜM geçilen seviyeleri kaydet (atlanmaz).
-	// ranks artan eşik sırasında gelir; newRank'a kadar olan her rütbe geçilmiştir.
-	for i := range ranks {
-		r := ranks[i]
-		if leftPV < r.RequiredLeftPV || rightPV < r.RequiredRightPV {
-			continue
-		}
-		if _, err := q.Exec(ctx,
-			`INSERT INTO rank_progress (user_id, rank_id)
-			 SELECT $1, $2
-			 WHERE NOT EXISTS (SELECT 1 FROM rank_progress WHERE user_id = $1 AND rank_id = $2)`,
-			userID, r.ID); err != nil {
-			return fmt.Errorf("rütbe ilerlemesi kaydedilemedi: %w", err)
-		}
-	}
-
-	if _, err := q.Exec(ctx, `UPDATE users SET current_rank_id = $1, updated_at = NOW() WHERE id = $2`, newRank.ID, userID); err != nil {
-		return fmt.Errorf("rütbe güncellenemedi: %w", err)
-	}
-
-	log.WithFields(log.Fields{
-		"user_id":  userID,
-		"rank":     newRank.Name,
-		"pv_left":  leftPV,
-		"pv_right": rightPV,
-	}).Info("Kullanıcı rütbesi güncellendi")
-
 	return nil
 }

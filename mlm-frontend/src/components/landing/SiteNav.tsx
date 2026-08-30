@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Moon, Sun, ShoppingCart, LogOut, Menu, X } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { cartCount } from "@/lib/cart";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Anasayfa" },
-  { href: "/shop", label: "Ürünler" },
+  { href: "/shop", label: "Mağaza" },
   { href: "/#kurumsal", label: "Kurumsal" },
   { href: "/#iletisim", label: "İletişim" },
 ];
@@ -28,8 +28,8 @@ function Logo() {
       <span className="flex flex-col items-start leading-tight">
         <span className="text-primary inline-flex items-start text-[30px] font-black tracking-tight sm:text-[34px]">
           BestWork
-          <span aria-label="Registered" className="mt-[0.3em] text-[18px] leading-none font-black sm:text-[20px]">
-            <sup>®</sup>
+          <span aria-label="Registered" className="text-primary mt-[0.3em] ml-1 text-[22px] leading-none font-black sm:text-[26px]">
+            ®
           </span>
         </span>
       </span>
@@ -128,11 +128,11 @@ export default function SiteNav() {
               className={cn(iconBtn, mode === "dark" && "text-[#FFB300] hover:text-[#FFB300]")}
               onClick={toggleMode}
             >
-              {mode === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
+              {mode === "dark" ? <MaterialIcon name="Sun" className="size-5" /> : <MaterialIcon name="Moon" className="size-5" />}
             </button>
 
             <button aria-label={`Sepet (${count} ürün)`} className={iconBtn} onClick={openCart}>
-              <ShoppingCart className="size-5" />
+              <MaterialIcon name="ShoppingCart" className="size-5" />
               {count > 0 && (
                 <Badge className="bg-primary absolute -top-0.5 -right-0.5 h-[17px] min-w-[17px] justify-center rounded-full px-1 text-[10px] font-bold text-white">
                   {Math.min(count, 99)}
@@ -153,7 +153,7 @@ export default function SiteNav() {
                     {user.role === "admin" || user.role === "super_admin" ? "Yönetim" : user.name.toLocaleUpperCase("tr-TR")}
                   </Link>
                   <button aria-label="Çıkış yap" className={iconBtn} onClick={logout}>
-                    <LogOut className="size-5" />
+                    <MaterialIcon name="LogOut" className="size-5" />
                   </button>
                 </>
               ) : (
@@ -168,7 +168,7 @@ export default function SiteNav() {
               className={cn(iconBtn, "lg:hidden")}
               onClick={() => setMobileOpen(true)}
             >
-              <Menu className="size-6" />
+              <MaterialIcon name="Menu" className="size-6" />
             </button>
           </div>
         </nav>
@@ -202,7 +202,7 @@ export default function SiteNav() {
               className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              <X className="size-5" />
+              <MaterialIcon name="X" className="size-5" />
             </button>
           </div>
 
@@ -246,7 +246,7 @@ export default function SiteNav() {
                     logout();
                   }}
                 >
-                  <LogOut className="size-5" />
+                  <MaterialIcon name="LogOut" className="size-5" />
                   Çıkış Yap
                 </Button>
               </>

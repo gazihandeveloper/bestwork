@@ -22,14 +22,13 @@ type AdminHandler struct {
 	orders       *services.OrderService
 	audit        *services.AuditService
 	stats        *services.AdminStatsService
-	kyc          *services.KYCService
 	tree         *services.TreeAdminService
 	jobs         *services.JobService
 }
 
 // NewAdminHandler yeni bir AdminHandler örneği döndürür.
-func NewAdminHandler(wallets *services.WalletService, chips *services.ChipService, monthlyClose *services.MonthlyCloseService, pendingPool *services.PendingPoolService, payments *services.PaymentNotificationService, users *services.UserService, orders *services.OrderService, audit *services.AuditService, stats *services.AdminStatsService, kyc *services.KYCService, tree *services.TreeAdminService, jobs *services.JobService) *AdminHandler {
-	return &AdminHandler{wallets: wallets, chips: chips, monthlyClose: monthlyClose, pendingPool: pendingPool, payments: payments, users: users, orders: orders, audit: audit, stats: stats, kyc: kyc, tree: tree, jobs: jobs}
+func NewAdminHandler(wallets *services.WalletService, chips *services.ChipService, monthlyClose *services.MonthlyCloseService, pendingPool *services.PendingPoolService, payments *services.PaymentNotificationService, users *services.UserService, orders *services.OrderService, audit *services.AuditService, stats *services.AdminStatsService, tree *services.TreeAdminService, jobs *services.JobService) *AdminHandler {
+	return &AdminHandler{wallets: wallets, chips: chips, monthlyClose: monthlyClose, pendingPool: pendingPool, payments: payments, users: users, orders: orders, audit: audit, stats: stats, tree: tree, jobs: jobs}
 }
 
 // ListPaymentNotifications tüm ödeme bildirimlerini döndürür (admin).

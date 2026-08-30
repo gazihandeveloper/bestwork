@@ -1,19 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  CheckCircle2,
-  Lock,
-  Star,
-  Trophy,
-  Pentagon,
-  Circle,
-  Hexagon,
-  Diamond,
-  Square,
-  User,
-  Loader2,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { listCareer, getRanks, getErrorMessage } from "@/services/api";
@@ -30,23 +18,23 @@ const RANK_DISPLAY: Record<string, string> = {
 };
 
 // Stitch panelindeki gibi her rütbeye özel ikon + renk (+ elmas yıldızları)
-function rankMeta(name: string): { icon: typeof Diamond; color: string; stars: number } {
+function rankMeta(name: string): { icon: string; color: string; stars: number } {
   const n = name.toLocaleLowerCase("tr-TR");
-  const map: Record<string, { icon: typeof Diamond; color: string; stars: number }> = {
-    jade: { icon: Pentagon, color: "#2e7d32", stars: 0 },
-    pearl: { icon: Circle, color: "#9e9e9e", stars: 0 },
-    safir: { icon: Hexagon, color: "#1565c0", stars: 0 },
-    ruby: { icon: Diamond, color: "#c62828", stars: 0 },
-    zümrüt: { icon: Square, color: "#43a047", stars: 0 },
-    diamond: { icon: Diamond, color: "#90caf9", stars: 0 },
-    "blue diamond": { icon: Diamond, color: "#1e88e5", stars: 0 },
-    "green diamond": { icon: Diamond, color: "#43a047", stars: 0 },
-    "red diamond": { icon: Diamond, color: "#e53935", stars: 0 },
-    "black diamond": { icon: Diamond, color: "#212121", stars: 0 },
-    president: { icon: Diamond, color: "#ffd700", stars: 2 },
-    ambassador: { icon: Diamond, color: "#ffd700", stars: 3 },
+  const map: Record<string, { icon: string; color: string; stars: number }> = {
+    jade: { icon: "pentagon", color: "#2e7d32", stars: 0 },
+    pearl: { icon: "circle", color: "#9e9e9e", stars: 0 },
+    safir: { icon: "hexagon", color: "#1565c0", stars: 0 },
+    ruby: { icon: "diamond", color: "#c62828", stars: 0 },
+    zümrüt: { icon: "square", color: "#43a047", stars: 0 },
+    diamond: { icon: "diamond", color: "#90caf9", stars: 0 },
+    "blue diamond": { icon: "diamond", color: "#1e88e5", stars: 0 },
+    "green diamond": { icon: "diamond", color: "#43a047", stars: 0 },
+    "red diamond": { icon: "diamond", color: "#e53935", stars: 0 },
+    "black diamond": { icon: "diamond", color: "#212121", stars: 0 },
+    president: { icon: "diamond", color: "#ffd700", stars: 2 },
+    ambassador: { icon: "diamond", color: "#ffd700", stars: 3 },
   };
-  return map[n] ?? { icon: Diamond, color: "#90caf9", stars: 0 };
+  return map[n] ?? { icon: "diamond", color: "#90caf9", stars: 0 };
 }
 
 function CareerContent() {
@@ -69,7 +57,7 @@ function CareerContent() {
   if (loading) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }
@@ -97,7 +85,7 @@ function CareerContent() {
       isActive: activeID == null,
       isAchieved: true,
       isNext: false,
-      meta: { icon: User, color: "#004786", stars: 0 },
+      meta: { icon: "person", color: "#004786", stars: 0 },
     },
     ...steps.map((s) => ({
       id: s.rank.id,
@@ -131,7 +119,7 @@ function CareerContent() {
       {/* Kariyer seviyeleri — yatay kaydırılabilir rütbe kartları */}
       <div className="border-border bg-card mb-4 rounded border p-2.5">
         <div className="mb-2 flex items-center gap-1">
-          <Trophy className="text-primary size-4" />
+          <MaterialIcon name="Trophy" className="text-primary size-4" />
           <p className="text-muted-foreground text-[11px] font-extrabold tracking-[1.5px] uppercase">
             Kariyer Seviyeleri
           </p>
@@ -142,7 +130,6 @@ function CareerContent() {
         </div>
         <div className="flex gap-1 overflow-x-auto py-1 md:gap-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {rankCards.map((c) => {
-            const Icon = c.meta.icon;
             return (
               <div
                 key={c.id}
@@ -158,15 +145,18 @@ function CareerContent() {
                 )}
               >
                 <div className="relative">
-                  <Icon className="size-10 md:size-8" color={c.isActive ? "#fff" : c.meta.color} />
+                  <span style={{ color: c.isActive ? "#fff" : c.meta.color }}>
+                    <MaterialIcon name={c.meta.icon} className="size-10 md:size-8" />
+                  </span>
                   {c.isAchieved && (
-                    <CheckCircle2 className="bg-background text-[#2E7D32] absolute -top-0.5 -left-[18px] size-[18px] rounded-full" />
+                    <MaterialIcon name="check_circle" className="bg-background text-[#2E7D32] absolute -top-0.5 -left-[18px] size-[18px] rounded-full" />
                   )}
                   {c.meta.stars > 0 && (
                     <div className="absolute -top-[7px] -right-[12px] flex gap-0.25">
                       {Array.from({ length: c.meta.stars }).map((_, k) => (
-                        <Star
+                        <MaterialIcon
                           key={k}
+                          name="Star"
                           className="bg-background text-[#ffd700] size-[13px] rounded-full"
                         />
                       ))}
@@ -237,23 +227,23 @@ function CareerContent() {
                   )}
                 >
                   {s.isAchieved ? (
-                    <CheckCircle2 className="size-[26px]" />
+                    <MaterialIcon name="check_circle" className="size-[26px]" />
                   ) : s.next ? (
-                    <Star className="size-6" />
+                    <MaterialIcon name="Star" className="size-6" />
                   ) : (
-                    <Lock className="size-[22px]" />
+                    <MaterialIcon name="Lock" className="size-[22px]" />
                   )}
                 </div>
                 <div className="flex gap-0.5">
                   {s.isActive && (
                     <Badge className="border-[#2E7D32]/50 text-[#2E7D32] gap-1 font-bold">
-                      <Trophy className="size-3.5" />
+                      <MaterialIcon name="Trophy" className="size-3.5" />
                       Güncel Rütbeniz
                     </Badge>
                   )}
                   {s.next && (
                     <Badge className="gap-1 font-bold">
-                      <Star className="size-3.5" />
+                      <MaterialIcon name="Star" className="size-3.5" />
                       Sonraki
                     </Badge>
                   )}
@@ -300,7 +290,7 @@ function CareerContent() {
               {s.isAchieved && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/45 backdrop-blur-[2.5px]">
                   <div className="bg-amber-500 flex size-[60px] items-center justify-center rounded-full text-white shadow-md">
-                    <CheckCircle2 className="size-[38px]" />
+                    <MaterialIcon name="check_circle" className="size-[38px]" />
                   </div>
                   <p className="text-amber-600 text-xs font-extrabold">GEÇİLDİ</p>
                 </div>

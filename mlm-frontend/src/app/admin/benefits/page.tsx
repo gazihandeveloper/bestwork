@@ -17,7 +17,7 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
-import { Gift, Headphones, Pencil, ShieldCheck, Trash2, Truck } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import {
   listAdminBenefits,
@@ -29,10 +29,10 @@ import {
 import type { Benefit } from "@/services/api";
 
 const ICON_OPTIONS = [
-  { value: "shipping", label: "Kargo", icon: <Truck /> },
-  { value: "payment", label: "Güvenli Ödeme", icon: <ShieldCheck /> },
-  { value: "pv", label: "Puan", icon: <Gift /> },
-  { value: "support", label: "Destek", icon: <Headphones /> },
+  { value: "shipping", label: "Kargo", icon: <MaterialIcon name="Truck" /> },
+  { value: "payment", label: "Güvenli Ödeme", icon: <MaterialIcon name="ShieldCheck" /> },
+  { value: "pv", label: "Puan", icon: <MaterialIcon name="Gift" /> },
+  { value: "support", label: "Destek", icon: <MaterialIcon name="Headphones" /> },
 ];
 
 interface FormState {
@@ -248,7 +248,7 @@ function AdminBenefitsContent() {
                       }}
                     >
                       {ICON_OPTIONS.find((o) => o.value === b.icon)?.icon ?? (
-                        <Truck />
+                        <MaterialIcon name="Truck" />
                       )}
                     </Box>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -266,10 +266,10 @@ function AdminBenefitsContent() {
                       />
                     </Box>
                     <IconButton aria-label="düzenle" onClick={() => startEdit(b)}>
-                      <Pencil />
+                      <MaterialIcon name="Pencil" />
                     </IconButton>
                     <IconButton aria-label="sil" color="error" onClick={() => handleDelete(b.id)}>
-                      <Trash2 />
+                      <MaterialIcon name="Trash2" />
                     </IconButton>
                   </Box>
                 ))}

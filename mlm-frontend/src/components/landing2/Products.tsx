@@ -3,15 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ShoppingCart,
-  ArrowRight,
-  Plus,
-  Minus,
-  Check,
-  PackageSearch,
-  Eye,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { listPopularProducts, listProducts, fileUrl } from "@/services/api";
 import type { PopularProduct } from "@/services/api";
 import { addToCartStorage } from "@/lib/cart";
@@ -129,7 +121,7 @@ export default function Products() {
           <Button asChild variant="outline" className="text-primary border-primary/40 rounded hover:bg-primary/5">
             <Link href="/shop">
               Tümünü Gör
-              <ArrowRight className="size-4" />
+              <MaterialIcon name="ArrowRight" className="size-4" />
             </Link>
           </Button>
         </div>
@@ -144,7 +136,7 @@ export default function Products() {
         </div>
       ) : error ? (
         <div className="text-muted-foreground py-10 text-center">
-          <PackageSearch className="text-muted-foreground mx-auto mb-2 size-12" />
+          <MaterialIcon name="inventory_2" className="text-muted-foreground mx-auto mb-2 size-12" />
           <p>Ürünler yüklenemedi. Lütfen tekrar deneyin.</p>
           <Button
             variant="default"
@@ -160,7 +152,7 @@ export default function Products() {
         </div>
       ) : products && products.length === 0 ? (
         <div className="text-muted-foreground py-10 text-center">
-          <PackageSearch className="text-muted-foreground mx-auto mb-2 size-12" />
+          <MaterialIcon name="inventory_2" className="text-muted-foreground mx-auto mb-2 size-12" />
           <p>Henüz ürün eklenmemiş.</p>
           <Button asChild className="mt-3">
             <Link href="/shop">Alışverişe Başla</Link>
@@ -193,7 +185,7 @@ export default function Products() {
                       />
                     ) : (
                       <div className="bg-gradient-to-br from-secondary-light to-secondary flex h-full w-full items-center justify-center">
-                        <PackageSearch className="text-primary-dark size-12" />
+                        <MaterialIcon name="inventory_2" className="text-primary-dark size-12" />
                       </div>
                     )}
 
@@ -220,7 +212,7 @@ export default function Products() {
                     {/* Hover inceleme */}
                     <div className="bg-black/25 absolute inset-0 flex items-center justify-center opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100">
                       <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-primary-dark shadow-lg">
-                        <Eye className="size-4" />
+                        <MaterialIcon name="Eye" className="size-4" />
                         İncele
                       </span>
                     </div>
@@ -270,7 +262,7 @@ export default function Products() {
                           }}
                           className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-[7px] transition-colors disabled:pointer-events-none disabled:opacity-40"
                         >
-                          <Minus className="size-3.5" />
+                          <MaterialIcon name="Minus" className="size-3.5" />
                         </button>
                         <span className="min-w-[20px] text-center text-sm font-bold">{qty}</span>
                         <button
@@ -283,7 +275,7 @@ export default function Products() {
                           }}
                           className="text-primary hover:bg-accent flex size-7 cursor-pointer items-center justify-center rounded-[7px] transition-colors disabled:pointer-events-none disabled:opacity-40"
                         >
-                          <Plus className="size-3.5" />
+                          <MaterialIcon name="Plus" className="size-3.5" />
                         </button>
                       </div>
                       <Button
@@ -295,7 +287,7 @@ export default function Products() {
                           handleAddToCart(p, quantityOf(p.id));
                         }}
                       >
-                        <ShoppingCart className="size-3.5" />
+                        <MaterialIcon name="ShoppingCart" className="size-3.5" />
                         Sepete Ekle
                       </Button>
                     </div>
@@ -311,7 +303,7 @@ export default function Products() {
       {snackbar && (
         <div className="fixed bottom-5 left-1/2 z-[1300] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
           <div className="bg-foreground text-background shadow-lg flex items-center gap-2 rounded px-5 py-3 text-sm font-semibold">
-            <Check className="size-5 shrink-0" />
+            <MaterialIcon name="Check" className="size-5 shrink-0" />
             <span className="flex-1 truncate">{snackbar}</span>
             <button
               type="button"

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Wallet, Coins, TrendingUp, Clock, Users, AlertTriangle, Loader2, Activity } from "lucide-react";
-import { getAdminDashboard, listWithdrawals, monthlyClose, getErrorMessage } from "@/services/api";
+import { MaterialIcon } from "@/components/MaterialIcon";
+import { getAdminDashboard, listWithdrawals, getErrorMessage } from "@/services/api";
 import type { AdminDashboard } from "@/services/api";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -53,8 +53,6 @@ export default function AdminHome() {
   const [error, setError] = useState("");
   const [period, setPeriod] = useState<Period>("all");
   const [pending, setPending] = useState({ count: 0, amount: 0 });
-  const [closing, setClosing] = useState(false);
-  const [closeMsg, setCloseMsg] = useState("");
 
   const load = () => {
     getAdminDashboard()
@@ -72,20 +70,6 @@ export default function AdminHome() {
       .catch(() => {});
   }, []);
 
-  const handleMonthlyClose = async () => {
-    setCloseMsg("");
-    setClosing(true);
-    try {
-      await monthlyClose();
-      setCloseMsg("Aylık kapanış tamamlandı.");
-      load();
-    } catch (err) {
-      setCloseMsg(getErrorMessage(err));
-    } finally {
-      setClosing(false);
-    }
-  };
-
   if (error) {
     return (
       <div className="border-destructive/50 bg-destructive/10 text-destructive my-4 rounded border px-4 py-3 text-sm font-medium">
@@ -96,7 +80,7 @@ export default function AdminHome() {
   if (!data) {
     return (
       <div className="flex justify-center py-14">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }
@@ -128,28 +112,21 @@ export default function AdminHome() {
           <h1 className="text-foreground mt-0.5 text-2xl font-extrabold tracking-tight">Genel Bakış</h1>
           <p className="text-muted-foreground text-sm">Organizasyonun finansal sağlığı ve kritik metrikler.</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleMonthlyClose}
-          disabled={closing}
-          className="text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
+        <a
+          href="https://mahmutgazihanarslan.com.tr/bestmanager"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded border border-primary bg-primary text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-primary/90 px-4 py-2"
         >
-          {closing ? <Loader2 className="size-4 animate-spin" /> : <Activity className="size-4" />}
-          {closing ? "Çalışıyor…" : "Aylık Kapanış"}
-        </Button>
+          <MaterialIcon name="ExternalLink" className="size-4" />
+          Yönetim Paneli
+        </a>
       </div>
-
-      {closeMsg && (
-        <div className="border-sky-500/40 bg-sky-500/10 text-sky-700 rounded border px-4 py-2 text-sm font-medium">
-          {closeMsg}
-        </div>
-      )}
 
       {/* KPI kartları */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* 1) Toplam Ciro (Günlük/Haftalık/Aylık) */}
-        <KpiShell label="Toplam Ciro" icon={<Wallet className="text-primary size-4.5" />} iconCls="bg-primary/10">
+        <KpiShell label="Toplam Ciro" icon={<MaterialIcon name="Wallet" className="text-primary size-4.5" />} iconCls="bg-primary/10">
           <p className="text-primary-dark text-2xl font-black tracking-tight">{ciroValue}</p>
           <div className="mt-2 flex flex-wrap gap-1">
             {PERIODS.map((p) => (
@@ -176,13 +153,13 @@ export default function AdminHome() {
         </KpiShell>
 
         {/* 2) Dağıtılan Komisyon */}
-        <KpiShell label="Dağıtılan Komisyon" icon={<Coins className="text-[#0288D1] size-4.5" />} iconCls="bg-[#0288D1]/10">
+        <KpiShell label="Dağıtılan Komisyon" icon={<MaterialIcon name="Coins" className="text-[#0288D1] size-4.5" />} iconCls="bg-[#0288D1]/10">
           <p className="text-primary-dark text-2xl font-black tracking-tight">{shortTl(data.total_commissions_paid)}</p>
           <p className="text-muted-foreground mt-1 text-[11px]">Üyelere hakediş olarak aktarılan toplam tutar</p>
         </KpiShell>
 
         {/* 3) Net Kâr + Payout Oranı */}
-        <KpiShell label="Net Kâr / Payout" icon={<TrendingUp className="text-[#6A008A] size-4.5" />} iconCls="bg-[#6A008A]/10">
+        <KpiShell label="Net Kâr / Payout" icon={<MaterialIcon name="TrendingUp" className="text-[#6A008A] size-4.5" />} iconCls="bg-[#6A008A]/10">
           <p className="text-primary-dark text-2xl font-black tracking-tight">{shortTl(data.net_profit)}</p>
           <div className="mt-2">
             <div className="mb-1 flex items-center justify-between text-[10px] font-bold">
@@ -200,20 +177,20 @@ export default function AdminHome() {
             </div>
             {payoutOver && (
               <p className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-red-600">
-                <AlertTriangle className="size-3" /> Hedef ≤ %50 aşıldı!
+                <MaterialIcon name="AlertTriangle" className="size-3" /> Hedef ≤ %50 aşıldı!
               </p>
             )}
           </div>
         </KpiShell>
 
         {/* 4) Bekleyen Çekimler */}
-        <KpiShell label="Bekleyen Çekimler" icon={<Clock className="text-amber-600 size-4.5" />} iconCls="bg-amber-500/10">
+        <KpiShell label="Bekleyen Çekimler" icon={<MaterialIcon name="Clock" className="text-amber-600 size-4.5" />} iconCls="bg-amber-500/10">
           <p className="text-primary-dark text-2xl font-black tracking-tight">{pending.count} adet</p>
           <p className="text-muted-foreground mt-1 text-[11px]">Tutar: {shortTl(pending.amount)}</p>
         </KpiShell>
 
         {/* 5) Aktif Üye */}
-        <KpiShell label="Aktif Üye" icon={<Users className="text-[#2E7D32] size-4.5" />} iconCls="bg-[#2E7D32]/10">
+        <KpiShell label="Aktif Üye" icon={<MaterialIcon name="Users" className="text-[#2E7D32] size-4.5" />} iconCls="bg-[#2E7D32]/10">
           <p className="text-primary-dark text-2xl font-black tracking-tight">{data.active_users.toLocaleString("tr-TR")}</p>
           <div className="mt-1.5 flex items-center gap-1.5">
             <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
@@ -228,7 +205,7 @@ export default function AdminHome() {
       <div className="flex flex-col gap-1.5">
         {alerts.map((a, i) => (
           <div key={i} className={cn("flex items-center gap-2 rounded border px-3 py-2 text-sm font-semibold", toneCls[a.tone])}>
-            <AlertTriangle className="size-4 shrink-0" />
+            <MaterialIcon name="AlertTriangle" className="size-4 shrink-0" />
             {a.text}
           </div>
         ))}

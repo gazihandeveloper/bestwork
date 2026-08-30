@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getTree, getErrorMessage } from "@/services/api";
@@ -13,7 +13,7 @@ const BinaryTree = dynamic(() => import("@/components/binary-tree/BinaryTree"), 
   ssr: false,
   loading: () => (
     <div className="flex justify-center py-10">
-      <Loader2 className="text-primary size-10 animate-spin" />
+      <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
     </div>
   ),
 });
@@ -51,7 +51,7 @@ function TreeContent() {
   if (!root) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }

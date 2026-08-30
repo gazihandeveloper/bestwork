@@ -17,7 +17,7 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
-import { Trash2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { listProducts, createProduct, deleteProduct, getErrorMessage } from "@/services/api";
 import type { Product } from "@/services/api";
@@ -136,7 +136,7 @@ function AdminProductsContent() {
                     </Typography>
                   </Box>
                   <IconButton color="error" onClick={() => handleDelete(p.id)} aria-label="sil">
-                    <Trash2 />
+                    <MaterialIcon name="Trash2" />
                   </IconButton>
                 </Box>
               ))}

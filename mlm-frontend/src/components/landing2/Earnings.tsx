@@ -1,28 +1,27 @@
 import Link from "next/link";
-import { Gift, Workflow, Crown, ArrowRight } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 
 interface EarningPlan {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 const plans: EarningPlan[] = [
   {
     title: "Referans Bonusu",
     description: "Sponsor ettiğiniz her üyeden anında prim kazanın.",
-    icon: Gift,
+    icon: "Gift",
   },
   {
     title: "Binary Komisyon",
     description: "Sol-sağ hat eşleşmesiyle her ay düzenli komisyon.",
-    icon: Workflow,
+    icon: "account_tree",
   },
   {
     title: "Liderlik Primi",
     description: "Ekibinizin kazancından derinlik primleri kazanın.",
-    icon: Crown,
+    icon: "Crown",
   },
 ];
 
@@ -43,7 +42,7 @@ export default function Earnings() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-        {plans.map(({ title, description, icon: Icon }) => (
+        {plans.map(({ title, description, icon }) => (
           <div
             key={title}
             className="border-border bg-card relative flex h-full flex-col overflow-hidden rounded-[10px] border border-t-2 border-t-primary p-6 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(0,0,0,0.18),0_2px_4px_2px_rgba(0,0,0,0.08)]"
@@ -52,7 +51,7 @@ export default function Earnings() {
             <div aria-hidden className="bg-primary/5 pointer-events-none absolute -top-10 -right-10 size-32 rounded-full" />
 
             <div className="bg-primary text-primary-foreground relative flex size-12 items-center justify-center rounded shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)]">
-              <Icon className="size-6" />
+              <MaterialIcon name={icon} className="size-6" />
             </div>
 
             <h3 className="relative mt-4 text-lg font-bold">{title}</h3>
@@ -65,7 +64,7 @@ export default function Earnings() {
               className="text-primary hover:text-primary-dark relative mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
             >
               Detaylı İncele
-              <ArrowRight className="size-4" />
+              <MaterialIcon name="ArrowRight" className="size-4" />
             </Link>
           </div>
         ))}

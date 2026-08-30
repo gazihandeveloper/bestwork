@@ -165,13 +165,14 @@ func (s *ChipService) applyMonthlyChipDeduction(ctx context.Context, q DBTX) err
 	return nil
 }
 
-// resetMonthlyBinaryEarnings tüm kullanıcıların aylık binary kazanç sayacını sıfırlar.
+// resetMonthlyBinaryEarnings tüm kullanıcıların aylık binary kazanç sayacını ve
+// aylık kişisel PV sayacını sıfırlar (ay sonu flashout + aktiflik reseti).
 func resetMonthlyBinaryEarnings(ctx context.Context, q DBTX) error {
-	tag, err := q.Exec(ctx, `UPDATE users SET current_month_binary_earned = 0, updated_at = NOW()`)
+	tag, err := q.Exec(ctx, `UPDATE users SET current_month_binary_earned = 0, current_month_personal_pv = 0, updated_at = NOW()`)
 	if err != nil {
 		return fmt.Errorf("aylık binary kazanç sıfırlanamadı: %w", err)
 	}
 
-	log.WithField("rows", tag.RowsAffected()).Info("Aylık binary kazançlar sıfırlandı")
+	log.WithField("rows", tag.RowsAffected()).Info("Aylık binary kazançlar ve kişisel PV sıfırlandı")
 	return nil
 }

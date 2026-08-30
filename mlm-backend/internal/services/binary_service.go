@@ -257,7 +257,9 @@ func logFlashoutViolation(ctx context.Context, q DBTX, memberID int64, period st
 }
 
 // DistributeMatchingBonus binary kazanan üyenin sponsor zincirine 5 nesil
-// boyunca matching bonusu dağıtır.
+// boyunca matching (liderlik) bonusu dağıtır. Her nesil yalnızca kariyer sahibi
+// (Jade+) ise pay alır; kariyeri olmayan nesil pay almaz ve payı devredilmez
+// (şirkete kalır).
 func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, amount float64) error {
 	currentID := binaryEarnerID
 
@@ -268,6 +270,17 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 		}
 		if sponsorID == nil {
 			break // sponsor zinciri sona erdi
+		}
+
+		// Liderlik primi yalnızca kariyer sahibi (Jade+) üst hatta ödenir.
+		// Kariyeri olmayan nesil pay almaz; pay DEVREDİLMEZ (şirkete kalır).
+		var hasCareer bool
+		if err := q.QueryRow(ctx, `SELECT (current_rank_id IS NOT NULL) FROM users WHERE id = $1`, *sponsorID).Scan(&hasCareer); err != nil {
+			return fmt.Errorf("sponsor kariyeri okunamadı: %w", err)
+		}
+		if !hasCareer {
+			currentID = *sponsorID
+			continue
 		}
 
 		bonus := round2(amount * rate)

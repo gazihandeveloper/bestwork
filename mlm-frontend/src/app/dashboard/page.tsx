@@ -3,30 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Copy,
-  Link as LinkIcon,
-  BarChart3,
-  Camera,
-  Medal,
-  BadgeCheck,
-  UserPlus,
-  SignalHigh,
-  Users,
-  Scale,
-  ChartLine,
-  Info,
-  Wallet,
-  Clock,
-  X,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
-import KycCard from "@/components/dashboard/KycCard";
 import AdminHome from "@/components/dashboard/AdminHome";
 import { BASE_PATH } from "@/lib/api";
 import type { UserDashboard, Rank, User } from "@/services/api";
@@ -87,7 +67,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, big
                 }}
                 className="cursor-pointer border-none bg-transparent p-0"
               >
-                <Info className="text-primary size-[28px] transition duration-200 hover:scale-115" />
+                <MaterialIcon name="Info" className="text-primary size-[28px] transition duration-200 hover:scale-115" />
               </button>
             </div>
 
@@ -167,7 +147,7 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, big
               transform: "rotateY(180deg)",
             }}
           >
-            <Info className="size-[30px]" />
+            <MaterialIcon name="Info" className="size-[30px]" />
             <p className="text-lg font-extrabold">{value}</p>
             <p className="max-w-[220px] text-sm font-semibold">{info}</p>
             <button
@@ -277,7 +257,7 @@ function DashboardContent() {
   if (!data) {
     return (
       <div className="flex justify-center py-10">
-        <Loader2 className="text-primary size-10 animate-spin" />
+        <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
       </div>
     );
   }
@@ -357,7 +337,7 @@ function DashboardContent() {
                       onChange={(e) => handleImageUpload(e.target.files?.[0])}
                     />
                     <span className="bg-background/90 text-foreground flex size-11 items-center justify-center rounded-full shadow-lg opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
-                      {uploading ? <Loader2 className="size-5 animate-spin" /> : <Camera className="size-5" />}
+                      {uploading ? <MaterialIcon name="Loader2" className="size-5 animate-spin" /> : <MaterialIcon name="photo_camera" className="size-5" />}
                     </span>
                   </label>
                 </div>
@@ -389,7 +369,7 @@ function DashboardContent() {
                       className="text-foreground border-border w-full rounded normal-case hover:bg-accent"
                     >
                       Üye No: {me?.member_code}
-                      <Copy className="size-3.5" />
+                      <MaterialIcon name="Copy" className="size-3.5" />
                     </Button>
                     {d.user.rank && (
                       <Button
@@ -408,7 +388,7 @@ function DashboardContent() {
                       className="text-primary border-primary w-full rounded normal-case font-bold hover:bg-primary/5"
                     >
                       <Link href="/success-report">
-                        <BarChart3 className="size-4" />
+                        <MaterialIcon name="bar_chart" className="size-4" />
                         Başarı Raporu
                       </Link>
                     </Button>
@@ -421,7 +401,7 @@ function DashboardContent() {
                     Üye Kayıt Linkiniz
                   </p>
                   <div className="border-border flex items-center gap-1 rounded border px-1.5 py-1">
-                    <LinkIcon className="text-muted-foreground size-4 shrink-0" />
+                    <MaterialIcon name="link" className="text-muted-foreground size-4 shrink-0" />
                     <span className="text-muted-foreground font-mono text-xs flex-grow truncate">{referralLink}</span>
                     <Button
                       size="sm"
@@ -429,7 +409,7 @@ function DashboardContent() {
                       onClick={() => copyText(referralLink, "link")}
                       className="rounded px-2 text-[11px] normal-case"
                     >
-                      <Copy className="size-3.5" />
+                      <MaterialIcon name="Copy" className="size-3.5" />
                       {copied === "link" ? "Kopyalandı!" : "Kopyala"}
                     </Button>
                   </div>
@@ -446,7 +426,7 @@ function DashboardContent() {
               label="Ünvan"
               value={currentRankName}
               steps={{ filled: rankIndex + 1, total: 12 }}
-              icon={<Medal />}
+              icon={<MaterialIcon name="military_tech" />}
               info={`${currentRankName} — Sistemdeki en yüksek kariyer unvanınız.`}
               flipped={flippedCard === "Ünvan"}
               onFlip={() => flip("Ünvan")}
@@ -455,7 +435,7 @@ function DashboardContent() {
             <StatBlock
               label="Güncel Kariyeriniz"
               value={currentRankName}
-              icon={<BadgeCheck />}
+              icon={<MaterialIcon name="BadgeCheck" />}
               info="Bu ayki güncel kariyeriniz."
               flipped={flippedCard === "Güncel Kariyeriniz"}
               onFlip={() => flip("Güncel Kariyeriniz")}
@@ -464,7 +444,7 @@ function DashboardContent() {
             <StatBlock
               label="Seviyeniz"
               value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
-              icon={<SignalHigh />}
+              icon={<MaterialIcon name="signal_cellular_alt" />}
               info="Kazanç oranlarınızı belirleyen paketiniz."
               flipped={flippedCard === "Seviyeniz"}
               onFlip={() => flip("Seviyeniz")}
@@ -472,7 +452,7 @@ function DashboardContent() {
             <StatBlock
               label="Sponsor Olduklarım"
               value={String(sponsoredCount)}
-              icon={<UserPlus />}
+              icon={<MaterialIcon name="UserPlus" />}
               info="Doğrudan kaydettiğiniz 1. hat üyeleriniz."
               flipped={flippedCard === "Sponsor Olduklarım"}
               onFlip={() => flip("Sponsor Olduklarım")}
@@ -487,7 +467,7 @@ function DashboardContent() {
                 left: fmt(d.left_team_count),
                 right: fmt(d.right_team_count),
               }}
-              icon={<Users />}
+              icon={<MaterialIcon name="Users" />}
               info="Binary ağacınızdaki toplam üye sayısı."
               flipped={flippedCard === "Ekibim"}
               onFlip={() => flip("Ekibim")}
@@ -502,7 +482,7 @@ function DashboardContent() {
                 left: fmt(d.leg_cv_left_total),
                 right: fmt(d.leg_cv_right_total),
               }}
-              icon={<Scale />}
+              icon={<MaterialIcon name="balance" />}
               info="Kısa kol ile eşleşen puanınız."
               flipped={flippedCard === "Anlık Eşleşme"}
               onFlip={() => flip("Anlık Eşleşme")}
@@ -511,7 +491,7 @@ function DashboardContent() {
             <StatBlock
               label="Kişisel Toplam Kazanç"
               value={`${fmt2(d.wallet.total_earned)} ₺`}
-              icon={<ChartLine />}
+              icon={<MaterialIcon name="monitoring" />}
               info="Sisteme katılımınızdan beri toplam kazancınız."
               flipped={flippedCard === "Kişisel Toplam Kazanç"}
               onFlip={() => flip("Kişisel Toplam Kazanç")}
@@ -520,7 +500,7 @@ function DashboardContent() {
             <StatBlock
               label="Yerleşim Bekleyen"
               value={String(pendingCount)}
-              icon={<Clock />}
+              icon={<MaterialIcon name="Clock" />}
               info="Ağaca yerleştirilmeyi bekleyen üyeler."
               flipped={flippedCard === "Yerleşim Bekleyen"}
               onFlip={() => flip("Yerleşim Bekleyen")}
@@ -529,7 +509,7 @@ function DashboardContent() {
             <StatBlock
               label="Anlık Kazanç"
               value={`${fmt2(d.monthly_earned)} ₺`}
-              icon={<Wallet />}
+              icon={<MaterialIcon name="Wallet" />}
               info="Bu cari dönemde oluşan güncel hakedişiniz."
               flipped={flippedCard === "Anlık Kazanç"}
               onFlip={() => flip("Anlık Kazanç")}
@@ -551,12 +531,12 @@ function DashboardContent() {
               onClick={() => setPendingOpen(false)}
               className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
             >
-              <X className="size-5" />
+              <MaterialIcon name="X" className="size-5" />
             </button>
           </div>
           {pendingLoading ? (
             <div className="flex justify-center py-6">
-              <Loader2 className="text-primary size-8 animate-spin" />
+              <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
             </div>
           ) : pendingUsers.length === 0 ? (
             <p className="text-muted-foreground py-4 text-center text-sm">Yerleşim bekleyen üye yok.</p>
@@ -607,21 +587,18 @@ function DashboardContent() {
         </DialogContent>
       </Dialog>
 
-      {/* KYC — Kimlik Doğrulama */}
-      <KycCard />
-
       {/* Bildirim */}
       {msg && (
         <div className="fixed bottom-5 left-1/2 z-[1400] w-[calc(100%-2rem)] max-w-md -translate-x-1/2">
           <div className="bg-foreground text-background flex items-center gap-2 rounded px-4 py-3 text-sm font-semibold shadow-lg">
-            <CheckCircle2 className="size-5 shrink-0" />
+            <MaterialIcon name="check_circle" className="size-5 shrink-0" />
             <span className="flex-1">{msg}</span>
             <button
               aria-label="Kapat"
               className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
               onClick={() => setMsg("")}
             >
-              <X className="size-4" />
+              <MaterialIcon name="X" className="size-4" />
             </button>
           </div>
         </div>

@@ -5,14 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import {
-  UserPlus,
-  Handshake,
-  CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  Loader2,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/lib/api";
 import { checkReferral } from "@/services/api";
@@ -247,7 +240,7 @@ function RegisterContent() {
             <div
               className="bg-[#D8F0DC] text-primary-dark mx-auto mb-1 flex size-[60px] items-center justify-center rounded-full"
             >
-              <UserPlus className="size-8" />
+              <MaterialIcon name="UserPlus" className="size-8" />
             </div>
             <h1 className="text-2xl font-extrabold">Kayıt Ol</h1>
             <p className="mt-0.5 text-sm text-white/85">
@@ -259,7 +252,7 @@ function RegisterContent() {
             {stage === "sponsor" ? (
               <div className="border-border bg-secondary/10 flex flex-col gap-1.5 rounded-[17px] border p-4">
                 <div className="flex items-center gap-1">
-                  <Handshake className="text-primary size-5" />
+                  <MaterialIcon name="handshake" className="text-primary size-5" />
                   <p className="text-base font-bold">Sponsor Üye Numarası</p>
                 </div>
                 <p className="text-muted-foreground text-sm">
@@ -283,13 +276,13 @@ function RegisterContent() {
                     )}
                   </div>
                   <Button onClick={searchRef} disabled={refStatus === "checking"} className="h-10 shrink-0 px-4">
-                    {refStatus === "checking" ? <Loader2 className="size-4 animate-spin" /> : "Ara"}
+                    {refStatus === "checking" ? <MaterialIcon name="Loader2" className="size-4 animate-spin" /> : "Ara"}
                   </Button>
                 </div>
 
                 {refStatus === "found" && (
                   <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-                    <CheckCircle2 className="size-5 shrink-0" />
+                    <MaterialIcon name="check_circle" className="size-5 shrink-0" />
                     <span>
                       Sponsor Üyeniz: <strong>{refOwner}</strong>
                     </span>
@@ -297,7 +290,7 @@ function RegisterContent() {
                 )}
                 {refStatus === "notfound" && (
                   <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-                    <AlertCircle className="size-5 shrink-0" />
+                    <MaterialIcon name="error" className="size-5 shrink-0" />
                     Bu referans kodu sistemde bulunamadı. Lütfen kontrol edin.
                   </div>
                 )}
@@ -316,7 +309,7 @@ function RegisterContent() {
                   onClick={() => setStage("sponsor")}
                   className="text-foreground ml-[-4px] self-start font-semibold"
                 >
-                  <ArrowRight className="size-4 rotate-180" />
+                  <MaterialIcon name="ArrowRight" className="size-4 rotate-180" />
                   Sponsoru değiştir
                 </Button>
 
@@ -329,7 +322,7 @@ function RegisterContent() {
                   </div>
                 ) : (
                   <div className="border-[#2E7D32]/50 bg-[#2E7D32]/10 text-[#2E7D32] flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-                    <CheckCircle2 className="size-5 shrink-0" />
+                    <MaterialIcon name="check_circle" className="size-5 shrink-0" />
                     <span>
                       Sponsor Üyeniz: <strong>{refOwner}</strong>
                     </span>
@@ -544,7 +537,7 @@ function RegisterContent() {
                   disabled={isSubmitting}
                   className="mt-1 self-stretch px-6 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.16),0_1px_2px_1px_rgba(0,0,0,0.06)] md:self-end"
                 >
-                  {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : "Hesabımı Oluştur"}
+                  {isSubmitting ? <MaterialIcon name="Loader2" className="size-5 animate-spin" /> : "Hesabımı Oluştur"}
                 </Button>
               </form>
             )}

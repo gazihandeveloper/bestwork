@@ -1,0 +1,273 @@
+/* ── Şaşalı Güvenli Login Template ─────────────────────────────────────── */
+
+.lt-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(1200px 700px at 85% -10%, rgba(91, 33, 182, 0.35), transparent 60%),
+    radial-gradient(900px 600px at 10% 110%, rgba(71, 111, 22, 0.45), transparent 55%),
+    linear-gradient(160deg, #05070c 0%, #0a0f1d 45%, #0d1226 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-source-sans), "Source Sans 3", sans-serif;
+  z-index: 10;
+}
+
+/* Yüzen neon küreler */
+.lt-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.55;
+  animation: lt-float 14s ease-in-out infinite;
+  pointer-events: none;
+}
+.lt-orb-1 { width: 380px; height: 380px; left: -80px; top: -60px; background: radial-gradient(circle, #4B49AC, transparent 70%); }
+.lt-orb-2 { width: 320px; height: 320px; right: -60px; top: 18%; background: radial-gradient(circle, #7fbf3f, transparent 70%); animation-delay: -5s; }
+.lt-orb-3 { width: 260px; height: 260px; left: 28%; bottom: -90px; background: radial-gradient(circle, #20c997, transparent 70%); animation-delay: -9s; }
+@keyframes lt-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.08); }
+  66% { transform: translate(-30px, 24px) scale(0.94); }
+}
+
+/* Parçacık tuvali */
+.lt-canvas { position: absolute; inset: 0; pointer-events: none; }
+
+/* Cam kart */
+.lt-card {
+  position: relative;
+  width: min(92vw, 420px);
+  padding: 2.2rem 2rem 1.8rem;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  animation: lt-card-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden;
+}
+.lt-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(127, 191, 63, 0.7), rgba(75, 73, 172, 0.7), rgba(32, 201, 151, 0.7));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: lt-border-spin 6s linear infinite;
+  background-size: 300% 300%;
+  pointer-events: none;
+}
+@keyframes lt-card-in {
+  from { opacity: 0; transform: translateY(34px) scale(0.94); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes lt-border-spin {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Logo */
+.lt-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-bottom: 0.4rem;
+}
+.lt-logo img,
+.lt-logo-mark {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #476f16, #7fbf3f);
+  box-shadow: 0 0 26px rgba(127, 191, 63, 0.55);
+  animation: lt-logo-pulse 3s ease-in-out infinite;
+}
+@keyframes lt-logo-pulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(127, 191, 63, 0.4); }
+  50% { box-shadow: 0 0 38px rgba(75, 73, 172, 0.75); }
+}
+.lt-title {
+  margin: 0.4rem 0 0.1rem;
+  font-size: 1.7rem;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(90deg, #9fe870, #c4b5fd, #7dd3fc, #9fe870);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lt-shimmer 5s linear infinite;
+}
+@keyframes lt-shimmer {
+  to { background-position: 300% center; }
+}
+.lt-subtitle {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.86rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Kalkan rozeti */
+.lt-shield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #9fe870;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+  animation: lt-shield-pulse 2.4s ease-in-out infinite;
+}
+@keyframes lt-shield-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; text-shadow: 0 0 14px rgba(127, 191, 63, 0.8); }
+}
+
+/* Alanlar */
+.lt-field { position: relative; margin-bottom: 1rem; }
+.lt-field .lt-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.45);
+  z-index: 2;
+  pointer-events: none;
+  transition: color 0.25s;
+}
+.lt-field input {
+  width: 100%;
+  padding: 0.85rem 2.6rem 0.85rem 2.7rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.lt-field input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.lt-field input:focus {
+  border-color: rgba(127, 191, 63, 0.75);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 3px rgba(127, 191, 63, 0.18), 0 0 22px rgba(127, 191, 63, 0.25);
+}
+.lt-field .lt-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.lt-field .lt-toggle:hover { color: #fff; }
+
+/* Şifre güç göstergesi */
+.lt-strength { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.45rem; }
+.lt-strength .bars { flex: 1; display: flex; gap: 4px; }
+.lt-strength .bars span {
+  height: 4px;
+  flex: 1;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.35s, box-shadow 0.35s;
+}
+.lt-strength .bars span.on1 { background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b; }
+.lt-strength .bars span.on2 { background: #ffc100; box-shadow: 0 0 8px #ffc100; }
+.lt-strength .bars span.on3 { background: #20c997; box-shadow: 0 0 8px #20c997; }
+.lt-strength .bars span.on4 { background: #7fbf3f; box-shadow: 0 0 8px #7fbf3f; }
+.lt-strength-label { font-size: 0.72rem; color: rgba(255, 255, 255, 0.5); min-width: 92px; text-align: right; }
+
+/* Buton */
+.lt-btn {
+  position: relative;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(120deg, #388e3c, #2e7d32);
+  box-shadow: 0 10px 30px rgba(46, 125, 50, 0.45);
+  transition: transform 0.15s, box-shadow 0.25s, filter 0.2s;
+}
+.lt-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 38px rgba(75, 73, 172, 0.55); filter: brightness(1.08); }
+.lt-btn:active:not(:disabled) { transform: translateY(0); }
+.lt-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Hata */
+.lt-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ff9a9a;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  animation: lt-shake 0.45s ease;
+}
+@keyframes lt-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+/* Güvenlik rozetleri */
+.lt-security {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 1.3rem;
+  flex-wrap: wrap;
+}
+.lt-security span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+.lt-security span i { color: #9fe870; }
+
+.lt-foot {
+  position: absolute;
+  bottom: 14px;
+  width: 100%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}

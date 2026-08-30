@@ -249,8 +249,9 @@ func ProcessOrderEffects(ctx context.Context, q DBTX, orderID int64) error {
 		// Üye: PV/CV birikimi + referans + paket seviyesi + binary
 		newTotalPV := totalPVAccumulated + totalPV
 		if _, err := q.Exec(ctx,
-			`UPDATE users SET total_pv_accumulated = $1, total_cv_accumulated = total_cv_accumulated + $2, updated_at = NOW() WHERE id = $3`,
-			newTotalPV, totalCV, orderUserID); err != nil {
+			`UPDATE users SET total_pv_accumulated = $1, total_cv_accumulated = total_cv_accumulated + $2,
+				current_month_personal_pv = current_month_personal_pv + $3, updated_at = NOW() WHERE id = $4`,
+			newTotalPV, totalCV, totalPV, orderUserID); err != nil {
 			return fmt.Errorf("PV/CV birikimi güncellenemedi: %w", err)
 		}
 
@@ -493,21 +494,33 @@ func (s *OrderService) getOrderItems(ctx context.Context, orderID int64) ([]mode
 	return items, rows.Err()
 }
 
+// AdminOrderItem admin sipariş listesindeki bir sipariş kalemini temsil eder.
+type AdminOrderItem struct {
+	ID          int64   `json:"id"`
+	ProductID   *int64  `json:"product_id"`
+	ProductName *string `json:"product_name"`
+	Quantity    int     `json:"quantity"`
+	Price       float64 `json:"price"`
+	PV          int64   `json:"pv"`
+	CV          int64   `json:"cv"`
+}
+
 // AdminOrder admin sipariş listesindeki bir satırı temsil eder (üye bilgisiyle).
 type AdminOrder struct {
-	ID            int64     `json:"id"`
-	UserID        int64     `json:"user_id"`
-	UserName      string    `json:"user_name"`
-	MemberCode    string    `json:"member_code"`
-	TotalAmount   float64   `json:"total_amount"`
-	TotalPV       int64     `json:"total_pv"`
-	TotalCV       int64     `json:"total_cv"`
-	Status        string    `json:"status"`
-	PaymentMethod string    `json:"payment_method"`
-	OrderType     string    `json:"order_type"`
-	TrackingCode  *string   `json:"tracking_code"`
-	AdminNote     *string   `json:"admin_note"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            int64             `json:"id"`
+	UserID        int64             `json:"user_id"`
+	UserName      string            `json:"user_name"`
+	MemberCode    string            `json:"member_code"`
+	TotalAmount   float64           `json:"total_amount"`
+	TotalPV       int64             `json:"total_pv"`
+	TotalCV       int64             `json:"total_cv"`
+	Status        string            `json:"status"`
+	PaymentMethod string            `json:"payment_method"`
+	OrderType     string            `json:"order_type"`
+	TrackingCode  *string           `json:"tracking_code"`
+	AdminNote     *string           `json:"admin_note"`
+	CreatedAt     time.Time         `json:"created_at"`
+	Items         []AdminOrderItem  `json:"items"`
 }
 
 const adminOrderColumns = `o.id, o.user_id, u.name, u.member_code, o.total_amount, o.total_pv, o.total_cv,
@@ -569,15 +582,52 @@ func (s *OrderService) ListAllOrders(ctx context.Context, limit, offset int, sta
 		}
 		orders = append(orders, o)
 	}
-	return orders, total, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	// Sipariş kalemlerini toplu çek (hazırlama ekranı için ürün listesi).
+	if len(orders) > 0 {
+		ids := make([]int64, 0, len(orders))
+		idx := make(map[int64]int, len(orders))
+		for i, o := range orders {
+			idx[o.ID] = i
+			ids = append(ids, o.ID)
+		}
+		itemRows, err := s.db.Query(ctx, `
+			SELECT oi.id, oi.order_id, oi.product_id, p.name, oi.quantity, oi.price, oi.pv, oi.cv
+			FROM order_items oi
+			LEFT JOIN products p ON p.id = oi.product_id
+			WHERE oi.order_id = ANY($1)
+			ORDER BY oi.id`, ids)
+		if err != nil {
+			return nil, 0, fmt.Errorf("sipariş kalemleri okunamadı: %w", err)
+		}
+		defer itemRows.Close()
+		for itemRows.Next() {
+			var it AdminOrderItem
+			var orderID int64
+			if err := itemRows.Scan(&it.ID, &orderID, &it.ProductID, &it.ProductName, &it.Quantity, &it.Price, &it.PV, &it.CV); err != nil {
+				return nil, 0, fmt.Errorf("sipariş kalemi okunamadı: %w", err)
+			}
+			if i, ok := idx[orderID]; ok {
+				orders[i].Items = append(orders[i].Items, it)
+			}
+		}
+		if err := itemRows.Err(); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return orders, total, nil
 }
 
 // UpdateOrderStatus sipariş durumunu günceller (kargo kodu/notuyla) ve
 // denetim kaydı yazar.
 func (s *OrderService) UpdateOrderStatus(ctx context.Context, adminID int64, adminName string, orderID int64, status, trackingCode, note string) error {
 	status = strings.TrimSpace(status)
-	if status != "pending" && status != "paid" && status != "shipped" && status != "cancelled" {
-		return errors.New("geçersiz sipariş durumu: pending, paid, shipped veya cancelled olmalıdır")
+	if status != "pending" && status != "paid" && status != "preparing" && status != "shipped" && status != "cancelled" {
+		return errors.New("geçersiz sipariş durumu: pending, paid, preparing, shipped veya cancelled olmalıdır")
 	}
 
 	tx, err := s.db.Begin(ctx)
@@ -599,6 +649,13 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, adminID int64, adm
 		return ErrOrderNotFound
 	}
 
+	// Sipariş iptal ediliyorsa bu siparişe bağlı ödenmiş komisyonları otomatik geri al.
+	if status == "cancelled" {
+		if err := reverseOrderCommissions(ctx, tx, orderID, adminID, adminName, note); err != nil {
+			return err
+		}
+	}
+
 	if err := logInTx(ctx, tx, adminID, adminName, "order_status", "order", &orderID, note, map[string]any{
 		"status":        status,
 		"tracking_code": trackingCode,
@@ -608,6 +665,68 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, adminID int64, adm
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("transaction tamamlanamadı: %w", err)
+	}
+	return nil
+}
+
+// reverseOrderCommissions sipariş iptalinde ilgili ödenmiş perakende/referans
+// komisyonlarını otomatik geri alır: cüzdandan düşer, komisyonu iptal eder,
+// hareket kaydı ve düzeltme (bonus_rollback) logu yazar.
+func reverseOrderCommissions(ctx context.Context, tx pgx.Tx, orderID int64, adminID int64, adminName, note string) error {
+	rows, err := tx.Query(ctx, `
+		SELECT id, user_id, amount FROM commissions
+		WHERE related_order_id = $1 AND status = 'paid'
+		FOR UPDATE`, orderID)
+	if err != nil {
+		return fmt.Errorf("komisyonlar okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	type comm struct {
+		id     int64
+		userID int64
+		amount float64
+	}
+	var items []comm
+	for rows.Next() {
+		var c comm
+		if err := rows.Scan(&c.id, &c.userID, &c.amount); err != nil {
+			return err
+		}
+		items = append(items, c)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	for _, c := range items {
+		if _, err := tx.Exec(ctx,
+			`UPDATE wallets SET balance = GREATEST(0, balance - $1), updated_at = NOW() WHERE user_id = $2`,
+			c.amount, c.userID); err != nil {
+			return fmt.Errorf("cüzdan düşümü başarısız: %w", err)
+		}
+
+		var walletID int64
+		if err := tx.QueryRow(ctx, `SELECT id FROM wallets WHERE user_id = $1`, c.userID).Scan(&walletID); err == nil && walletID > 0 {
+			neg := -c.amount
+			reason := "Sipariş iptali geri alımı"
+			if _, err := tx.Exec(ctx,
+				`INSERT INTO wallet_transactions (wallet_id, amount, type, reason, admin_id) VALUES ($1,$2,'reversal',$3,$4)`,
+				walletID, neg, reason, adminID); err != nil {
+				return fmt.Errorf("cüzdan hareketi yazılamadı: %w", err)
+			}
+		}
+
+		if _, err := tx.Exec(ctx, `UPDATE commissions SET status = 'cancelled' WHERE id = $1`, c.id); err != nil {
+			return fmt.Errorf("komisyon iptal edilemedi: %w", err)
+		}
+
+		uid := c.userID
+		if err := logInTx(ctx, tx, adminID, adminName, "bonus_rollback", "user", &uid, note, map[string]any{
+			"commission_id": c.id, "amount": c.amount, "order_id": orderID,
+		}); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -27,6 +27,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const initialMode = (ck.get("bw_mode")?.value === "dark" ? "dark" : ck.get("bw_mode")?.value === "light" ? "light" : null) as "light" | "dark" | null;
   return (
     <html lang="tr" className={initialMode === "dark" ? "dark" : ""} style={{ colorScheme: initialMode === "dark" ? "dark" : "light" }}>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+      />
       <body className={`${plusJakarta.variable} ${plusJakarta.className}`}>
         <AppRouterCacheProvider>
           <Providers initialMode={initialMode}>

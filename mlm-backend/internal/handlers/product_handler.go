@@ -31,6 +31,7 @@ type ProductRequest struct {
 	Stock       int     `json:"stock" binding:"min=0"`
 	ImagePath   string  `json:"image_path"`
 	Category    string  `json:"category"`
+	CategoryID  *int64  `json:"category_id"`
 	SKU         string  `json:"sku"`
 }
 
@@ -42,7 +43,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		return
 	}
 
-	p, err := h.products.CreateProduct(c.Request.Context(), req.Name, req.Description, req.ImagePath, req.Category, req.SKU, req.Price, req.PV, req.CV, req.Stock)
+	p, err := h.products.CreateProduct(c.Request.Context(), req.Name, req.Description, req.ImagePath, req.Category, req.SKU, req.Price, req.PV, req.CV, req.Stock, req.CategoryID)
 	if err != nil {
 		log.WithError(err).Error("Ürün oluşturulamadı")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -136,6 +137,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	p.PV = req.PV
 	p.CV = req.CV
 	p.Stock = req.Stock
+	p.CategoryID = req.CategoryID
 	desc := req.Description
 	p.Description = &desc
 	if req.ImagePath != "" {
@@ -157,7 +159,14 @@ func (h *ProductHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"product": p})
+	// Güncel kategori adı dahil tam kaydı yeniden oku ve döndür.
+	updated, err := h.products.GetProductByID(c.Request.Context(), id)
+	if err != nil {
+		log.WithError(err).Error("Güncellenen ürün okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ürün güncellendi ancak okunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"product": updated})
 }
 
 // Delete ürünü siler (JWT korumalı).

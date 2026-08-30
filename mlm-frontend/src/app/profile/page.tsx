@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, Copy } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import AppSnackbar from "@/components/AppSnackbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,7 +60,7 @@ function ProfileContent() {
             onClick={copyMemberCode}
           >
             Üye Numaranız: {user?.member_code}
-            <Copy className="size-3.5" />
+            <MaterialIcon name="Copy" className="size-3.5" />
           </Badge>
           <Badge className="bg-secondary text-secondary-foreground">
             {user?.role === "admin" || user?.role === "super_admin" ? "Admin" : user?.role === "customer" ? "Müşteri" : "Üye"}
@@ -70,7 +70,7 @@ function ProfileContent() {
         {/* Başarı Raporu */}
         <Button asChild size="sm" className="text-primary-dark mb-2.5 rounded bg-white font-extrabold shadow-sm hover:bg-white/90">
           <Link href="/success-report">
-            <BarChart3 className="size-4" />
+            <MaterialIcon name="bar_chart" className="size-4" />
             🏅 Başarı Raporu
           </Link>
         </Button>

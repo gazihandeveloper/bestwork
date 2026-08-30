@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Truck, ShieldCheck, Gift, Headphones } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import { listBenefits } from "@/services/api";
 import type { Benefit } from "@/services/api";
 import { Reveal } from "../landing/Reveal";
@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // İkon anahtarları (admin panelindeki seçimle eşleşir)
 const ICONS: Record<string, ReactNode> = {
-  shipping: <Truck className="size-5" />,
-  payment: <ShieldCheck className="size-5" />,
-  pv: <Gift className="size-5" />,
-  support: <Headphones className="size-5" />,
+  shipping: <MaterialIcon name="Truck" className="size-5" />,
+  payment: <MaterialIcon name="ShieldCheck" className="size-5" />,
+  pv: <MaterialIcon name="Gift" className="size-5" />,
+  support: <MaterialIcon name="Headphones" className="size-5" />,
 };
 
 const fallbackBenefits: Benefit[] = [

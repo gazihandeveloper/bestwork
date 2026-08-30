@@ -129,6 +129,22 @@ func (s *JobService) RunBinaryMatchPass(ctx context.Context, jobID int64) {
 		return
 	}
 
+	// Önce kariyerleri yeniden hesapla (matching primi taze unvanlara göre ödenecek).
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		s.finish(ctx, jobID, nil, "kariyer hesaplama transaction başlatılamadı: "+err.Error())
+		return
+	}
+	if _, err := RecomputeAllCareers(ctx, tx); err != nil {
+		tx.Rollback(ctx)
+		s.finish(ctx, jobID, nil, "kariyer hesaplama başarısız: "+err.Error())
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		s.finish(ctx, jobID, nil, "kariyer hesaplama commit edilemedi: "+err.Error())
+		return
+	}
+
 	rows, err := s.db.Query(ctx, `
 		SELECT id FROM users
 		WHERE is_active = true AND parent_id IS NOT NULL

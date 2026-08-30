@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 
 // Eski admin paneli girişi → artık yönetim ana sayfası üye dashboard'unun içinde (AdminHome).
 export default function AdminDashboardRedirect() {
@@ -12,7 +12,7 @@ export default function AdminDashboardRedirect() {
   }, [router]);
   return (
     <div className="flex justify-center py-20">
-      <Loader2 className="text-primary size-10 animate-spin" />
+      <MaterialIcon name="Loader2" className="text-primary size-10 animate-spin" />
     </div>
   );
 }

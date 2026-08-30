@@ -16,7 +16,7 @@ import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Chip from "@mui/material/Chip";
-import { Image as ImageIcon, Pencil, Trash2, Upload } from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import {
   listAdminHeroSlides,
@@ -207,7 +207,7 @@ function AdminHeroSlidesContent() {
                   />
                   <Button
                     variant="outlined"
-                    startIcon={uploading ? <CircularProgress size={18} /> : <Upload />}
+                    startIcon={uploading ? <CircularProgress size={18} /> : <MaterialIcon name="Upload" />}
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading}
                     fullWidth
@@ -308,16 +308,16 @@ function AdminHeroSlidesContent() {
                       />
                     </Box>
                     <IconButton aria-label="düzenle" onClick={() => startEdit(s)}>
-                      <Pencil />
+                      <MaterialIcon name="Pencil" />
                     </IconButton>
                     <IconButton aria-label="sil" color="error" onClick={() => handleDelete(s.id)}>
-                      <Trash2 />
+                      <MaterialIcon name="Trash2" />
                     </IconButton>
                   </Box>
                 ))}
                 {!loading && slides.length === 0 && (
                   <Box sx={{ textAlign: "center", py: 6, color: "text.secondary" }}>
-                    <ImageIcon className="size-[48px] mb-2" />
+                    <MaterialIcon name="Image" className="size-[48px] mb-2" />
                     <Typography variant="body1">Henüz slider eklenmemiş.</Typography>
                   </Box>
                 )}

@@ -1,19 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  FoldVertical,
-  Maximize,
-  Search,
-  UnfoldVertical,
-  UserPlus,
-  X,
-  ZoomIn,
-  ZoomOut,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { MaterialIcon } from "@/components/MaterialIcon";
 import {
   fileUrl,
   getTree,
@@ -324,7 +312,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
           ))}
         </Select>
         <div className="relative">
-          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+          <MaterialIcon name="Search" className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             placeholder="Üye ara (TR90 kodu)..."
             value={search}
@@ -340,19 +328,19 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
         </div>
         <div className="flex-1" />
         <button type="button" title="Tümünü aç" aria-label="Tümünü aç" className={iconBtn} onClick={() => toggleAll(false)}>
-          <UnfoldVertical className="size-5" />
+          <MaterialIcon name="unfold_more" className="size-5" />
         </button>
         <button type="button" title="Tümünü kapat" aria-label="Tümünü kapat" className={iconBtn} onClick={() => toggleAll(true)}>
-          <FoldVertical className="size-5" />
+          <MaterialIcon name="unfold_less" className="size-5" />
         </button>
         <button type="button" title="Yaklaş" aria-label="Yaklaş" className={iconBtn} onClick={() => rendererRef.current?.zoomBy(1.3)}>
-          <ZoomIn className="size-5" />
+          <MaterialIcon name="zoom_in" className="size-5" />
         </button>
         <button type="button" title="Uzaklaş" aria-label="Uzaklaş" className={iconBtn} onClick={() => rendererRef.current?.zoomBy(0.77)}>
-          <ZoomOut className="size-5" />
+          <MaterialIcon name="zoom_out" className="size-5" />
         </button>
         <button type="button" title="Sığdır" aria-label="Sığdır" className={iconBtn} onClick={() => rendererRef.current?.fit()}>
-          <Maximize className="size-5" />
+          <MaterialIcon name="fit_screen" className="size-5" />
         </button>
       </div>
 
@@ -368,7 +356,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
       <Dialog open={!!placeTarget} onOpenChange={(o) => !o && setPlaceTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogTitle className="flex items-center gap-1 text-lg font-extrabold">
-            <UserPlus className="text-primary size-5" />
+            <MaterialIcon name="UserPlus" className="text-primary size-5" />
             {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
             <div className="flex-1" />
             <button
@@ -377,7 +365,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
               className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
               onClick={() => setPlaceTarget(null)}
             >
-              <X className="size-4" />
+              <MaterialIcon name="X" className="size-4" />
             </button>
           </DialogTitle>
           <p className="text-muted-foreground mb-1.5 text-sm">
@@ -393,7 +381,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
 
           {pendingLoading ? (
             <div className="flex justify-center py-4">
-              <Loader2 className="text-primary size-7 animate-spin" />
+              <MaterialIcon name="Loader2" className="text-primary size-7 animate-spin" />
             </div>
           ) : pendingUsers.length === 0 && !placeError ? (
             <p className="text-muted-foreground py-3 text-center text-sm">
@@ -428,7 +416,7 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
             disabled={placing || pendingLoading || selectedUserId === null}
             onClick={handlePlaceSubmit}
           >
-            {placing ? <Loader2 className="size-5 animate-spin" /> : "Yerleştir"}
+            {placing ? <MaterialIcon name="Loader2" className="size-5 animate-spin" /> : "Yerleştir"}
           </Button>
         </DialogContent>
       </Dialog>
@@ -464,13 +452,13 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
               className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
               onClick={() => setInfoNode(null)}
             >
-              <X className="size-4" />
+              <MaterialIcon name="X" className="size-4" />
             </button>
           </DialogTitle>
           <div className="border-border border-t pt-3">
             {infoLoading ? (
               <div className="flex justify-center py-6">
-                <Loader2 className="text-primary size-8 animate-spin" />
+                <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
               </div>
             ) : infoError ? (
               <div className="border-destructive/50 bg-destructive/10 text-destructive rounded border px-3 py-2 text-sm font-medium">
@@ -504,9 +492,9 @@ function Toast({ msg, onClose, type }: { msg: string; onClose: () => void; type:
         )}
       >
         {type === "success" ? (
-          <CheckCircle2 className="size-5 shrink-0" />
+          <MaterialIcon name="check_circle" className="size-5 shrink-0" />
         ) : (
-          <AlertCircle className="size-5 shrink-0" />
+          <MaterialIcon name="error" className="size-5 shrink-0" />
         )}
         <span className="flex-1">{msg}</span>
         <button
@@ -515,7 +503,7 @@ function Toast({ msg, onClose, type }: { msg: string; onClose: () => void; type:
           className="cursor-pointer text-lg leading-none opacity-70 hover:opacity-100"
           onClick={onClose}
         >
-          <X className="size-4" />
+          <MaterialIcon name="X" className="size-4" />
         </button>
       </div>
     </div>
