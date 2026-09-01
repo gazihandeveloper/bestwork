@@ -56,14 +56,14 @@ func (h *BenefitHandler) ListAll(c *gin.Context) {
 func (h *BenefitHandler) Create(c *gin.Context) {
 	var req BenefitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
 	b, err := h.benefits.CreateBenefit(c.Request.Context(), req.Title, req.Description, req.Icon, req.SortOrder, req.IsActive)
 	if err != nil {
 		log.WithError(err).Error("Avantaj kartı eklenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"benefit": b})
@@ -79,7 +79,7 @@ func (h *BenefitHandler) Update(c *gin.Context) {
 
 	var req BenefitRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *BenefitHandler) Update(c *gin.Context) {
 
 	if err := h.benefits.UpdateBenefit(c.Request.Context(), b); err != nil {
 		log.WithError(err).Error("Avantaj kartı güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"benefit": b})
@@ -122,7 +122,7 @@ func (h *BenefitHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Avantaj kartı silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Avantaj kartı silindi"})

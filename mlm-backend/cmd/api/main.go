@@ -127,7 +127,7 @@ func main() {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-CSRF-Protection"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-CSRF-Protection", "X-Admin-Scope"},
 		AllowCredentials: true,
 	}))
 
@@ -317,6 +317,7 @@ func main() {
 		api.PUT("/admin/users/:id/rank", append(superAdminOnly(), adminHandler.UpdateUserRank)...)
 		api.PUT("/admin/users/:id/status", append(adminOnly(), adminHandler.UpdateUserStatus)...)
 		api.PUT("/admin/users/:id/role", append(superAdminOnly(), adminHandler.UpdateUserRole)...)
+		api.PUT("/admin/users/:id/sponsor", append(adminOnly(), adminHandler.ChangeSponsor)...)
 		api.POST("/admin/users/:id/adjust-pv-cv", append(superAdminOnly(), adminHandler.AdjustPVAndCV)...)
 		api.GET("/admin/orders", append(adminOnly(), adminHandler.ListOrders)...)
 		api.PUT("/admin/orders/:id/status", append(adminOnly(), adminHandler.UpdateOrderStatus)...)
@@ -345,6 +346,7 @@ func main() {
 		api.GET("/admin/commissions-series", append(adminOnly(), adminHandler.CommissionSeries)...)
 		api.GET("/admin/rank-distribution", append(adminOnly(), adminHandler.RankDistribution)...)
 		api.POST("/admin/careers/recompute", append(adminOnly(), adminHandler.RecomputeCareers)...)
+		api.POST("/admin/respawn", append(adminOnly(), adminHandler.RespawnUser)...)
 		api.GET("/admin/top-products", append(adminOnly(), adminHandler.TopProducts)...)
 		api.GET("/admin/fraud/duplicates", append(adminOnly(), adminHandler.FraudDuplicates)...)
 		api.POST("/admin/bonus/simulate", append(adminOnly(), adminHandler.SimulateBonus)...)

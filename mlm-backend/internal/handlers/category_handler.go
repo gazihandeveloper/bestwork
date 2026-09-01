@@ -48,7 +48,7 @@ func (h *CategoryHandler) List(c *gin.Context) {
 func (h *CategoryHandler) Create(c *gin.Context) {
 	var req CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	cat, err := h.categories.Create(c.Request.Context(), req.Name, req.Slug, req.Icon, description, req.SortOrder, isActive)
 	if err != nil {
 		log.WithError(err).Error("Kategori eklenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"category": cat})
@@ -80,7 +80,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 
 	var req CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -116,7 +116,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Kategori güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"category": cat})
@@ -136,7 +136,7 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Kategori silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Kategori silindi"})

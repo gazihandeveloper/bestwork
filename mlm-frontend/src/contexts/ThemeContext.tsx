@@ -13,7 +13,8 @@ function initialMode(): "light" | "dark" {
   try {
     const saved = window.localStorage.getItem(MODE_KEY);
     if (saved === "dark" || saved === "light") return saved;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    // Varsayılan her zaman açık tema — sayfa açılışında siyah flaş olmasın.
+    return "light";
   } catch {
     return "light";
   }

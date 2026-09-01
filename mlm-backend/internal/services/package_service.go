@@ -106,7 +106,7 @@ const packageColumns = `id, name, price, referral_bonus_rate, binary_bonus_rate,
 
 // CreatePackage yeni paket ekler.
 func (s *PackageService) CreatePackage(ctx context.Context, name string, price, refRate, binRate, matchRate, discRate float64, requiredPV, cv int64) (*models.Package, error) {
-	if name == "" || price <= 0 || requiredPV < 0 || cv < 0 || !validRate(refRate) || !validRate(binRate) || !validRate(matchRate) || !validRate(discRate) {
+	if name == "" || price < 0 || requiredPV < 0 || cv < 0 || !validRate(refRate) || !validRate(binRate) || !validRate(matchRate) || !validRate(discRate) {
 		return nil, errors.New("geçersiz paket bilgileri")
 	}
 
@@ -166,7 +166,7 @@ func (s *PackageService) ListPackages(ctx context.Context) ([]models.Package, er
 
 // UpdatePackage paketin tüm değişebilir alanlarını günceller.
 func (s *PackageService) UpdatePackage(ctx context.Context, p *models.Package) error {
-	if p.Name == "" || p.Price <= 0 || p.RequiredPV < 0 || p.CV < 0 || !validRate(p.ReferralBonusRate) || !validRate(p.BinaryBonusRate) || !validRate(p.MatchingBonusRate) || !validRate(p.DiscountRate) {
+	if p.Name == "" || p.Price < 0 || p.RequiredPV < 0 || p.CV < 0 || !validRate(p.ReferralBonusRate) || !validRate(p.BinaryBonusRate) || !validRate(p.MatchingBonusRate) || !validRate(p.DiscountRate) {
 		return errors.New("geçersiz paket bilgileri")
 	}
 	tag, err := s.db.Exec(ctx,

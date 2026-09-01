@@ -28,6 +28,7 @@ const groups: MenuGroup[] = [
       { path: "/beneficiary", label: "Varis Bilgileri", icon: <MaterialIcon name="Users" className="size-4" /> },
       { path: "/bank", label: "Banka Bilgilerim", icon: <MaterialIcon name="account_balance" className="size-4" /> },
       { path: "/sponsored", label: "Sponsor Olduklarım", icon: <MaterialIcon name="Users" className="size-4" /> },
+      { path: "/success-report", label: "Başarı Raporu", icon: <MaterialIcon name="emoji_events" className="size-4" /> },
       { path: "/change-password", label: "Şifre Değiştir", icon: <MaterialIcon name="Lock" className="size-4" /> },
     ],
   },

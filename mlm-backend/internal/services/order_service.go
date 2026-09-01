@@ -126,17 +126,24 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 		}
 		unitPrice := centsToMoney(unitPriceCents)
 
+		// PV/CV de paket indirimiyle oranlanır: Katalog Değeri × (1 - İndirim Oranı)
 		qty := int64(item.Quantity)
+		pv := p.PV * qty
+		cv := p.CV * qty
+		if discountRate > 0 {
+			pv = int64(float64(pv)*(1-discountRate) + 0.5)
+			cv = int64(float64(cv)*(1-discountRate) + 0.5)
+		}
 		itemRows = append(itemRows, itemRow{
 			productID: p.ID,
 			quantity:  item.Quantity,
 			price:     unitPrice,
-			pv:        p.PV * qty,
-			cv:        p.CV * qty,
+			pv:        pv,
+			cv:        cv,
 		})
 		totalAmountCents += unitPriceCents * qty
-		totalPV += p.PV * qty
-		totalCV += p.CV * qty
+		totalPV += pv
+		totalCV += cv
 	}
 	totalAmount := centsToMoney(totalAmountCents)
 

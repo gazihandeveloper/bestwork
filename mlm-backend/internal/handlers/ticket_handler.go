@@ -31,7 +31,7 @@ type TicketRequest struct {
 func (h *TicketHandler) Create(c *gin.Context) {
 	var req TicketRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -43,7 +43,7 @@ func (h *TicketHandler) Create(c *gin.Context) {
 	t, err := h.tickets.CreateTicket(c.Request.Context(), userID, req.Name, req.Surname, req.Phone, req.Message)
 	if err != nil {
 		log.WithError(err).Error("Ticket kaydedilemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"ticket": t})

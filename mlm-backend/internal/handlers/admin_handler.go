@@ -140,7 +140,7 @@ func (h *AdminHandler) PlacePendingUser(c *gin.Context) {
 		Position  string `json:"position" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 

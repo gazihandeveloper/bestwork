@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="/bestmanager/vendor/overlayscrollbars.min.css" />
         <link rel="stylesheet" href="/bestmanager/vendor/apexcharts.min.css" />
         <link rel="stylesheet" href="/bestmanager/vendor/adminlte.min.css" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" />
+        <link rel="stylesheet" href="/bestmanager/vendor/material-symbols.css" />
         <script defer src="/bestmanager/vendor/apexcharts.min.js" />
       </head>
       <body className={`${sourceSans.variable} layout-fixed`}>

@@ -13,11 +13,15 @@ import (
 // AuthRequired Bearer token'ı ve kullanıcının güncel aktiflik durumunu doğrular.
 func AuthRequired(users *services.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		cookieName := "mlm_session"
+		if c.GetHeader("X-Admin-Scope") == "1" {
+			cookieName = "mlm_admin_session"
+		}
 		header := c.GetHeader("Authorization")
 		tokenString := ""
 		if strings.HasPrefix(header, "Bearer ") {
 			tokenString = strings.TrimPrefix(header, "Bearer ")
-		} else if cookieToken, err := c.Cookie("mlm_session"); err == nil {
+		} else if cookieToken, err := c.Cookie(cookieName); err == nil {
 			tokenString = cookieToken
 			if c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead && c.Request.Method != http.MethodOptions && c.GetHeader("X-CSRF-Protection") != "1" {
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "CSRF koruma başlığı eksik"})

@@ -153,12 +153,12 @@ func (h *UserHandler) UpdateProfileImage(c *gin.Context) {
 	}
 	var req ProfileImageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.users.SetProfileImage(c.Request.Context(), userID, req.ImagePath); err != nil {
 		log.WithError(err).Error("Profil görseli güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Profil görseli güncellendi"})
@@ -178,12 +178,12 @@ func (h *UserHandler) UpdateTheme(c *gin.Context) {
 	}
 	var req ThemeColorRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.users.SetThemeColor(c.Request.Context(), userID, req.Color); err != nil {
 		log.WithError(err).Error("Tema rengi kaydedilemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Tema rengi kaydedildi"})

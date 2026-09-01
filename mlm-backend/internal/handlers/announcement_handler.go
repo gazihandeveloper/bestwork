@@ -55,7 +55,7 @@ func (h *AnnouncementHandler) ListAll(c *gin.Context) {
 func (h *AnnouncementHandler) Create(c *gin.Context) {
 	var req AnnouncementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	isActive := true
@@ -80,7 +80,7 @@ func (h *AnnouncementHandler) Update(c *gin.Context) {
 	}
 	var req AnnouncementRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	isActive := true
@@ -113,7 +113,7 @@ func (h *AnnouncementHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Duyuru silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Duyuru silindi"})

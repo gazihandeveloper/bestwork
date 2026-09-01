@@ -30,6 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
       { text: "Üyeler", href: "/uyeler" },
       { text: "Ağaç Görüntüleyici", href: "/agac" },
       { text: "Bekleyenler", href: "/bekleyenler" },
+      { text: "Yeniden Üyelik", href: "/yeniden-uyelik" },
       { text: "Kariyer Yönetimi", href: "/rutbeler" },
     ],
   },

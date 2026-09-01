@@ -24,7 +24,7 @@ func NewPackageHandler(packages *services.PackageService) *PackageHandler {
 // PackageRequest paket oluşturma/güncelleme JSON gövdesidir.
 type PackageRequest struct {
 	Name              string  `json:"name" binding:"required"`
-	Price             float64 `json:"price" binding:"required,gt=0"`
+	Price             float64 `json:"price" binding:"gte=0"`
 	ReferralBonusRate float64 `json:"referral_bonus_rate" binding:"gte=0,lte=1"`
 	BinaryBonusRate   float64 `json:"binary_bonus_rate" binding:"gte=0,lte=1"`
 	MatchingBonusRate float64 `json:"matching_bonus_rate" binding:"gte=0,lte=1"`
@@ -48,7 +48,7 @@ func (h *PackageHandler) List(c *gin.Context) {
 func (h *PackageHandler) Create(c *gin.Context) {
 	var req PackageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *PackageHandler) Create(c *gin.Context) {
 		req.ReferralBonusRate, req.BinaryBonusRate, req.MatchingBonusRate, req.DiscountRate, req.RequiredPV, req.CV)
 	if err != nil {
 		log.WithError(err).Error("Paket oluşturulamadı")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *PackageHandler) Update(c *gin.Context) {
 
 	var req PackageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -99,7 +99,7 @@ func (h *PackageHandler) Update(c *gin.Context) {
 
 	if err := h.packages.UpdatePackage(c.Request.Context(), p); err != nil {
 		log.WithError(err).Error("Paket güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 
@@ -120,7 +120,7 @@ func (h *PackageHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Paket silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 

@@ -39,13 +39,13 @@ func (h *SettingHandler) Get(c *gin.Context) {
 func (h *SettingHandler) Update(c *gin.Context) {
 	var req SettingUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
 	if err := h.settings.SetAll(c.Request.Context(), req.Settings); err != nil {
 		log.WithError(err).Error("Ayarlar güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Ayarlar güncellendi"})

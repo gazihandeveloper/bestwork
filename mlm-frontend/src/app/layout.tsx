@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="tr" className={initialMode === "dark" ? "dark" : ""} style={{ colorScheme: initialMode === "dark" ? "dark" : "light" }}>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+        href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/vendor/material-symbols.css`}
       />
       <body className={`${plusJakarta.variable} ${plusJakarta.className}`}>
         <AppRouterCacheProvider>

@@ -62,6 +62,11 @@ function CareerContent() {
     );
   }
 
+  const downlineName = (id?: number | null) => {
+    if (!id) return "";
+    return ranks.find((r) => r.id === id)?.name ?? "";
+  };
+
   const leftPV = user?.total_pv_left ?? 0;
   const rightPV = user?.total_pv_right ?? 0;
   const achievedIDs = new Set(achieved.map((a) => a.rank_id));
@@ -149,16 +154,14 @@ function CareerContent() {
                     <MaterialIcon name={c.meta.icon} className="size-10 md:size-8" />
                   </span>
                   {c.isAchieved && (
-                    <MaterialIcon name="check_circle" className="bg-background text-[#2E7D32] absolute -top-0.5 -left-[18px] size-[18px] rounded-full" />
+                    <span className="absolute -top-1 -left-1 flex size-[16px] items-center justify-center rounded-full bg-[#2E7D32] text-white ring-2 ring-background">
+                      <MaterialIcon name="Check" className="size-[11px]" />
+                    </span>
                   )}
                   {c.meta.stars > 0 && (
-                    <div className="absolute -top-[7px] -right-[12px] flex gap-0.25">
+                    <div className="absolute -top-1 -right-1 flex gap-0.5">
                       {Array.from({ length: c.meta.stars }).map((_, k) => (
-                        <MaterialIcon
-                          key={k}
-                          name="Star"
-                          className="bg-background text-[#ffd700] size-[13px] rounded-full"
-                        />
+                        <MaterialIcon key={k} name="Star" className="text-[#ffd700] size-[13px]" />
                       ))}
                     </div>
                   )}
@@ -175,7 +178,7 @@ function CareerContent() {
                           : "text-muted-foreground"
                   )}
                 >
-                  {c.name.toLocaleUpperCase("tr-TR")}
+                  {c.name.toUpperCase()}
                 </p>
                 {(c.isActive || c.isNext) && (
                   <p
@@ -226,13 +229,9 @@ function CareerContent() {
                         : "bg-secondary-light text-muted-foreground/50"
                   )}
                 >
-                  {s.isAchieved ? (
-                    <MaterialIcon name="check_circle" className="size-[26px]" />
-                  ) : s.next ? (
-                    <MaterialIcon name="Star" className="size-6" />
-                  ) : (
-                    <MaterialIcon name="Lock" className="size-[22px]" />
-                  )}
+                  <span style={{ color: s.isAchieved || s.next ? "#fff" : rankMeta(s.rank.name).color }}>
+                    <MaterialIcon name={rankMeta(s.rank.name).icon} className="size-6" />
+                  </span>
                 </div>
                 <div className="flex gap-0.5">
                   {s.isActive && (
@@ -250,11 +249,26 @@ function CareerContent() {
                 </div>
               </div>
 
-              <h3 className="text-primary-dark text-lg font-extrabold">{s.rank.name}</h3>
+              <h3 className="text-primary-dark text-lg font-extrabold">{s.rank.name.toUpperCase()}</h3>
 
               <p className="text-muted-foreground mt-0.5 text-sm">
                 Sol {fmt(s.rank.required_left_pv)} PV · Sağ {fmt(s.rank.required_right_pv)} PV
               </p>
+
+              {((s.rank.required_downline_count ?? 0) > 0 || (s.rank.personal_activity_pv ?? 0) > 0) && (
+                <p className="text-muted-foreground/70 mt-0.5 text-xs font-semibold">
+                  {[
+                    (s.rank.required_downline_count ?? 0) > 0 && s.rank.required_downline_rank_id
+                      ? `Alt: ${s.rank.required_downline_count} × ${downlineName(s.rank.required_downline_rank_id)}`
+                      : "",
+                    (s.rank.personal_activity_pv ?? 0) > 0
+                      ? `Aktiflik: ${s.rank.personal_activity_pv} PV/ay`
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
 
               {achievedAt ? (
                 <p className="text-amber-600 mt-0.5 text-xs font-bold">
@@ -282,6 +296,7 @@ function CareerContent() {
                 </div>
                 <div className="text-muted-foreground mt-0.5 flex justify-between text-xs">
                   <span>Sol: %{leftPct}</span>
+                  <span className="text-primary-dark font-extrabold">%{pct}</span>
                   <span>Sağ: %{rightPct}</span>
                 </div>
               </div>

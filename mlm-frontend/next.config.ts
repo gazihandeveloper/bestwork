@@ -7,17 +7,6 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
   ...(basePath ? { basePath } : {}),
-  // Üye/backoffice girişi artık izole admin panelinde (bestmanager) yapılır;
-  // /dashboard rotası doğrudan panel girişine yönlendirilir.
-  async redirects() {
-    return [
-      {
-        source: "/dashboard",
-        destination: "https://mahmutgazihanarslan.com.tr/bestmanager/",
-        permanent: false,
-      },
-    ];
-  },
   // Yerel geliştirmede /api isteklerini canlı API'ye yönlendir (CORS/çerez sorununu çözer:
   // çerez localhost domain'inde kalır, giriş sonrası geri atma yaşanmaz).
   async rewrites() {

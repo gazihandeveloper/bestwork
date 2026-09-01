@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/MaterialIcon";
@@ -8,23 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
 import type { CartItem } from "@/lib/cart";
-import { createOrder, getErrorMessage, getMe, fileUrl as apiFileUrl } from "@/services/api";
+import { createOrder, getErrorMessage, fileUrl as apiFileUrl } from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
 import RequireAuth from "@/components/RequireAuth";
 import { cn } from "@/lib/utils";
 
 const tl = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
-
-// Kariyer/paket seviyeleri — hedef PV ve renkler
-const LEVELS = [
-  { name: "İLK ADIM", pv: 125, color: "#017cc6" }, // mavi
-  { name: "STARTER", pv: 250, color: "#017cc6" }, // mavi
-  { name: "BRONZ GİRİŞİMCİ", pv: 500, color: "#b4552d" }, // bronz
-  { name: "GÜMÜŞ GİRİŞİMCİ", pv: 1300, color: "#9e9e9e" }, // gümüş
-  { name: "ALTIN GİRİŞİMCİ", pv: 2500, color: "#c9a227" }, // altın
-  { name: "PLATİN", pv: 5000, color: "#9c27b0" }, // mor
-];
 
 // Ayrı sepet sayfası — /cart
 function CartContent() {
@@ -34,26 +24,6 @@ function CartContent() {
   const [error, setError] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const [successOrder, setSuccessOrder] = useState<number | null>(null);
-  // Sunucudan canlı çekilen kullanıcı PV'si (seviye kontrolü için sürekli güncellenir)
-  const [livePV, setLivePV] = useState<number | null>(null);
-
-  // Kullanıcının güncel PV'sini sunucudan al (login anlık görüntüsü değil)
-  const fetchLivePV = useCallback(() => {
-    if (!user) return;
-    getMe()
-      .then((u) => setLivePV(u.total_pv_accumulated ?? 0))
-      .catch(() => {
-        /* yoksay */
-      });
-  }, [user]);
-
-  // Sürekli kontrol: her 15 saniyede bir ve giriş değişince güncelle
-  useEffect(() => {
-    if (!user) return;
-    fetchLivePV();
-    const id = setInterval(fetchLivePV, 15000);
-    return () => clearInterval(id);
-  }, [fetchLivePV, user]);
 
   // Sepet verisi
   useEffect(() => {
@@ -71,25 +41,6 @@ function CartContent() {
   const totalPV = items.reduce((sum, c) => sum + c.product.pv * c.quantity, 0);
   const totalCV = items.reduce((sum, c) => sum + c.product.cv * c.quantity, 0);
   const totalQuantity = items.reduce((sum, c) => sum + c.quantity, 0);
-
-  // Seviye dolumu: sunucudaki canlı kariyer PV + bu siparişin PV'si
-  const careerPV = livePV ?? user?.total_pv_accumulated ?? 0;
-  const levelPV = careerPV + totalPV;
-
-  // Platin'e ulaşınca paket bölümü ömür boyu gizlenir (kalıcı bayrak)
-  const [platinDone, setPlatinDone] = useState<boolean>(() =>
-    typeof window !== "undefined" && window.localStorage.getItem("bestwork_platin_reached") === "1",
-  );
-  useEffect(() => {
-    if (levelPV >= 5000 && !platinDone) {
-      try {
-        window.localStorage.setItem("bestwork_platin_reached", "1");
-      } catch {
-        /* yoksay */
-      }
-      setPlatinDone(true);
-    }
-  }, [levelPV, platinDone]);
 
   const checkout = async () => {
     if (!user) {
@@ -162,64 +113,6 @@ function CartContent() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Sepet öğeleri */}
           <div className="lg:col-span-8">
-            {/* Paket seviyeleri — ürünlerin üstünde, yan yana (Platin'de ömür boyu gizli) */}
-            {user && !platinDone && (
-              <div className="mb-3">
-                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-6">
-                  {LEVELS.map((lv, i) => {
-                    // Kademeli dolum: her paket kendi bölgesinde (önceki paket dolunca başlar)
-                    const prevPv = i === 0 ? 0 : LEVELS[i - 1].pv;
-                    const segment = lv.pv - prevPv;
-                    const inSegment = Math.max(0, Math.min(segment, levelPV - prevPv));
-                    const fillPct = Math.min(100, Math.round((inSegment / segment) * 100));
-                    const reached = levelPV >= lv.pv;
-                    return (
-                      <div
-                        key={lv.name}
-                        className="border-border bg-card overflow-hidden rounded border"
-                      >
-                        {/* Görsel alanı */}
-                        <div
-                          className="flex items-center justify-center py-2"
-                          style={{ backgroundColor: `${lv.color}14` }}
-                        >
-                          <div
-                            className="flex size-14 items-center justify-center rounded-full px-1 text-center text-[8px] leading-tight font-black text-white"
-                            style={{ backgroundColor: lv.color }}
-                          >
-                            {lv.name}
-                          </div>
-                        </div>
-                        {/* PV */}
-                        <p className="mt-1 text-center text-xs font-extrabold" style={{ color: lv.color }}>
-                          {lv.pv} PV
-                        </p>
-                        {/* Bar + sayaç — kademeli */}
-                        <div className="px-1.5">
-                          <div className="bg-muted mt-1 h-1 w-full overflow-hidden rounded-full">
-                            <div
-                              className="h-full rounded-full transition-[width] duration-300"
-                              style={{ width: `${fillPct}%`, backgroundColor: lv.color }}
-                            />
-                          </div>
-                          <p className="text-muted-foreground mt-0.5 text-center text-[8px]">
-                            <span className="font-bold">{inSegment.toLocaleString("tr-TR")}</span>/
-                            {segment.toLocaleString("tr-TR")}
-                          </p>
-                        </div>
-                        {/* Başlık şeridi */}
-                        <div
-                          className="mt-1 py-1 text-center text-[9px] font-extrabold tracking-wide text-white"
-                          style={{ backgroundColor: lv.color, opacity: reached ? 1 : 0.55 }}
-                        >
-                          {lv.name}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             <div className="border-border bg-card rounded border p-4">
               {items.map((c) => (
                 <div key={c.product.id} className="border-border flex items-center gap-3 border-b py-3 last:border-b-0">

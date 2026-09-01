@@ -39,14 +39,14 @@ type ProductRequest struct {
 func (h *ProductHandler) Create(c *gin.Context) {
 	var req ProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
 	p, err := h.products.CreateProduct(c.Request.Context(), req.Name, req.Description, req.ImagePath, req.Category, req.SKU, req.Price, req.PV, req.CV, req.Stock, req.CategoryID)
 	if err != nil {
 		log.WithError(err).Error("Ürün oluşturulamadı")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 
@@ -117,7 +117,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 
 	var req ProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -155,7 +155,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 
 	if err := h.products.UpdateProduct(c.Request.Context(), p); err != nil {
 		log.WithError(err).Error("Ürün güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 
@@ -183,7 +183,7 @@ func (h *ProductHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Ürün silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 

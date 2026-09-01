@@ -735,6 +735,9 @@ export interface Rank {
   required_left_pv: number;
   required_right_pv: number;
   monthly_binary_limit: number;
+  required_downline_rank_id?: number | null;
+  required_downline_count?: number;
+  personal_activity_pv?: number;
 }
 
 export async function getRanks(): Promise<Rank[]> {

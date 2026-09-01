@@ -94,14 +94,14 @@ func (h *HeroSlideHandler) ListAll(c *gin.Context) {
 func (h *HeroSlideHandler) Create(c *gin.Context) {
 	var req HeroSlideRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
 	slide, err := h.slides.CreateSlide(c.Request.Context(), req.toModel())
 	if err != nil {
 		log.WithError(err).Error("Slider eklenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"hero_slide": slide})
@@ -117,7 +117,7 @@ func (h *HeroSlideHandler) Update(c *gin.Context) {
 
 	var req HeroSlideRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -148,7 +148,7 @@ func (h *HeroSlideHandler) Update(c *gin.Context) {
 
 	if err := h.slides.UpdateSlide(c.Request.Context(), slide); err != nil {
 		log.WithError(err).Error("Slider güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"hero_slide": slide})
@@ -168,7 +168,7 @@ func (h *HeroSlideHandler) Delete(c *gin.Context) {
 			return
 		}
 		log.WithError(err).Error("Slider silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Slider kaydı silindi"})

@@ -63,7 +63,7 @@ async function listPackagesApi(): Promise<PackageRow[]> {
 function toBody(f: PackageForm) {
   return {
     name: f.name.trim(),
-    price: f.price,
+    price: 0,
     referral_bonus_rate: pctToRate(f.referral),
     binary_bonus_rate: pctToRate(f.binary),
     matching_bonus_rate: pctToRate(f.matching),
@@ -134,10 +134,6 @@ export default function PaketlerPage() {
       setError("Seviye adı zorunludur.");
       return;
     }
-    if (form.price <= 0) {
-      setError("Fiyat 0'dan büyük olmalıdır.");
-      return;
-    }
     setSaving(true);
     setError("");
     try {
@@ -206,18 +202,6 @@ export default function PaketlerPage() {
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
-            <div className="col-md-6">
-              <label className="form-label">Fiyat (₺) *</label>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                className="form-control"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: toNum(e.target.value) })}
-              />
-            </div>
-
             <div className="col-md-3">
               <label className="form-label">PV (Gerekli)</label>
               <input

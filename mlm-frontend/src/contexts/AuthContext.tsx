@@ -6,6 +6,10 @@ import * as apiService from "@/services/api";
 import { BASE_PATH } from "@/lib/api";
 import type { AuthResponse, User } from "@/services/api";
 
+// Admin/süper admin ana sitede (bestwork) oturum açamaz — yalnızca izole
+// panelden (bestmanager) girer.
+const isStaffRole = (role?: string) => role === "admin" || role === "super_admin";
+
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
@@ -26,7 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     apiService
       .getSessionStatus()
-      .then((d) => setUser(d.authenticated ? d.user : null))
+      .then((d) =>
+        setUser(d.authenticated && d.user && !isStaffRole(d.user.role) ? d.user : null)
+      )
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
@@ -39,6 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (loginValue: string, password: string) => {
       const res = await apiService.loginUser(loginValue, password);
+      if (isStaffRole(res.user?.role)) {
+        // Ana siteden yönetici girişi engellendi — çerezi temizle, genel hata göster.
+        void apiService.logoutUser().catch(() => {});
+        throw new Error("Kullanıcı adı ve şifre tanınamadı");
+      }
       return persistSession(res);
     },
     [persistSession]
@@ -53,10 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    void apiService.logoutUser().finally(() => {
-      setUser(null);
-      window.location.replace(BASE_PATH + "/");
-    });
+    // Çıkış sonrası doğrudan anasayfaya dön; oturum arkada temizlenir.
+    void apiService
+      .logoutUser()
+      .catch(() => {})
+      .finally(() => {
+        window.location.replace(BASE_PATH + "/");
+      });
   }, []);
 
   const value = useMemo(

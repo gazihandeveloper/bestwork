@@ -28,6 +28,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401 && typeof window !== "undefined") {
+      // Çıkış isteğinde 401 yönlendirme yapma (logout anasayfaya döner).
+      const reqUrl = error?.config?.url || "";
+      if (reqUrl.includes("/auth/logout")) {
+        return Promise.reject(error);
+      }
       const path = pathUnderBase(window.location.pathname);
       // Herkese açık sayfalar: oturum yokluğunda yönlendirme yapma.
       // /product ürün detayı da herkese açıktır (mağaza vitrini); satın alma login ister.
@@ -45,8 +50,15 @@ api.interceptors.response.use(
 
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status && status >= 500) {
+      return "Bir sorun oluştu";
+    }
     const data = error.response?.data as { error?: string } | undefined;
-    return data?.error || error.message || "Beklenmeyen bir hata oluştu";
+    return data?.error || "Bir sorun oluştu";
   }
-  return "Beklenmeyen bir hata oluştu";
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return "Bir sorun oluştu";
 }

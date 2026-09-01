@@ -41,7 +41,7 @@ const LUCIDE_TO_MATERIAL: Record<string, string> = {
   Building2: "business", Power: "power_settings_new", Menu2: "menu", List: "list",
   HomeIcon: "home", CreditCard: "credit_card", Banknote: "payments",
   Receipt: "receipt_long", FileBarChart: "bar_chart", FileCheck: "fact_check",
-  Share2: "share", Copy: "copy", Clipboard: "content_paste", CheckCircle: "check_circle",
+  Share2: "share", Copy: "content_copy", Clipboard: "content_paste", CheckCircle: "check_circle",
   XCircle: "cancel", HelpCircle: "help", QuestionMark: "help", Settings: "settings",
   Cog: "settings", Bell: "notifications", MenuIcon: "menu", MoreHorizontal: "more_horiz",
   MoreVertical: "more_vert", SearchIcon: "search", CartIcon: "shopping_cart",

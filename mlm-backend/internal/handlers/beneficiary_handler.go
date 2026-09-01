@@ -49,7 +49,7 @@ func (h *BeneficiaryHandler) Create(c *gin.Context) {
 
 	var req BeneficiaryPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *BeneficiaryHandler) Delete(c *gin.Context) {
 
 	if err := h.beneficiaries.DeleteBeneficiary(c.Request.Context(), id); err != nil {
 		log.WithError(err).Error("Varis silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 

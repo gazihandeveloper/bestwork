@@ -50,7 +50,7 @@ func (h *WalletHandler) CreateWithdraw(c *gin.Context) {
 
 	var req WithdrawRequestPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 

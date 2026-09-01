@@ -49,7 +49,7 @@ func (h *AdminHandler) UpdateUserRank(c *gin.Context) {
 		Reason string `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.users.UpdateUserRank(c.Request.Context(), c.GetInt64("user_id"), "", userID, req.RankID, req.Reason); err != nil {
@@ -99,7 +99,7 @@ func (h *AdminHandler) UpdateOrderStatus(c *gin.Context) {
 		Note         string `json:"note"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.orders.UpdateOrderStatus(c.Request.Context(), c.GetInt64("user_id"), "", orderID, req.Status, req.TrackingCode, req.Note); err != nil {
@@ -172,7 +172,7 @@ func (h *AdminHandler) AdminWalletAdjust(c *gin.Context) {
 		Reason string  `json:"reason" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	wallet, err := h.wallets.AdminAdjustWallet(c.Request.Context(), c.GetInt64("user_id"), "", req.UserID, req.Amount, req.Action, req.Reason)
@@ -197,7 +197,7 @@ func (h *AdminHandler) TreeMove(c *gin.Context) {
 		Position    string `json:"position" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.tree.MoveUserInTree(c.Request.Context(), c.GetInt64("user_id"), "", req.UserID, req.NewParentID, req.Position); err != nil {
@@ -273,7 +273,7 @@ func (h *AdminHandler) SimulateBonus(c *gin.Context) {
 		Period      string  `json:"period"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	result, err := h.stats.SimulateBonus(c.Request.Context(), req.MemberCount, req.AveragePV, req.Period)
@@ -302,7 +302,7 @@ func (h *AdminHandler) SetFlashout(c *gin.Context) {
 		WeeklyLimit float64 `json:"weekly_limit"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.stats.SetFlashout(c.Request.Context(), req.DailyLimit, req.WeeklyLimit); err != nil {
@@ -321,7 +321,7 @@ func (h *AdminHandler) FraudScan(c *gin.Context) {
 		Value string `json:"value" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	matches, err := h.stats.FraudScan(c.Request.Context(), req.Field, req.Value)
@@ -376,7 +376,7 @@ func (h *AdminHandler) AdjustPVAndCV(c *gin.Context) {
 		Reason  string `json:"reason" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if req.DeltaPV == 0 && req.DeltaCV == 0 {
@@ -494,6 +494,89 @@ func (h *AdminHandler) RecomputeCareers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Kariyerler yeniden hesaplandı", "processed": processed})
 }
 
+// RespawnUser üyeyi askıya alıp yeni sponsorla sıfırdan üyelik açar (admin).
+func (h *AdminHandler) RespawnUser(c *gin.Context) {
+	var req struct {
+		UserID       int64 `json:"user_id" binding:"required"`
+		NewSponsorID int64 `json:"new_sponsor_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
+		return
+	}
+
+	tx, err := database.GetDB().Begin(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
+		return
+	}
+	defer tx.Rollback(c.Request.Context())
+
+	newUser, err := services.RespawnUser(c.Request.Context(), tx, req.UserID, req.NewSponsorID, c.GetInt64("user_id"), "")
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrRespawnNotEligible):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrUserNotFound), errors.Is(err, services.ErrSponsorNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			log.WithError(err).Error("Yeniden üyelik başarısız")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	if err := tx.Commit(c.Request.Context()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Yeniden üyelik tamamlandı", "user": newUser})
+}
+
+// ChangeSponsor üyenin sponsorunu değiştirir (admin, denetim loglu).
+func (h *AdminHandler) ChangeSponsor(c *gin.Context) {
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz üye ID"})
+		return
+	}
+	var req struct {
+		NewSponsorID int64 `json:"new_sponsor_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
+		return
+	}
+
+	tx, err := database.GetDB().Begin(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
+		return
+	}
+	defer tx.Rollback(c.Request.Context())
+
+	if err := services.ChangeSponsor(c.Request.Context(), tx, userID, req.NewSponsorID, c.GetInt64("user_id"), ""); err != nil {
+		switch {
+		case errors.Is(err, services.ErrUserNotFound), errors.Is(err, services.ErrSponsorNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrSponsorCycle), errors.Is(err, services.ErrInactiveUser):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			log.WithError(err).Error("Sponsor değiştirilemedi")
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	if err := tx.Commit(c.Request.Context()); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Sponsor değiştirildi"})
+}
+
 // TopProducts en çok satan ürünleri döndürür (admin).
 func (h *AdminHandler) TopProducts(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
@@ -531,7 +614,7 @@ func (h *AdminHandler) UpdateUserStatus(c *gin.Context) {
 		Reason   string `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.users.UpdateUserStatus(c.Request.Context(), userID, req.IsActive); err != nil {
@@ -575,7 +658,7 @@ func (h *AdminHandler) TransferWallet(c *gin.Context) {
 		Reason     string  `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.wallets.TransferWallet(c.Request.Context(), adminID, "", req.FromUserID, req.ToUserID, req.Amount, req.Reason); err != nil {
@@ -619,7 +702,7 @@ func (h *AdminHandler) UpdateUserRole(c *gin.Context) {
 		Reason string `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	if err := h.users.UpdateUserRole(c.Request.Context(), userID, req.Role); err != nil {

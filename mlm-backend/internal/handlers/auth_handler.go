@@ -27,6 +27,15 @@ func NewAuthHandler(users *services.UserService, cookieSecure bool) *AuthHandler
 
 const authCookieName = "mlm_session"
 
+// adminAuthCookieName izole yönetim panelinin oturumunu ana site (bestwork)
+// oturumundan ayıran çerez adıdır — aynı domain'de çakışmayı önler.
+const adminAuthCookieName = "mlm_admin_session"
+
+// isAdminScope isteğin izole panelden geldiğini belirtir (X-Admin-Scope: 1).
+func isAdminScope(c *gin.Context) bool {
+	return c.GetHeader("X-Admin-Scope") == "1"
+}
+
 // ReferralCheckRequest referans kodu kontrol sorgusudur.
 type ReferralCheckRequest struct {
 	Code string `json:"code" binding:"required"`
@@ -71,7 +80,7 @@ type RegisterRequest struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -132,7 +141,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	h.setSessionCookie(c, token)
+	h.setSessionCookie(c, token, authCookieName)
 	c.JSON(http.StatusCreated, gin.H{"user": user})
 }
 
@@ -146,7 +155,7 @@ type LoginRequest struct {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -185,20 +194,25 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	h.setSessionCookie(c, token)
+	cookieName := authCookieName
+	if isAdminScope(c) {
+		cookieName = adminAuthCookieName
+	}
+	h.setSessionCookie(c, token, cookieName)
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
-// Logout mevcut tarayıcı oturum cookie'sini siler.
+// Logout her iki oturum cookie'sini de siler.
 func (h *AuthHandler) Logout(c *gin.Context) {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(authCookieName, "", -1, "/", "", h.cookieSecure, true)
+	c.SetCookie(adminAuthCookieName, "", -1, "/", "", h.cookieSecure, true)
 	c.Status(http.StatusNoContent)
 }
 
-func (h *AuthHandler) setSessionCookie(c *gin.Context, token string) {
+func (h *AuthHandler) setSessionCookie(c *gin.Context, token, cookieName string) {
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(authCookieName, token, int(auth.TokenTTL.Seconds()), "/", "", h.cookieSecure, true)
+	c.SetCookie(cookieName, token, int(auth.TokenTTL.Seconds()), "/", "", h.cookieSecure, true)
 }
 
 // ChangePasswordRequest şifre değiştirme JSON gövdesidir.
@@ -213,7 +227,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 
 	var req ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 

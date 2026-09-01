@@ -72,7 +72,7 @@ func (h *RankHandler) ListAll(c *gin.Context) {
 func (h *RankHandler) Create(c *gin.Context) {
 	var req RankRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	r, err := services.CreateRank(c.Request.Context(), database.GetDB(), req.toRank())
@@ -93,7 +93,7 @@ func (h *RankHandler) Update(c *gin.Context) {
 	}
 	var req RankRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 	r := req.toRank()

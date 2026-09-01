@@ -442,12 +442,12 @@ function DashboardContent() {
               onClick={() => router.push("/career")}
             />
             <StatBlock
-              label="Seviyeniz"
+              label="Paket Yükselt"
               value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
-              icon={<MaterialIcon name="signal_cellular_alt" />}
-              info="Kazanç oranlarınızı belirleyen paketiniz."
-              flipped={flippedCard === "Seviyeniz"}
-              onFlip={() => flip("Seviyeniz")}
+              icon={<MaterialIcon name="trending_up" className="animate-pulse" />}
+              info="Alışveriş PV'niz arttıkça paketiniz ve ürün indiriminiz otomatik yükselir."
+              flipped={flippedCard === "Paket Yükselt"}
+              onFlip={() => flip("Paket Yükselt")}
             />
             <StatBlock
               label="Sponsor Olduklarım"

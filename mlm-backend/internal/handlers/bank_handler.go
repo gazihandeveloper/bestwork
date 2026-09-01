@@ -48,7 +48,7 @@ func (h *BankHandler) Create(c *gin.Context) {
 
 	var req BankAccountPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *BankHandler) Update(c *gin.Context) {
 
 	var req BankAccountPayload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *BankHandler) Update(c *gin.Context) {
 
 	if err := h.banks.UpdateBankAccount(c.Request.Context(), id, req.BankName, req.IBAN, req.AccountName); err != nil {
 		log.WithError(err).Error("Banka hesabı güncellenemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 
@@ -128,7 +128,7 @@ func (h *BankHandler) Delete(c *gin.Context) {
 
 	if err := h.banks.DeleteBankAccount(c.Request.Context(), id); err != nil {
 		log.WithError(err).Error("Banka hesabı silinemedi")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
 		return
 	}
 

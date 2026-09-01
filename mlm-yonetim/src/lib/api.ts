@@ -9,7 +9,7 @@ export const API_URL =
 export const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
-  headers: { "Content-Type": "application/json", "X-CSRF-Protection": "1" },
+  headers: { "Content-Type": "application/json", "X-CSRF-Protection": "1", "X-Admin-Scope": "1" },
 });
 
 // Oturum sona erdiğinde (401) kullanıcıyı giriş ekranına döndür.
@@ -33,10 +33,14 @@ api.interceptors.response.use(
 
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status && status >= 500) {
+      return "Bir sorun oluştu";
+    }
     const data = error.response?.data as { error?: string } | undefined;
-    return data?.error || error.message || "Beklenmeyen bir hata oluştu";
+    return data?.error || "Bir sorun oluştu";
   }
-  return "Beklenmeyen bir hata oluştu";
+  return "Bir sorun oluştu";
 }
 
 // ── Tipler ────────────────────────────────────────────────────────────────
@@ -414,6 +418,32 @@ export async function updateRank(id: number, input: RankInput): Promise<Rank> {
 
 export async function deleteRank(id: number): Promise<void> {
   await api.delete(`/admin/ranks/${id}`);
+}
+
+// ── Yeniden Üyelik (respawn) ───────────────────────────────────────────────
+export interface UserSearchResult {
+  id: number;
+  name: string;
+  email: string;
+  member_code: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export async function searchUsers(q: string): Promise<UserSearchResult[]> {
+  const { data } = await api.get<{ users: UserSearchResult[]; total: number }>("/admin/users", {
+    params: { q, limit: 20 },
+  });
+  return data.users ?? [];
+}
+
+export async function respawnUser(userId: number, newSponsorId: number): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>("/admin/respawn", {
+    user_id: userId,
+    new_sponsor_id: newSponsorId,
+  });
+  return data;
 }
 
 // ── Siparişler ────────────────────────────────────────────────────────────

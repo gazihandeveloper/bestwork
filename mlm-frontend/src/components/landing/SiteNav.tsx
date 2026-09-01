@@ -67,7 +67,15 @@ export default function SiteNav() {
   }, []);
 
   const openLogin = () => window.dispatchEvent(new CustomEvent("open-login"));
-  const openCart = () => router.push("/cart");
+  const openCart = () => {
+    if (!loading && !user) {
+      // Giriş yapmadan sepete gidilmez: modal aç, giriş sonrası sepete dön.
+      window.localStorage.setItem("bestwork_login_next", "/cart");
+      openLogin();
+      return;
+    }
+    router.push("/cart");
+  };
 
 ;
 
