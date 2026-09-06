@@ -12,5 +12,6 @@ type Rank struct {
 	RequiredDownlineRankID *int      `json:"required_downline_rank_id"`
 	RequiredDownlineCount  int       `json:"required_downline_count"`
 	PersonalActivityPV     int64     `json:"personal_activity_pv"`
+	CareerBonusAmount      float64   `json:"career_bonus_amount"`
 	CreatedAt              time.Time `json:"created_at"`
 }

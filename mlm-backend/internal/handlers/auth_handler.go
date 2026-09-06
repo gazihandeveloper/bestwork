@@ -172,6 +172,10 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		if errors.Is(err, services.ErrUserNotFound) {
 			user, err = h.users.GetUserByPhone(c.Request.Context(), login)
 		}
+		if errors.Is(err, services.ErrUserNotFound) {
+			// Kolay giriş: isimle de bul (ör. "ender" → ENDER ALTINTAŞ)
+			user, err = h.users.GetUserByName(c.Request.Context(), login)
+		}
 	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Geçersiz giriş bilgileri"})

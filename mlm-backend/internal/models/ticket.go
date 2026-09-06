@@ -5,6 +5,7 @@ import "time"
 // Ticket iletişim (destek) kaydının Go karşılığıdır.
 type Ticket struct {
 	ID        int64     `json:"id"`
+	MemberCode string    `json:"member_code,omitempty"`
 	UserID    *int64    `json:"user_id"`
 	Name      string    `json:"name"`
 	Surname   string    `json:"surname"`

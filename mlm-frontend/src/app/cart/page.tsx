@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/MaterialIcon";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { loadCart, saveCart, addToCartStorage, decrementCart } from "@/lib/cart";
+import { loadCart, saveCart, addToCartStorage, decrementCart, removeFromCart, setCartQuantity } from "@/lib/cart";
 import type { CartItem } from "@/lib/cart";
-import { createOrder, getErrorMessage, fileUrl as apiFileUrl } from "@/services/api";
+import QtyInput from "@/components/QtyInput";
+import { createOrder, getPackages, getErrorMessage, fileUrl as apiFileUrl } from "@/services/api";
+import type { Package } from "@/services/api";
 import { useAuth } from "@/hooks/useAuth";
 import RequireAuth from "@/components/RequireAuth";
+import ProductDetailModal from "@/components/ProductDetailModal";
 import { cn } from "@/lib/utils";
 
 const tl = (v: number) =>
@@ -24,6 +27,28 @@ function CartContent() {
   const [error, setError] = useState("");
   const [checkingOut, setCheckingOut] = useState(false);
   const [successOrder, setSuccessOrder] = useState<number | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
+  const [packages, setPackages] = useState<Package[]>([]);
+  useEffect(() => {
+    getPackages().then(setPackages).catch(() => {});
+  }, []);
+  // Kargo ayarları (admin panelinden yönetilir)
+  const [shippingSettings, setShippingSettings] = useState<{ fee: number; threshold: number }>({ fee: 0, threshold: 0 });
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "/api"}/settings`)
+      .then((r) => r.json())
+      .then((d) => {
+        const s = d?.settings ?? {};
+        setShippingSettings({
+          fee: Number(s.shipping_fee ?? 0) || 0,
+          threshold: Number(s.free_shipping_threshold ?? 0) || 0,
+        });
+      })
+      .catch(() => {});
+  }, []);
+  // Üyenin paket indirim oranı (örn. Platin %25)
+  const userPkg = packages.find((p) => p.id === user?.package_id);
+  const discountRate = userPkg?.discount_rate ?? 0;
 
   // Sepet verisi
   useEffect(() => {
@@ -37,10 +62,31 @@ function CartContent() {
     };
   }, []);
 
-  const totalAmount = items.reduce((sum, c) => sum + c.product.price * c.quantity, 0);
-  const totalPV = items.reduce((sum, c) => sum + c.product.pv * c.quantity, 0);
-  const totalCV = items.reduce((sum, c) => sum + c.product.cv * c.quantity, 0);
+  // Mağazada gösterilen indirimli fiyat sepete aynen gelir; sepette TEKRAR indirim uygulanmaz.
+  const itemPrice = (c: CartItem) =>
+    c.retail ? c.product.price : Math.round(c.product.price * (1 - discountRate) * 100) / 100;
+  const itemPV = (c: CartItem) => (c.retail ? c.product.pv : c.product.pv * (1 - discountRate));
+  const itemCV = (c: CartItem) => (c.retail ? c.product.cv : c.product.cv * (1 - discountRate));
+
+  const totalAmount = items.reduce((sum, c) => sum + itemPrice(c) * c.quantity, 0);
+  const totalPV = items.reduce((sum, c) => sum + itemPV(c) * c.quantity, 0);
+  const totalCV = items.reduce((sum, c) => sum + itemCV(c) * c.quantity, 0);
   const totalQuantity = items.reduce((sum, c) => sum + c.quantity, 0);
+  // İndirim ÖNCESİ normal (katalog) toplam satış tutarı.
+  const totalGross = items.reduce((sum, c) => sum + c.product.price * c.quantity, 0);
+  // Paket indirimi sayesinde kazanılan toplam tutar (perakende ürünlerde indirim yoktur).
+  const totalDiscount = items.reduce(
+    (sum, c) => sum + (c.retail ? 0 : (c.product.price - itemPrice(c)) * c.quantity),
+    0
+  );
+  // Kargo: ürün toplamı eşiği geçerse ücretsiz; geçmezse sabit ücret.
+  // Perakende (paket yükseltme) siparişlerinde kargo uygulanmaz (backend ile aynı kural).
+  const isRetail = items.some((c) => c.retail);
+  const shippingFee =
+    !isRetail && shippingSettings.fee > 0 && !(shippingSettings.threshold > 0 && totalAmount >= shippingSettings.threshold)
+      ? shippingSettings.fee
+      : 0;
+  const payable = totalAmount + shippingFee;
 
   const checkout = async () => {
     if (!user) {
@@ -52,9 +98,12 @@ function CartContent() {
     setError("");
     setCheckingOut(true);
     try {
+      // Paket yükseltme (perakende) alımlarında indirim uygulanmaz.
+      const isRetail = items.some((c) => c.retail);
       const order = await createOrder(
         items.map((c) => ({ product_id: c.product.id, quantity: c.quantity })),
         "eft_havale",
+        isRetail,
       );
       setItems([]);
       saveCart([]);
@@ -115,34 +164,56 @@ function CartContent() {
           <div className="lg:col-span-8">
             <div className="border-border bg-card rounded border p-4">
               {items.map((c) => (
-                <div key={c.product.id} className="border-border flex items-center gap-3 border-b py-3 last:border-b-0">
-                  <div className="bg-secondary flex size-16 shrink-0 items-center justify-center overflow-hidden rounded">
-                    {apiFileUrl(c.product.image_path) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={apiFileUrl(c.product.image_path)!}
-                        alt={c.product.name}
-                        className="block h-full w-full object-cover"
-                      />
-                    ) : (
-                      <MaterialIcon name="ShoppingBag" className="text-primary-dark" />
-                    )}
+                <div
+                  key={c.product.id}
+                  className="border-border flex items-center gap-3 border-b py-3 last:border-b-0"
+                >
+                  <div className="relative size-16 shrink-0">
+                    <button
+                      type="button"
+                      aria-label="Ürün detayını gör"
+                      title="Ürün detayı"
+                      onClick={() => setDetailId(c.product.id)}
+                      className="bg-secondary flex size-16 cursor-pointer items-center justify-center overflow-hidden rounded"
+                    >
+                      {apiFileUrl(c.product.image_path) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={apiFileUrl(c.product.image_path)!}
+                          alt={c.product.name}
+                          className="block h-full w-full object-cover"
+                        />
+                      ) : (
+                        <MaterialIcon name="ShoppingBag" className="text-primary-dark" />
+                      )}
+                    </button>
+                    <span className="bg-background/90 text-primary pointer-events-none absolute right-0.5 bottom-0.5 flex size-5 items-center justify-center rounded-full shadow">
+                      <MaterialIcon name="Search" className="size-3.5" />
+                    </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <button
                       type="button"
-                      onClick={() => router.push(`/product/${c.product.id}`)}
+                      onClick={() => setDetailId(c.product.id)}
                       className="block w-full truncate text-left text-sm font-semibold hover:text-primary"
                       title={c.product.name}
                     >
                       {c.product.name.length > 28 ? `${c.product.name.slice(0, 28)}…` : c.product.name}
                     </button>
                     <p className="text-muted-foreground text-xs">
-                      {tl(c.product.price)} × {c.quantity} = {tl(c.product.price * c.quantity)}
+                      {tl(itemPrice(c))} × {c.quantity} = {tl(itemPrice(c) * c.quantity)}
+                      {discountRate > 0 && !c.retail && (
+                        <span className="text-primary ml-1 font-semibold">(-%{Math.round(discountRate * 100)})</span>
+                      )}
                     </p>
-                    <p className="text-muted-foreground text-[10px]">
-                      +{c.product.pv} PV · +{c.product.cv} CV
-                    </p>
+                    <div className="mt-0.5 flex items-center gap-1">
+                      <span className="bg-purple-600 rounded px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        +{itemPV(c).toLocaleString("tr-TR", { maximumFractionDigits: 2 })} PV
+                      </span>
+                      <span className="bg-blue-600 rounded px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        +{itemCV(c).toLocaleString("tr-TR", { maximumFractionDigits: 2 })} CV
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -153,7 +224,7 @@ function CartContent() {
                     >
                       <MaterialIcon name="Minus" className="size-4" />
                     </button>
-                    <span className="min-w-5 text-center text-sm font-bold">{c.quantity}</span>
+                    <QtyInput qty={c.quantity} onChange={(n) => setCartQuantity(c.product, n)} max={c.product.stock} />
                     <button
                       type="button"
                       aria-label="Adedi artır"
@@ -164,6 +235,15 @@ function CartContent() {
                       <MaterialIcon name="Plus" className="size-4" />
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    aria-label="Ürünü sil"
+                    title="Sepetten sil"
+                    onClick={() => setItems(removeFromCart(c.product.id))}
+                    className="text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
+                  >
+                    <MaterialIcon name="Trash2" className="size-4" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -175,21 +255,55 @@ function CartContent() {
               <p className="mb-2 text-lg font-bold">Sipariş Özeti</p>
               {[
                 { label: "Ürün", value: `${totalQuantity} Ürün` },
-                { label: "Toplam Satış Tutarı", value: tl(totalAmount) },
-                { label: "Toplam CV", value: `${totalCV.toLocaleString("tr-TR")} CV` },
-                { label: "Toplam PV", value: `${totalPV.toLocaleString("tr-TR")} PV` },
-                { label: "Ödenecek Tutar", value: tl(totalAmount), strong: true },
+                { label: "Toplam Satış Tutarı", value: tl(totalGross) },
+                { label: "Toplam CV", value: `${totalCV.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} CV` },
+                { label: "Toplam PV", value: `${totalPV.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} PV` },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between py-0.5">
-                  <span className={row.strong ? "text-base font-bold" : "text-muted-foreground text-sm"}>
-                    {row.label}
-                  </span>
-                  <span className={row.strong ? "text-primary-dark text-base font-extrabold" : "text-sm font-semibold"}>
-                    {row.value}
-                  </span>
+                  <span className="text-muted-foreground text-sm">{row.label}</span>
+                  <span className="text-sm font-semibold">{row.value}</span>
                 </div>
               ))}
-              <p className="text-muted-foreground mt-0.5 block text-xs">
+
+              {/* Toplam indirim — yeşil satır: ikon + badge içinde beyaz tutar */}
+              {totalDiscount > 0 && (
+                <div className="border-green-600/30 bg-green-600/10 mt-1 flex items-center justify-between rounded-md border px-2.5 py-1.5">
+                  <span className="text-green-700 flex items-center gap-1.5 text-sm font-bold">
+                    <MaterialIcon name="percent" className="size-4" />
+                    Toplam İndiriminiz
+                  </span>
+                  <span className="bg-green-600 rounded-full px-2.5 py-0.5 text-xs font-extrabold text-white shadow-sm">
+                    -{tl(totalDiscount)}
+                  </span>
+                </div>
+              )}
+
+              {/* Kargo satırı — eşik geçilirse ücretsiz */}
+              {!isRetail && shippingSettings.fee > 0 && (
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-muted-foreground text-sm">Kargo</span>
+                  {shippingFee > 0 ? (
+                    <span className="text-sm font-semibold">{tl(shippingFee)}</span>
+                  ) : (
+                    <span className="text-green-600 flex items-center gap-1 text-sm font-bold">
+                      <MaterialIcon name="check_circle" className="size-4" />
+                      Ücretsiz
+                      {shippingSettings.threshold > 0 && (
+                        <span className="text-muted-foreground text-xs font-normal">
+                          ({tl(shippingSettings.threshold)} üzeri)
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Ödenecek tutar — gölgeli kutu */}
+              <div className="border-border bg-background shadow-md mt-3 flex items-center justify-between rounded-lg border px-3 py-2.5">
+                <span className="text-base font-bold">Ödenecek Tutar</span>
+                <span className="text-primary-dark text-lg font-extrabold">{tl(payable)}</span>
+              </div>
+              <p className="text-muted-foreground mt-1 block text-xs">
                 Ödeme: EFT/HAVALE — sipariş, bildirim onaylanana kadar beklemede kalır.
               </p>
               <Separator className="my-3" />
@@ -203,6 +317,14 @@ function CartContent() {
           </div>
         </div>
       )}
+
+      {/* Ürün detay modalı — /product/[id] içeriği modal içinde */}
+      <ProductDetailModal
+        open={detailId !== null}
+        productId={detailId}
+        onClose={() => setDetailId(null)}
+        discountRate={discountRate}
+      />
 
       {/* Başarı bildirimi (Tailwind toast) */}
       {successOrder !== null && (

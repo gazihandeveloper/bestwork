@@ -172,7 +172,7 @@ export default function PaketlerPage() {
     <PanelLayout>
       <PageHeader
         title="Seviyeler"
-        subtitle="Seviyeleri yönetin — PV ve CV değerlerini serbestçe ayarlayın."
+        subtitle="Seviyeleri yönetin — PV değerini serbestçe ayarlayın."
       />
 
       {notice && <div className="alert alert-success py-2">{notice}</div>}
@@ -188,7 +188,7 @@ export default function PaketlerPage() {
       {formOpen && (
         <PageCard
           title={editingId ? `Seviye Düzenle (#${editingId})` : "Yeni Seviye"}
-          subtitle="PV ve CV değerlerini doğrudan girin."
+          subtitle="PV değerini doğrudan girin."
           className="mb-3"
         >
           <div className="row g-3">
@@ -216,17 +216,6 @@ export default function PaketlerPage() {
               />
               <div className="form-text">Genelde değişmez.</div>
             </div>
-            <div className="col-md-3">
-              <label className="form-label">CV</label>
-              <input
-                type="number"
-                min={0}
-                className="form-control"
-                value={form.cv}
-                onChange={(e) => setForm((f) => ({ ...f, cv: toNum(e.target.value) }))}
-              />
-            </div>
-
 
             <div className="col-md-3">
               <label className="form-label">Referans Bonusu (%)</label>

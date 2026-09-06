@@ -11,7 +11,7 @@ import (
 )
 
 // MonthlyCloseService aylık kapanışı yürütür: toplu binary eşleşme,
-// rütbe güncelleme, %5 chip kesintisi ve binary kazanç sıfırlama.
+// rütbe güncelleme ve binary kazanç sıfırlama.
 type MonthlyCloseService struct {
 	db    *pgxpool.Pool
 	chips *ChipService
@@ -24,11 +24,10 @@ func NewMonthlyCloseService(db *pgxpool.Pool, chips *ChipService) *MonthlyCloseS
 
 // ProcessMonthlyClose aylık kapanışı idempotent olarak çalıştırır:
 //  1. 'monthly_close' guard'ı ile toplu binary eşleşme + rütbe güncelleme.
-//  2. Chip kesintisi ve binary sıfırlama (her birinin kendi guard'ı var;
-//     ayrı çalıştırılmışsa atlanır).
+//  2. Binary kazanç sıfırlama (kendi guard'ı var; ayrı çalıştırılmışsa atlanır).
 //
 // Kapanış daha önce çalıştırılmışsa ErrMonthlyJobAlreadyRun döner
-// (chip/sıfırlama yine denenir, onlar da kendi guard'larıyla atlar).
+// (sıfırlama yine denenir, kendi guard'ıyla atlar).
 func (s *MonthlyCloseService) ProcessMonthlyClose() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
@@ -36,12 +35,6 @@ func (s *MonthlyCloseService) ProcessMonthlyClose() error {
 	closeErr := runJobWithGuard(ctx, s.db, "monthly_close", s.processClose)
 	if closeErr != nil && !errors.Is(closeErr, ErrMonthlyJobAlreadyRun) {
 		return closeErr
-	}
-
-	if err := s.chips.ApplyMonthlyChipDeduction(); err != nil {
-		if !errors.Is(err, ErrMonthlyJobAlreadyRun) {
-			return err
-		}
 	}
 
 	if err := s.chips.ResetMonthlyBinaryEarnings(); err != nil {

@@ -358,15 +358,6 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
           <DialogTitle className="flex items-center gap-1 text-lg font-extrabold">
             <MaterialIcon name="UserPlus" className="text-primary size-5" />
             {placeTarget?.position === "L" ? "Sol" : "Sağ"} Hatta Üye Yerleştir
-            <div className="flex-1" />
-            <button
-              type="button"
-              aria-label="Kapat"
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
-              onClick={() => setPlaceTarget(null)}
-            >
-              <MaterialIcon name="X" className="size-4" />
-            </button>
           </DialogTitle>
           <p className="text-muted-foreground mb-1.5 text-sm">
             Bu boş bacağa yerleştirilecek üyeyi listeden seçin.
@@ -445,15 +436,6 @@ export default function BinaryTree({ data, depth, period = "", onPeriodChange, m
                 </span>
               </>
             )}
-            <div className="flex-1" />
-            <button
-              type="button"
-              aria-label="Kapat"
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
-              onClick={() => setInfoNode(null)}
-            >
-              <MaterialIcon name="X" className="size-4" />
-            </button>
           </DialogTitle>
           <div className="border-border border-t pt-3">
             {infoLoading ? (
@@ -595,7 +577,7 @@ function MemberInfoTable({ card }: { card: UserInfoCard }) {
       <table className="w-full text-sm">
         <tbody>
           {pair("SOL.CV", fmt(card.total_cv_left), "SAĞ.CV", fmt(card.total_cv_right))}
-          {pair("KİŞ.", tl(card.wallet_balance), "EK.C.", tl(card.chip_balance))}
+          {full("KİŞİSEL", tl(card.wallet_balance))}
           {pair("SOL.EK", fmt(card.left_team_count), "SAĞ.EK", fmt(card.right_team_count))}
           {pair("SOL.PV", fmt(card.total_pv_left), "SAĞ.PV", fmt(card.total_pv_right))}
           {full("ALT EKİP", fmt(card.total_team_count))}

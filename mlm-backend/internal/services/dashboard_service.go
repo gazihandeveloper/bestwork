@@ -117,6 +117,11 @@ func (s *DashboardService) GetDashboardSummary(ctx context.Context, userID int64
 		return nil, fmt.Errorf("aylık kazanç okunamadı: %w", err)
 	}
 
+	// Aktiflik özeti: bu ayki hedef paket kayıtları + hedef
+	_ = s.db.QueryRow(ctx,
+		`SELECT current_month_platinum_count FROM users WHERE id = $1`, userID).Scan(&sum.ActivityPackages)
+	sum.ActivityGoal = activityGoalCount(ctx, s.db)
+
 	return sum, nil
 }
 
@@ -402,6 +407,16 @@ func (s *DashboardService) GetUserDashboard(ctx context.Context, userID int64) (
 		}
 		o.Items = make([]models.OrderItem, 0)
 		d.RecentOrders = append(d.RecentOrders, o)
+	}
+
+	// Aktiflik özeti: bu ayki hedef paket kayıtları + hedef
+	var monthCount int
+	if err := s.db.QueryRow(ctx,
+		`SELECT current_month_platinum_count FROM users WHERE id = $1`, userID).Scan(&monthCount); err == nil {
+		d.Activity = &models.Activity{
+			MonthPackages: monthCount,
+			Goal:          activityGoalCount(ctx, s.db),
+		}
 	}
 
 	return d, orderRows.Err()

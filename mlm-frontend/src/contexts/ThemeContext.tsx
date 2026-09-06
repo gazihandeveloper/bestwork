@@ -104,7 +104,7 @@ export function ThemeProvider({
       shape: { borderRadius: 11 },
       typography: {
         fontFamily:
-          "var(--font-plus-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+          "var(--font-montserrat), 'Montserrat', Arial, Helvetica, sans-serif",
         h4: { fontWeight: 700 },
         h5: { fontWeight: 700 },
         h6: { fontWeight: 600 },

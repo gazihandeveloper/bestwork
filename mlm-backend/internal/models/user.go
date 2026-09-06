@@ -27,6 +27,7 @@ type User struct {
 	TotalPVAccumulated       int64      `json:"total_pv_accumulated"`
 	TotalCVAccumulated       int64      `json:"total_cv_accumulated"`
 	CurrentMonthBinaryEarned float64    `json:"current_month_binary_earned"`
+	MonthPlatinumCount       int        `json:"current_month_platinum_count"`
 	CreatedAt                time.Time  `json:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at"`
 }

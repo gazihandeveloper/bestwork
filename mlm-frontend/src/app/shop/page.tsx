@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { listProducts, listCategories, getErrorMessage, fileUrl } from "@/services/api";
-import type { Product } from "@/services/api";
+import { listProducts, listCategories, getPackages, getErrorMessage, fileUrl } from "@/services/api";
+import type { Product, Package } from "@/services/api";
+import { useAuth } from "@/hooks/useAuth";
 import { addToCartStorage } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,15 @@ type SortKey = "default" | "priceAsc" | "priceDesc" | "nameAsc";
 
 function ShopContent() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [packages, setPackages] = useState<Package[]>([]);
+  useEffect(() => {
+    getPackages().then(setPackages).catch(() => {});
+  }, []);
+  // Üyenin paketine göre indirimli fiyat (örn. Platin %25)
+  const userPkg = packages.find((p) => p.id === user?.package_id);
+  const discountRate = userPkg?.discount_rate ?? 0;
+  const discounted = (price: number) => Math.round(price * (1 - discountRate) * 100) / 100;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryDef[]>(FALLBACK_CATEGORIES);
   const [category, setCategory] = useState<string | null>(null);
@@ -297,7 +307,7 @@ function ShopContent() {
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {visibleProducts.map((p) => {
                   const image = fileUrl(p.image_path) ?? CATEGORY_IMAGE[p.category ?? "diger"];
-                  return <ProductCard key={p.id} product={p} image={image} onAdd={addToCart} />;
+                  return <ProductCard key={p.id} product={p} image={image} onAdd={addToCart} discountRate={discountRate} />;
                 })}
               </div>
             )}
@@ -306,7 +316,7 @@ function ShopContent() {
       </div>
 
       {/* Hızlı Sipariş popup */}
-      <QuickOrderModal open={quickOpen} onClose={() => setQuickOpen(false)} onAdd={addToCart} />
+      <QuickOrderModal open={quickOpen} onClose={() => setQuickOpen(false)} onAdd={addToCart} discountRate={discountRate} />
 
       {/* Sepete ekleme bildirimi */}
       {snackbar && (
@@ -348,15 +358,18 @@ function ProductCard({
   product,
   image,
   onAdd,
+  discountRate,
 }: {
   product: Product;
   image: string | null;
   onAdd: (p: Product, qty: number) => void;
+  discountRate: number;
 }) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const soldOut = product.stock <= 0;
   const clamp = (q: number) => Math.min(Math.max(q, 1), Math.max(product.stock, 1));
+  const discounted = (price: number) => Math.round(price * (1 - discountRate) * 100) / 100;
 
   return (
     <div
@@ -396,7 +409,15 @@ function ProductCard({
         </h3>
         <div className="mt-auto space-y-1.5 pt-2">
           <p className="text-foreground text-[0.95rem] leading-tight font-extrabold whitespace-nowrap">
-            {tl(product.price)}
+            {discountRate > 0 ? (
+              <>
+                <span className="text-primary">{tl(discounted(product.price))}</span>{" "}
+                <span className="text-muted-foreground text-xs font-semibold line-through">{tl(product.price)}</span>{" "}
+                <span className="text-primary-dark text-xs font-bold">-%{Math.round(discountRate * 100)}</span>
+              </>
+            ) : (
+              tl(product.price)
+            )}
           </p>
           {product.sku && (
             <div className="text-muted-foreground text-[11px] font-medium">Stok Kodu: #{product.sku}</div>
@@ -453,11 +474,14 @@ function QuickOrderModal({
   open,
   onClose,
   onAdd,
+  discountRate,
 }: {
   open: boolean;
   onClose: () => void;
   onAdd: (p: Product, qty: number) => void;
+  discountRate: number;
 }) {
+  const discounted = (price: number) => Math.round(price * (1 - discountRate) * 100) / 100;
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Product[]>([]);
   const [searching, setSearching] = useState(false);
@@ -550,7 +574,14 @@ function QuickOrderModal({
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground truncate text-sm font-bold">{p.name}</p>
                     <p className="text-muted-foreground text-xs">
-                      {tl(p.price)}
+                      {discountRate > 0 ? (
+                        <>
+                          <span className="text-primary font-bold">{tl(discounted(p.price))}</span>{" "}
+                          <span className="line-through">{tl(p.price)}</span>
+                        </>
+                      ) : (
+                        tl(p.price)
+                      )}
                       {p.sku ? ` · #${p.sku}` : ""}
                     </p>
                   </div>

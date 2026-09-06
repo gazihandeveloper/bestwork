@@ -42,12 +42,39 @@ func NewOrderService(db *pgxpool.Pool) *OrderService {
 	return &OrderService{db: db}
 }
 
-const orderColumns = `id, user_id, total_amount, total_pv, total_cv, status, payment_method, created_at`
+const orderColumns = `id, user_id, total_amount, total_pv, total_cv, shipping_fee, status, payment_method, created_at`
+
+// calcShipping siparişin kargo ücretini hesaplar (settings kaynaklı):
+//   - shipping_fee: sabit kargo ücreti (₺); 0 ise kargo alınmaz.
+//   - free_shipping_threshold: ücretsiz kargo eşiği (₺); ürün toplamı bu
+//     tutara ulaşırsa/geçerse kargo ücretsiz olur.
+func (s *OrderService) calcShipping(ctx context.Context, q DBTX, productTotal float64) (float64, error) {
+	var fee, threshold float64
+	err := q.QueryRow(ctx,
+		`SELECT COALESCE((SELECT value FROM settings WHERE key = 'shipping_fee'), '0')::numeric`).
+		Scan(&fee)
+	if err != nil {
+		return 0, fmt.Errorf("kargo ayarları okunamadı: %w", err)
+	}
+	if err := q.QueryRow(ctx,
+		`SELECT COALESCE((SELECT value FROM settings WHERE key = 'free_shipping_threshold'), '0')::numeric`).
+		Scan(&threshold); err != nil {
+		return 0, fmt.Errorf("kargo eşiği okunamadı: %w", err)
+	}
+	if fee <= 0 {
+		return 0, nil
+	}
+	if threshold > 0 && productTotal >= threshold {
+		return 0, nil
+	}
+	return round2(fee), nil
+}
 
 // CreateOrder siparişi transaction içinde oluşturur: sipariş + kalemler + stok düşümü.
 // Yalnızca doğrulanabilir EFT/HAVALE akışı desteklenir. Sipariş ödeme bildirimi
 // onaylanana kadar pending kalır ve hiçbir puan/komisyon etkisi uygulanmaz.
-func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMethod string, items []OrderItemInput) (*models.Order, error) {
+// retail=true ise paket indirimi UYGULANMAZ (perakende/katalog fiyatı, paket yükseltme alımı).
+func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMethod string, items []OrderItemInput, retail bool) (*models.Order, error) {
 	if len(items) == 0 {
 		return nil, ErrEmptyOrder
 	}
@@ -80,7 +107,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 	}
 
 	discountRate := 0.0
-	if packageID != nil {
+	if !retail && packageID != nil {
 		var rate float64
 		if err := tx.QueryRow(ctx, `SELECT discount_rate FROM packages WHERE id = $1`, *packageID).Scan(&rate); err == nil {
 			discountRate = rate
@@ -147,20 +174,32 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 	}
 	totalAmount := centsToMoney(totalAmountCents)
 
+	// Kargo ücreti: settings'ten sabit kargo ücreti + ücretsiz kargo eşiği.
+	// Ürün toplamı eşiğe ulaşırsa kargo ücretsiz; ulaşmazsa sabit ücret eklenir.
+	shipping := 0.0
+	if !retail {
+		shipping, err = s.calcShipping(ctx, tx, totalAmount)
+		if err != nil {
+			return nil, err
+		}
+	}
+	totalAmount = totalAmount + shipping
+
 	order := &models.Order{
 		UserID:        userID,
 		TotalAmount:   totalAmount,
 		TotalPV:       totalPV,
 		TotalCV:       totalCV,
+		ShippingFee:   shipping,
 		Status:        "pending",
 		PaymentMethod: paymentMethod,
 		Items:         make([]models.OrderItem, 0, len(itemRows)),
 	}
 
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO orders (user_id, total_amount, total_pv, total_cv, status, payment_method)
-		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
-		order.UserID, order.TotalAmount, order.TotalPV, order.TotalCV, order.Status, order.PaymentMethod).
+		`INSERT INTO orders (user_id, total_amount, total_pv, total_cv, shipping_fee, status, payment_method)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
+		order.UserID, order.TotalAmount, order.TotalPV, order.TotalCV, order.ShippingFee, order.Status, order.PaymentMethod).
 		Scan(&order.ID, &order.CreatedAt); err != nil {
 		return nil, fmt.Errorf("sipariş eklenemedi: %w", err)
 	}
@@ -448,7 +487,7 @@ func (s *OrderService) ListOrdersByUser(ctx context.Context, userID int64) ([]mo
 	orders := make([]models.Order, 0)
 	for rows.Next() {
 		var o models.Order
-		if err := rows.Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.Status, &o.PaymentMethod, &o.CreatedAt); err != nil {
+		if err := rows.Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt); err != nil {
 			return nil, fmt.Errorf("sipariş okunamadı: %w", err)
 		}
 		items, err := s.getOrderItems(ctx, o.ID)
@@ -465,7 +504,7 @@ func (s *OrderService) ListOrdersByUser(ctx context.Context, userID int64) ([]mo
 func (s *OrderService) GetOrderByID(ctx context.Context, orderID int64) (*models.Order, error) {
 	var o models.Order
 	err := s.db.QueryRow(ctx, `SELECT `+orderColumns+` FROM orders WHERE id = $1`, orderID).
-		Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.Status, &o.PaymentMethod, &o.CreatedAt)
+		Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrOrderNotFound

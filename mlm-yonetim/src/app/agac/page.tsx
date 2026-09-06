@@ -644,10 +644,6 @@ export default function AgacPage() {
                   <div className="text-muted small">Cüzdan Bakiyesi</div>
                   <div className="fw-semibold">{tl(card.wallet_balance)}</div>
                 </div>
-                <div className="col-md-4">
-                  <div className="text-muted small">Çip Bakiyesi</div>
-                  <div className="fw-semibold">{tl(card.chip_balance)}</div>
-                </div>
                 <div className="col-md-3">
                   <div className="text-muted small">Sol PV / CV</div>
                   <div>{card.total_pv_left} / {card.total_cv_left}</div>

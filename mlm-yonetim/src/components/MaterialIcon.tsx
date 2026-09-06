@@ -85,7 +85,7 @@ export function materialName(name: string): string {
   if (LUCIDE_TO_MATERIAL[key]) return LUCIDE_TO_MATERIAL[key];
   // snake_case (doğrudan material sembol adı) ise aynen döndür
   if (/^[a-z0-9_]+$/.test(name)) return name;
-  // Bilinmeyen PascalCase (eski lucide adı) -> circle (metin gözükmesin)
+  // Bilinmeyen PascalCase (eski Google ikon adı) -> circle (metin gözükmesin)
   return "circle";
 }
 

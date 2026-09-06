@@ -58,12 +58,21 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 				rank.ID, uid); err != nil {
 				return 0, fmt.Errorf("unvan atanamadı: %w", err)
 			}
-			if _, err := q.Exec(ctx,
+			// Kariyer ilerlemesi: ilk kez ulaşılan kariyerler kaydedilir.
+			// RowsAffected=1 ise bu kariyere ÖMÜR BOYU İLK KEZ ulaşıldı →
+			// kariyer bonusu ödenir (tekrar ulaşılsa bile bir daha ödenmez).
+			tag, err := q.Exec(ctx,
 				`INSERT INTO rank_progress (user_id, rank_id)
 				 SELECT $1, $2
 				 WHERE NOT EXISTS (SELECT 1 FROM rank_progress WHERE user_id = $1 AND rank_id = $2)`,
-				uid, rank.ID); err != nil {
+				uid, rank.ID)
+			if err != nil {
 				return 0, fmt.Errorf("kariyer ilerlemesi kaydedilemedi: %w", err)
+			}
+			if tag.RowsAffected() == 1 && rank.CareerBonusAmount > 0 {
+				if err := payCareerBonus(ctx, q, uid, rank.ID, rank.Name, rank.CareerBonusAmount); err != nil {
+					return 0, fmt.Errorf("kariyer bonusu ödenemedi (user %d, rank %s): %w", uid, rank.Name, err)
+				}
 			}
 			assigned++
 		}
@@ -72,6 +81,46 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 	log.WithFields(log.Fields{"users": len(userIDs), "assignments": assigned}).
 		Info("Kariyerler yeniden hesaplandı")
 	return len(userIDs), nil
+}
+
+// payCareerBonus ömür boyu ilk kez ulaşılan kariyerin bonusunu üyenin
+// cüzdanına anında işler ve commission kaydı (type='career') oluşturur.
+// career_bonus_amount DOLAR cinsindendir; güncel TCMB kuruyla TL'ye çevrilir.
+func payCareerBonus(ctx context.Context, q DBTX, userID int64, rankID int, rankName string, amountUSD float64) error {
+	rate, err := GetUSDTRY(ctx, q)
+	if err != nil {
+		return fmt.Errorf("güncel kur alınamadı: %w", err)
+	}
+	amountTL := round2(amountUSD * rate)
+
+	// Cüzdan: yoksa oluştur (register hesaplarında zaten vardır), varsa artır.
+	if _, err := q.Exec(ctx,
+		`INSERT INTO wallets (user_id, balance, total_earned)
+		 VALUES ($1, $2, $2)
+		 ON CONFLICT (user_id) DO UPDATE
+		   SET balance = wallets.balance + EXCLUDED.balance,
+		       total_earned = wallets.total_earned + EXCLUDED.total_earned,
+		       updated_at = NOW()`,
+		userID, amountTL); err != nil {
+		return fmt.Errorf("cüzdan güncellenemedi: %w", err)
+	}
+
+	if _, err := q.Exec(ctx,
+		`INSERT INTO commissions (user_id, from_user_id, type, amount, related_cv, related_order_id, status, paid_at)
+		 VALUES ($1, NULL, 'career', $2, NULL, NULL, 'paid', NOW())`,
+		userID, amountTL); err != nil {
+		return fmt.Errorf("kariyer bonusu kaydı eklenemedi: %w", err)
+	}
+
+	log.WithFields(log.Fields{
+		"user_id":  userID,
+		"rank_id":  rankID,
+		"rank":     rankName,
+		"amount_usd": amountUSD,
+		"rate":     rate,
+		"amount_tl": amountTL,
+	}).Info("Kariyer bonusu ödendi (ilk kez ulaşılan kariyer)")
+	return nil
 }
 
 // userQualifiesForRank üyenin verilen kariyer şartını sağlayıp sağlamadığını döndürür.
@@ -88,9 +137,15 @@ func userQualifiesForRank(ctx context.Context, q DBTX, userID int64, rank models
 		return false, nil
 	}
 
-	// Kişisel aktiflik şartı (tüm kariyerlerde).
+	// Aktiflik şartı: KENDİ alışverişi (kişisel PV) gerekli değildir —
+	// ay içinde kaydedilen hedef sayıda HEDEF PAKET (varsayılan: Bronze) alt üye
+	// kaydı varsa üye o ay AKTİF sayılır. İki yoldan biri yeterli (VEYA).
 	if rank.PersonalActivityPV > 0 && monthPV < rank.PersonalActivityPV {
-		return false, nil
+		var monthCount int
+		_ = q.QueryRow(ctx, `SELECT current_month_platinum_count FROM users WHERE id = $1`, userID).Scan(&monthCount)
+		if monthCount < activityGoalCount(ctx, q) {
+			return false, nil
+		}
 	}
 
 	// Downline (kişi/kariyer) şartı — kendi neslinden, her bacak ayrı sayılır.

@@ -42,7 +42,7 @@ func NewUserService(db *pgxpool.Pool) *UserService {
 const userColumns = `id, name, email, phone, member_code, role, password_hash, sponsor_id, parent_id,
 	position, package_id, is_active, is_in_pending_pool, pending_since, current_rank_id,
 	total_pv_left, total_pv_right, total_cv_left, total_cv_right, total_pv_accumulated, total_cv_accumulated,
-	current_month_binary_earned, created_at, updated_at`
+	current_month_binary_earned, current_month_platinum_count, created_at, updated_at`
 
 // GenerateMemberCode TR90 + 6 rastgele haneden oluşan, veritabanında benzersiz
 // bir üye kodu üretir. Çakışma olursa yeni kod üretir (en fazla 20 deneme).
@@ -235,6 +235,44 @@ func (s *UserService) GetUserByMemberCode(ctx context.Context, code string) (*mo
 	return s.getUser(ctx, "SELECT "+userColumns+" FROM users WHERE member_code = $1", code)
 }
 
+// GetUserByName isimle (küçük/büyük harf ve Türkçe karakter duyarsız) ilk
+// eşleşen aktif kullanıcıyı bulur. Kolay giriş için:
+// "ender" → "ENDER ALTINTAŞ", "ayse" → "Ayşe İnci Altıntaş".
+func (s *UserService) GetUserByName(ctx context.Context, name string) (*models.User, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, ErrUserNotFound
+	}
+	// Türkçe karakterleri sadeleştir (ş→s, ç→c, ğ→g, ı→i, ö→o, ü→u, â→a)
+	norm := func(v string) string {
+		v = strings.ToLower(v)
+		r := strings.NewReplacer(
+			"ş", "s", "ç", "c", "ğ", "g", "ı", "i", "ö", "o", "ü", "u", "â", "a", "î", "i", "û", "u",
+		)
+		return r.Replace(v)
+	}
+	firstWord := strings.Fields(name)[0]
+	normWord := norm(firstWord)
+	// Tam eşleşme öncelikli: önce sadeleştirilmiş adı birebir eşleşen kullanıcıyı
+	// dene (ör. "best" → name="best"); yoksa ilk kelimeyi içeren ilk kayda düş.
+	u, err := s.getUser(ctx, `
+		SELECT `+userColumns+` FROM users
+		WHERE is_active = true
+		  AND translate(lower(name), 'şçğıöüâîû', 'scgiouaiu') = $1
+		ORDER BY id LIMIT 1`, normWord)
+	if err == nil {
+		return u, nil
+	}
+	if !errors.Is(err, ErrUserNotFound) {
+		return nil, err
+	}
+	return s.getUser(ctx, `
+		SELECT `+userColumns+` FROM users
+		WHERE is_active = true
+		  AND translate(lower(name), 'şçğıöüâîû', 'scgiouaiu') LIKE '%' || $1 || '%'
+		ORDER BY id LIMIT 1`, normWord)
+}
+
 // GetUserByID ID'ye göre kullanıcıyı bulur.
 func (s *UserService) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
 	return s.getUser(ctx, "SELECT "+userColumns+" FROM users WHERE id = $1", id)
@@ -260,7 +298,8 @@ func scanUserRow(row pgx.Row) (*models.User, error) {
 		&u.SponsorID, &u.ParentID, &u.Position, &u.PackageID,
 		&u.IsActive, &u.IsInPendingPool, &u.PendingSince, &u.CurrentRankID,
 		&u.TotalPVLeft, &u.TotalPVRight, &u.TotalCVLeft, &u.TotalCVRight,
-		&u.TotalPVAccumulated, &u.TotalCVAccumulated, &u.CurrentMonthBinaryEarned, &u.CreatedAt, &u.UpdatedAt,
+		&u.TotalPVAccumulated, &u.TotalCVAccumulated, &u.CurrentMonthBinaryEarned,
+		&u.MonthPlatinumCount, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err

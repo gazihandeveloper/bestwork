@@ -9,6 +9,7 @@ type Order struct {
 	TotalAmount   float64     `json:"total_amount"`
 	TotalPV       int64       `json:"total_pv"`
 	TotalCV       int64       `json:"total_cv"`
+	ShippingFee   float64     `json:"shipping_fee"`
 	Status        string      `json:"status"`
 	PaymentMethod string      `json:"payment_method"`
 	CreatedAt     time.Time   `json:"created_at"`

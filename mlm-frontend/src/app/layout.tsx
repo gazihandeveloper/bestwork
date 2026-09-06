@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { cookies } from "next/headers";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import Providers from "@/components/Providers";
@@ -9,10 +9,10 @@ import Footer from "@/components/landing2/Footer";
 import LoginDialog from "@/components/LoginDialog";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
-  variable: "--font-plus-jakarta",
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         rel="stylesheet"
         href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/vendor/material-symbols.css`}
       />
-      <body className={`${plusJakarta.variable} ${plusJakarta.className}`}>
+      <body className={`${montserrat.variable} ${montserrat.className}`}>
         <AppRouterCacheProvider>
           <Providers initialMode={initialMode}>
             <SiteNav />

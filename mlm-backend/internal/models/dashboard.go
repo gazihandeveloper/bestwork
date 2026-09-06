@@ -14,6 +14,8 @@ type DashboardSummary struct {
 	MonthEarnings      float64 `json:"month_earnings"`
 	MonthBinaryEarned  float64 `json:"month_binary_earned"`
 	MonthlyBinaryLimit float64 `json:"monthly_binary_limit"`
+	ActivityPackages   int     `json:"activity_packages"`
+	ActivityGoal       int     `json:"activity_goal"`
 }
 
 // TeamSummary kullanıcının ekip ve binary bacak özetini tutar.
@@ -76,6 +78,13 @@ type UserDashboard struct {
 	RecentOrders          []Order      `json:"recent_orders"`
 	CurrentRank           *Rank        `json:"current_rank"`
 	CurrentPackage        *Package     `json:"current_package"`
+	Activity              *Activity    `json:"activity"`
+}
+
+// Activity aylık aktiflik durumu (hedef paket kayıtları).
+type Activity struct {
+	MonthPackages int `json:"month_packages"`
+	Goal          int `json:"goal"`
 }
 
 // AdminDashboard admin paneli özet istatistikleridir.

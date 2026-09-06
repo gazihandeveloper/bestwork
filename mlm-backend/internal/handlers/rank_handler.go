@@ -42,6 +42,7 @@ type RankRequest struct {
 	RequiredDownlineRankID *int    `json:"required_downline_rank_id"`
 	RequiredDownlineCount  int     `json:"required_downline_count" binding:"gte=0"`
 	PersonalActivityPV     int64   `json:"personal_activity_pv" binding:"gte=0"`
+	CareerBonusAmount      float64 `json:"career_bonus_amount"`
 }
 
 // toRank RankRequest'i models.Rank'e dönüştürür.
@@ -54,6 +55,7 @@ func (req RankRequest) toRank() *models.Rank {
 		RequiredDownlineRankID: req.RequiredDownlineRankID,
 		RequiredDownlineCount:  req.RequiredDownlineCount,
 		PersonalActivityPV:     req.PersonalActivityPV,
+		CareerBonusAmount:      req.CareerBonusAmount,
 	}
 }
 

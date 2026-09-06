@@ -42,17 +42,19 @@ func NewPendingPoolService(db *pgxpool.Pool) *PendingPoolService {
 	return &PendingPoolService{db: db}
 }
 
-// ListPendingUsersBySponsor sponsorun henüz yerleştirilmemiş bekleyenlerini döndürür.
+// ListPendingUsersBySponsor sponsorun henüz yerleştirilmemiş bekleyenlerini
+// döndürür. Yalnızca alışveriş yapmış (ödenmiş siparişi olan) üyeler listelenir.
 func (s *PendingPoolService) ListPendingUsersBySponsor(ctx context.Context, sponsorID int64) ([]models.User, error) {
 	rows, err := s.db.Query(ctx, `
 		SELECT u.id, u.name, u.email, u.phone, u.member_code, u.role, u.password_hash, u.sponsor_id, u.parent_id,
 			u.position, u.package_id, u.is_active, u.is_in_pending_pool, u.pending_since, u.current_rank_id,
 			u.total_pv_left, u.total_pv_right, u.total_cv_left, u.total_cv_right,
 			u.total_pv_accumulated, u.total_cv_accumulated,
-			u.current_month_binary_earned, u.created_at, u.updated_at
+			u.current_month_binary_earned, u.current_month_platinum_count, u.created_at, u.updated_at
 		FROM pending_pool pp
 		JOIN users u ON u.id = pp.user_id
 		WHERE pp.sponsor_id = $1 AND pp.is_placed = false
+		  AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id AND o.status = 'paid')
 		ORDER BY pp.id ASC`, sponsorID)
 	if err != nil {
 		return nil, fmt.Errorf("bekleyenler listelenemedi: %w", err)
@@ -70,7 +72,8 @@ func (s *PendingPoolService) ListPendingUsersBySponsor(ctx context.Context, spon
 	return users, rows.Err()
 }
 
-// ListAllPendingUsers tüm yerleştirilmemiş bekleyenleri sponsor bilgisiyle döndürür (admin).
+// ListAllPendingUsers tüm yerleştirilmemiş bekleyenleri sponsor bilgisiyle
+// döndürür (admin). Yalnızca alışveriş yapmış (ödenmiş siparişi olan) üyeler listelenir.
 func (s *PendingPoolService) ListAllPendingUsers(ctx context.Context) ([]PendingPoolEntry, error) {
 	rows, err := s.db.Query(ctx, `
 		SELECT u.id, u.name, u.email, u.phone, u.member_code, u.role, u.password_hash, u.sponsor_id, u.parent_id,
@@ -83,6 +86,7 @@ func (s *PendingPoolService) ListAllPendingUsers(ctx context.Context) ([]Pending
 		JOIN users u ON u.id = pp.user_id
 		LEFT JOIN users s ON s.id = pp.sponsor_id
 		WHERE pp.is_placed = false AND u.is_in_pending_pool = true
+		  AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id AND o.status = 'paid')
 		ORDER BY pp.id ASC`)
 	if err != nil {
 		return nil, fmt.Errorf("bekleyenler listelenemedi: %w", err)
@@ -96,7 +100,7 @@ func (s *PendingPoolService) ListAllPendingUsers(ctx context.Context) ([]Pending
 		var sponsorName, sponsorCode *string
 
 		if err := rows.Scan(
-			&u.ID, &u.Name, &u.Email, &u.MemberCode, &u.Role, &u.PasswordHash,
+			&u.ID, &u.Name, &u.Email, &u.Phone, &u.MemberCode, &u.Role, &u.PasswordHash,
 			&u.SponsorID, &u.ParentID, &u.Position, &u.PackageID,
 			&u.IsActive, &u.IsInPendingPool, &u.PendingSince, &u.CurrentRankID,
 			&u.TotalPVLeft, &u.TotalPVRight, &u.TotalCVLeft, &u.TotalCVRight,

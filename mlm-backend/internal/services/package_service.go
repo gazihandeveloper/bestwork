@@ -83,6 +83,18 @@ func UpdatePackageLevel(ctx context.Context, q DBTX, userID int64, totalPV int64
 		return err
 	}
 
+	// Aktiflik: alt üye (bu üye) HEDEF pakete (varsayılan Bronze) İLK KEZ
+	// ulaştıysa, onu kaydeden sponsora (1. hat) paket kaydı sayılır.
+	goalPkgID := activityPackageID(ctx, q)
+	if newPackage.ID == goalPkgID && (currentPackageID == nil || *currentPackageID < goalPkgID) {
+		var sponsorID *int64
+		if err := q.QueryRow(ctx, `SELECT sponsor_id FROM users WHERE id = $1`, userID).Scan(&sponsorID); err == nil && sponsorID != nil {
+			if err := RegisterActivityPackage(ctx, q, userID, *sponsorID); err != nil {
+				log.WithError(err).Warn("Hedef paket kaydı sayılamadı (aktiflik)")
+			}
+		}
+	}
+
 	log.WithFields(log.Fields{
 		"user_id":  userID,
 		"package":  newPackage.Name,

@@ -70,6 +70,7 @@ export interface Order {
   total_amount: number;
   total_pv: number;
   total_cv: number;
+  shipping_fee?: number;
   status: string;
   payment_method: string;
   created_at: string;
@@ -140,6 +141,7 @@ export interface UserDashboard {
   recent_orders: Order[];
   current_rank: { id: number; name: string; monthly_binary_limit: number } | null;
   current_package: { id: number; name: string } | null;
+  activity: { month_packages: number; goal: number } | null;
 }
 
 export interface AdminDashboard {
@@ -308,9 +310,10 @@ export async function getOrders(): Promise<Order[]> {
 
 export async function createOrder(
   items: { product_id: number; quantity: number }[],
-  paymentMethod = "eft_havale"
+  paymentMethod = "eft_havale",
+  retail = false
 ): Promise<Order> {
-  const { data } = await api.post<{ order: Order }>("/orders", { items, payment_method: paymentMethod });
+  const { data } = await api.post<{ order: Order }>("/orders", { items, payment_method: paymentMethod, retail });
   return data.order;
 }
 
@@ -743,6 +746,19 @@ export interface Rank {
 export async function getRanks(): Promise<Rank[]> {
   const { data } = await api.get<{ ranks: Rank[] }>("/ranks");
   return data.ranks;
+}
+
+// Paketler (seviyeler)
+export interface Package {
+  id: number;
+  name: string;
+  required_pv: number;
+  discount_rate: number;
+}
+
+export async function getPackages(): Promise<Package[]> {
+  const { data } = await api.get<{ packages: Package[] }>("/packages");
+  return data.packages ?? [];
 }
 
 // Liderlik (matching) primleri

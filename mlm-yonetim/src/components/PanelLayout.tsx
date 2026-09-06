@@ -21,6 +21,7 @@ const NAV_GROUPS: NavGroup[] = [
       { text: "Ürünler", href: "/urunler" },
       { text: "Seviyeler", href: "/paketler" },
       { text: "Siparişler", href: "/siparisler" },
+      { text: "Kargo Limiti", href: "/kargo" },
     ],
   },
   {
@@ -32,6 +33,8 @@ const NAV_GROUPS: NavGroup[] = [
       { text: "Bekleyenler", href: "/bekleyenler" },
       { text: "Yeniden Üyelik", href: "/yeniden-uyelik" },
       { text: "Kariyer Yönetimi", href: "/rutbeler" },
+      { text: "Manuel Kur", href: "/manuel-kur" },
+      { text: "PV & Aktiflik", href: "/promosyon" },
     ],
   },
   {
@@ -145,6 +148,17 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
             >
               <MaterialIcon name="ExternalLink" className="bw-nav-icon" size={16} />
               <span>Siteye Dön</span>
+            </a>
+            <a
+              className="bw-nav-item"
+              href="https://mahmutgazihanarslan.com.tr/bestmanager2"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setMobileOpen(false)}
+              title="Yeni Versiyon (TailAdmin)"
+            >
+              <MaterialIcon name="Rocket" className="bw-nav-icon" size={16} />
+              <span>Yeni Versiyon</span>
             </a>
           </div>
 

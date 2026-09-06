@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // İkon adı çözümü: kullanıcı kebab-case yazar (örn. "chevron-down").
-// Eski kayıtlardaki anahtarlar lucide adlarına eşlenir.
+// Eski kayıtlardaki anahtarlar Google ikon adlarına eşlenir.
 const ICON_ALIAS: Record<string, string> = {
   shipping: "truck",
   payment: "shield-check",

@@ -6,12 +6,15 @@ import Link from "next/link";
 import { MaterialIcon } from "@/components/MaterialIcon";
 import RequireAuth from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
-import { getDashboard, getRanks, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, getErrorMessage } from "@/services/api";
+import { getDashboard, getRanks, getPackages, getMe, listSponsored, listPendingUsers, getProfile, updateProfileImage, uploadFile, fileUrl, listProducts, getErrorMessage } from "@/services/api";
+import { addRetailToCart, loadCart, saveCart, decrementCart, removeFromCart, setCartQuantity } from "@/lib/cart";
+import type { CartItem } from "@/lib/cart";
 import AdminHome from "@/components/dashboard/AdminHome";
 import { BASE_PATH } from "@/lib/api";
-import type { UserDashboard, Rank, User } from "@/services/api";
+import type { UserDashboard, Rank, Package, Product, User } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import QtyInput from "@/components/QtyInput";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
@@ -109,9 +112,11 @@ function StatBlock({ label, value, kalan, kalanBoxes, progress, steps, icon, big
                 ].map((b) => (
                   <div
                     key={b.label}
-                    className="bg-primary flex flex-grow items-center justify-center gap-0.5 rounded px-0.75 py-0.1 text-center"
+                    className="bg-primary flex flex-grow items-center justify-center gap-1 rounded px-0.75 py-0.1 text-center"
                   >
-                    <span className="text-[10.5px] font-bold leading-tight text-white/85">{b.label}</span>
+                    <span className="text-[10.5px] font-bold leading-tight text-white/85">
+                      {b.label} <span className="text-white">:</span>
+                    </span>
                     <span className="text-[12.5px] leading-tight font-extrabold text-white">{b.value}</span>
                   </div>
                 ))}
@@ -173,6 +178,12 @@ function DashboardContent() {
   const [me, setMe] = useState<User | null>(contextUser);
   const [data, setData] = useState<UserDashboard | null>(null);
   const [ranks, setRanks] = useState<Rank[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cartPV, setCartPV] = useState(0);
+  const [cartRetailTotal, setCartRetailTotal] = useState(0);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const cartQtyOf = (id: number) => cartItems.find((c) => c.product.id === id)?.quantity ?? 0;
   const [sponsoredCount, setSponsoredCount] = useState(0);
   const [copied, setCopied] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -180,6 +191,7 @@ function DashboardContent() {
   const [msg, setMsg] = useState("");
   const [flippedCard, setFlippedCard] = useState<string | null>(null);
   const [pendingOpen, setPendingOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -211,10 +223,12 @@ function DashboardContent() {
   useEffect(() => {
     // Yönetim (admin) ana sayfası ayrı bileşende; üye verileri yalnızca üyeler için
     if (isAdmin) return;
-    Promise.all([getDashboard(), getRanks(), listSponsored(), listPendingUsers()])
-      .then(([d, r, sp, pend]) => {
+    Promise.all([getDashboard(), getRanks(), getPackages(), listSponsored(), listPendingUsers(), listProducts()])
+      .then(([d, r, pk, sp, pend, pr]) => {
         setData(d);
         setRanks(r);
+        setPackages(pk);
+        setProducts(pr);
         setSponsoredCount(sp.length);
         setPendingCount(pend.length);
       })
@@ -235,6 +249,19 @@ function DashboardContent() {
       clearInterval(id);
       window.removeEventListener("focus", onFocus);
     };
+  }, []);
+
+  // Sepetteki ürünlerin toplam PV'si — seviye çizgileri sepete göre dolsun.
+  useEffect(() => {
+    const calcCartPV = () => {
+      const items = loadCart();
+      setCartItems(items);
+      setCartPV(items.reduce((sum, c) => sum + c.product.pv * c.quantity, 0));
+      setCartRetailTotal(items.filter((c) => c.retail).reduce((sum, c) => sum + c.product.price * c.quantity, 0));
+    };
+    calcCartPV();
+    window.addEventListener("cart-updated", calcCartPV);
+    return () => window.removeEventListener("cart-updated", calcCartPV);
   }, []);
 
   // Yönetim (admin) ana sayfası: site tasarımıyla uyumlu KPI özeti.
@@ -268,6 +295,39 @@ function DashboardContent() {
   const rankIndex = currentRankId != null ? ranks.findIndex((r) => r.id === currentRankId) : -1;
 
   const currentRankName = (d.user.rank || "GİRİŞİMCİ").toLocaleUpperCase("en-US");
+
+  // Paket Yükselt: güncel paket + seviye ilerlemesi (PV bazlı)
+  const pv = me?.total_pv_accumulated ?? 0;
+  const sortedPkgs = [...packages].sort((a, b) => a.required_pv - b.required_pv);
+  const pkgByName = d.user.package
+    ? sortedPkgs.find((p) => p.name.toLocaleLowerCase("tr-TR") === d.user.package!.toLocaleLowerCase("tr-TR"))
+    : undefined;
+  const pickHighest = (a?: Package, b?: Package) =>
+    [a, b].filter((p): p is Package => !!p).sort((x, y) => y.required_pv - x.required_pv)[0];
+
+  // GERÇEK seviye (yalnızca onaylanmış/ödenmiş PV) — dashboard kutuları onaysız ilerlemez.
+  const actualPkgByPV = [...sortedPkgs].reverse().find((p) => p.required_pv > 0 && pv >= p.required_pv);
+  const actualPkg = pickHighest(actualPkgByPV, pkgByName);
+  const actualPkgName = (actualPkg?.name ?? "Girişimci").toLocaleUpperCase("tr-TR");
+  const actualPkgIndex = actualPkg ? sortedPkgs.findIndex((p) => p.id === actualPkg.id) : -1;
+  const actualLevelIndex = actualPkgIndex >= 0 ? actualPkgIndex + 1 : 0;
+
+  // ÖNGÖRÜLEN seviye (sepet dahil) — yalnızca modalda "ürün eklenince dolsun" önizlemesi.
+  const projectedPV = pv + cartPV;
+  const pkgByPV = [...sortedPkgs].reverse().find((p) => p.required_pv > 0 && projectedPV >= p.required_pv);
+  const currentPkg = pickHighest(pkgByPV, pkgByName);
+  const currentPkgName = (currentPkg?.name ?? "Girişimci").toLocaleUpperCase("tr-TR");
+  // 5 seviye çizgisi: Girişimci=0, Starter=1, Bronze=2, Gümüş=3, Altın=4, Platin=5
+  const currentPkgIndex = currentPkg ? sortedPkgs.findIndex((p) => p.id === currentPkg.id) : -1;
+  const levelIndex = currentPkgIndex >= 0 ? currentPkgIndex + 1 : 0;
+
+  // Modal seviye çizgileri: güncel hedef çizgi kısmi dolsun (yavaş animasyonlu).
+  const projectedNext = sortedPkgs.find((p) => p.required_pv > projectedPV);
+  const segStart = currentPkg ? currentPkg.required_pv : 0;
+  const segEnd = projectedNext ? projectedNext.required_pv : 0;
+  const seg = segEnd - segStart;
+  const inSeg = seg > 0 ? Math.max(0, Math.min(seg, projectedPV - segStart)) : 0;
+  const currentSegPct = seg > 0 ? Math.round((inSeg / seg) * 100) : 100;
 
   const handleImageUpload = async (file: File | undefined) => {
     if (!file) return;
@@ -421,6 +481,16 @@ function DashboardContent() {
 
         {/* İstatistik blokları */}
         <div className={cn("md:col-span-9", isAdmin && "md:col-span-12")}>
+          {/* Paket Seviyeni Yükselt butonu — yalnızca maksimum seviyeye ulaşmamışlara gösterilir */}
+          {actualLevelIndex < 5 && (
+            <button
+              type="button"
+              onClick={() => setUpgradeOpen(true)}
+              className="bg-red-600 text-white mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded py-3 text-base font-extrabold shadow-md transition-transform duration-200 animate-pulse hover:-translate-y-0.5 hover:animate-none hover:brightness-110"
+            >
+              Üyelik seviyenizi yükseltmek için tıklayınız
+            </button>
+          )}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
             <StatBlock
               label="Ünvan"
@@ -442,12 +512,13 @@ function DashboardContent() {
               onClick={() => router.push("/career")}
             />
             <StatBlock
-              label="Paket Yükselt"
-              value={d.user.package ? d.user.package.toLocaleUpperCase("tr-TR") : "BRONZ"}
+              label="Seviyeniz"
+              value={actualPkgName}
+              steps={{ filled: actualLevelIndex, total: 5 }}
               icon={<MaterialIcon name="trending_up" className="animate-pulse" />}
               info="Alışveriş PV'niz arttıkça paketiniz ve ürün indiriminiz otomatik yükselir."
-              flipped={flippedCard === "Paket Yükselt"}
-              onFlip={() => flip("Paket Yükselt")}
+              flipped={flippedCard === "Seviyeniz"}
+              onFlip={() => flip("Seviyeniz")}
             />
             <StatBlock
               label="Sponsor Olduklarım"
@@ -522,18 +593,9 @@ function DashboardContent() {
       {/* Yerleşim bekleyenler modalı */}
       <Dialog open={pendingOpen} onOpenChange={setPendingOpen}>
         <DialogContent className="max-w-3xl">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-primary-dark text-lg font-extrabold">
-              Yerleşim Bekleyen Üyeler
-            </DialogTitle>
-            <button
-              aria-label="Kapat"
-              onClick={() => setPendingOpen(false)}
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded transition-colors"
-            >
-              <MaterialIcon name="X" className="size-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-primary-dark text-lg font-extrabold">
+            Yerleşim Bekleyen Üyeler
+          </DialogTitle>
           {pendingLoading ? (
             <div className="flex justify-center py-6">
               <MaterialIcon name="Loader2" className="text-primary size-8 animate-spin" />
@@ -584,6 +646,139 @@ function DashboardContent() {
               </table>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Paket Yükselt modalı */}
+      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto">
+          <DialogTitle className="text-primary-dark text-center text-xl font-extrabold">
+            Paket Seviyenizi Yükseltin
+          </DialogTitle>
+          <div className="px-1 pb-1">
+            <div className="bg-secondary/60 flex items-center justify-between rounded px-3 py-2">
+              <span className="text-muted-foreground text-sm font-semibold">Mevcut Seviye</span>
+              <span className="text-primary-dark font-extrabold">{currentPkgName}</span>
+            </div>
+
+            <div className="mt-2 flex gap-0.5">
+              {Array.from({ length: 5 }, (_, i) => {
+                let fill = 0;
+                if (i < levelIndex) fill = 100;
+                else if (i === levelIndex) fill = currentSegPct;
+                return (
+                  <div key={i} className="bg-secondary-light h-2 flex-grow overflow-hidden rounded">
+                    <div
+                      className="bg-primary h-full rounded transition-[width] duration-700 ease-out"
+                      style={{ width: `${fill}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-muted-foreground mt-2 text-center text-xs">
+              Paket yükseltme için ürünler{" "}
+              <span className="text-primary-dark font-bold">perakende satış fiyatından</span> satılır (indirim
+              uygulanmaz).
+            </p>
+
+            <div className="mt-3 max-h-[300px] space-y-1.5 overflow-y-auto pr-0.5">
+              {products.length === 0 ? (
+                <p className="text-muted-foreground py-4 text-center text-xs">Ürün bulunamadı.</p>
+              ) : (
+                products.map((p) => (
+                  <div key={p.id} className="border-border flex flex-wrap items-center gap-2 rounded border px-2 py-2">
+                    <div className="bg-secondary flex size-11 shrink-0 items-center justify-center overflow-hidden rounded">
+                      {fileUrl(p.image_path) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={fileUrl(p.image_path)!} alt={p.name} className="block h-full w-full object-cover" />
+                      ) : (
+                        <MaterialIcon name="ShoppingBag" className="text-primary-dark size-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold">{p.name}</p>
+                      <p className="text-primary-dark text-[13px] font-extrabold">
+                        {p.price.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} ₺
+                      </p>
+                      <p className="text-muted-foreground text-[10px]">{p.pv} PV · {p.cv} CV</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        aria-label="Adedi azalt"
+                        onClick={() => {
+                          if (cartQtyOf(p.id) > 0) decrementCart(p.id);
+                        }}
+                        className="border-border bg-card text-primary flex size-7 cursor-pointer items-center justify-center rounded border"
+                      >
+                        <MaterialIcon name="Minus" className="size-3.5" />
+                      </button>
+                      <QtyInput qty={cartQtyOf(p.id)} onChange={(n) => setCartQuantity(p, n)} max={p.stock} />
+                      <button
+                        type="button"
+                        aria-label="Adedi artır"
+                        onClick={() => addRetailToCart(p, 1)}
+                        disabled={cartQtyOf(p.id) >= p.stock}
+                        className="border-border bg-card text-primary flex size-7 cursor-pointer items-center justify-center rounded border disabled:pointer-events-none disabled:opacity-40"
+                      >
+                        <MaterialIcon name="Plus" className="size-3.5" />
+                      </button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive border-destructive/50 shrink-0"
+                      disabled={cartQtyOf(p.id) <= 0}
+                      onClick={() => {
+                        removeFromCart(p.id);
+                        setMsg(`${p.name} sepetten silindi.`);
+                      }}
+                    >
+                      <MaterialIcon name="Trash2" className="mr-1 size-3.5" /> Sil
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="bg-secondary/50 mt-3 space-y-1 rounded px-3 py-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-xs font-semibold">Toplam PV</span>
+                <span className="text-primary-dark text-sm font-extrabold">{cartPV.toLocaleString("tr-TR")} PV</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-xs font-semibold">Toplam Tutar</span>
+                <span className="text-primary-dark text-sm font-extrabold">
+                  {cartRetailTotal.toLocaleString("tr-TR", { minimumFractionDigits: 2 })} ₺
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                className="flex-1 min-w-[140px]"
+                onClick={() => {
+                  setUpgradeOpen(false);
+                  router.push("/cart");
+                }}
+              >
+                <MaterialIcon name="ShoppingCart" className="mr-1 size-4" /> Sepete Git
+              </Button>
+              <Button
+                variant="outline"
+                className="text-destructive border-destructive/50"
+                onClick={() => {
+                  saveCart([]);
+                  setMsg("Sepet temizlendi.");
+                }}
+              >
+                <MaterialIcon name="Trash2" className="mr-1 size-4" /> Temizle
+              </Button>
+              <Button variant="outline" onClick={() => setUpgradeOpen(false)}>Kapat</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

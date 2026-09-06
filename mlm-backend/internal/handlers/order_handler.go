@@ -25,6 +25,7 @@ func NewOrderHandler(orders *services.OrderService) *OrderHandler {
 type CreateOrderRequest struct {
 	Items         []services.OrderItemInput `json:"items" binding:"required,min=1"`
 	PaymentMethod string                    `json:"payment_method"`
+	Retail        bool                      `json:"retail"`
 }
 
 // Create kullanıcı adına sipariş oluşturur (JWT korumalı).
@@ -42,7 +43,7 @@ func (h *OrderHandler) Create(c *gin.Context) {
 		return
 	}
 
-	order, err := h.orders.CreateOrder(c.Request.Context(), userID, req.PaymentMethod, req.Items)
+	order, err := h.orders.CreateOrder(c.Request.Context(), userID, req.PaymentMethod, req.Items, req.Retail)
 	if err != nil {
 		switch {
 		case errors.Is(err, services.ErrProductNotFound),

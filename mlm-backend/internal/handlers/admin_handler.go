@@ -246,7 +246,7 @@ func (h *AdminHandler) RejectWithdrawal(c *gin.Context) {
 }
 
 // MonthlyClose aylık kapanışı çalıştırır: toplu binary eşleşme + rütbe +
-// %5 chip kesintisi + binary kazanç sıfırlama (admin).
+// binary kazanç sıfırlama (admin).
 // Idempotent: aynı ay tekrar çağrılırsa hiçbir değişiklik yapılmaz.
 func (h *AdminHandler) MonthlyClose(c *gin.Context) {
 	if err := h.monthlyClose.ProcessMonthlyClose(); err != nil {
@@ -266,16 +266,9 @@ func (h *AdminHandler) MonthlyClose(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Aylık kapanış tamamlandı", "executed": true})
 }
 
-// MonthlyReset chip kesintisi ve binary kazanç sıfırlama işlemlerini çalıştırır (admin).
-// Her ikisi de idempotenttir; aynı ay tekrar çağrılırsa değişiklik yapılmaz.
+// MonthlyReset binary kazanç sıfırlama işlemini çalıştırır (admin).
+// Idempotenttir; aynı ay tekrar çağrılırsa değişiklik yapılmaz.
 func (h *AdminHandler) MonthlyReset(c *gin.Context) {
-	chipErr := h.chips.ApplyMonthlyChipDeduction()
-	if chipErr != nil && !errors.Is(chipErr, services.ErrMonthlyJobAlreadyRun) {
-		log.WithError(chipErr).Error("Aylık chip kesintisi başarısız")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Aylık chip kesintisi başarısız"})
-		return
-	}
-
 	resetErr := h.chips.ResetMonthlyBinaryEarnings()
 	if resetErr != nil && !errors.Is(resetErr, services.ErrMonthlyJobAlreadyRun) {
 		log.WithError(resetErr).Error("Aylık binary sıfırlama başarısız")
@@ -283,10 +276,9 @@ func (h *AdminHandler) MonthlyReset(c *gin.Context) {
 		return
 	}
 
-	chipDone := errors.Is(chipErr, services.ErrMonthlyJobAlreadyRun)
 	resetDone := errors.Is(resetErr, services.ErrMonthlyJobAlreadyRun)
 
-	if chipDone && resetDone {
+	if resetDone {
 		c.JSON(http.StatusOK, gin.H{"message": "Bu ay için ay sonu işlemleri zaten çalıştırılmış", "executed": false})
 		return
 	}

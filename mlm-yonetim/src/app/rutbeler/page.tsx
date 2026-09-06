@@ -16,6 +16,7 @@ interface RankForm {
   downlineRankId: number | null;
   downlineCount: number;
   activityPv: number;
+  careerBonus: number;
 }
 
 const emptyForm: RankForm = {
@@ -26,6 +27,7 @@ const emptyForm: RankForm = {
   downlineRankId: null,
   downlineCount: 0,
   activityPv: 250,
+  careerBonus: 250,
 };
 
 const toNum = (v: string) => {
@@ -34,8 +36,10 @@ const toNum = (v: string) => {
 };
 
 const fmt = (v: number) => v.toLocaleString("tr-TR");
+const usd2 = (v: number) =>
+  "$" + Number(v || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default function SeviyelerPage() {
+export default function KariyerlerPage() {
   const [ranks, setRanks] = useState<Rank[] | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -78,6 +82,7 @@ export default function SeviyelerPage() {
       downlineRankId: r.required_downline_rank_id ?? null,
       downlineCount: r.required_downline_count ?? 0,
       activityPv: r.personal_activity_pv ?? 250,
+      careerBonus: r.career_bonus_amount ?? 250,
     });
     setError("");
     setFormOpen(true);
@@ -85,7 +90,7 @@ export default function SeviyelerPage() {
 
   const save = async () => {
     if (!form.name.trim()) {
-      setError("Seviye adı zorunludur.");
+      setError("Kariyer adı zorunludur.");
       return;
     }
     setSaving(true);
@@ -99,10 +104,11 @@ export default function SeviyelerPage() {
         required_downline_rank_id: form.downlineRankId,
         required_downline_count: form.downlineCount,
         personal_activity_pv: form.activityPv,
+        career_bonus_amount: form.careerBonus,
       };
       if (editingId) await updateRank(editingId, input);
       else await createRank(input);
-      setNotice(editingId ? "Seviye güncellendi." : "Seviye eklendi.");
+      setNotice(editingId ? "Kariyer güncellendi." : "Kariyer eklendi.");
       setFormOpen(false);
       load();
     } catch (err) {
@@ -117,7 +123,7 @@ export default function SeviyelerPage() {
     setDeleting(true);
     try {
       await deleteRank(delTarget.id);
-      setNotice("Seviye silindi.");
+      setNotice("Kariyer silindi.");
       setDelTarget(null);
       load();
     } catch (err) {
@@ -136,8 +142,8 @@ export default function SeviyelerPage() {
   return (
     <PanelLayout>
       <PageHeader
-        title="Seviyeler (Kariyerler)"
-        subtitle="Kariyer merdivenini yönetin — PV eşiği, alt kariyer şartı, kişisel aktiflik ve aylık binary limit."
+        title="Kariyerler"
+        subtitle="Kariyer merdivenini yönetin — PV eşiği, alt kariyer şartı, kişisel aktiflik, aylık binary limit ve kariyer bonusu."
       />
 
       {notice && <div className="alert alert-success py-2">{notice}</div>}
@@ -145,20 +151,20 @@ export default function SeviyelerPage() {
 
       <div className="mb-3">
         <button className="btn btn-primary" onClick={openNew}>
-          <MaterialIcon name="Plus" size={15} className="me-1" /> Yeni Seviye
+          <MaterialIcon name="Plus" size={15} className="me-1" /> Yeni Kariyer
         </button>
       </div>
 
       {/* Form paneli */}
       {formOpen && (
         <PageCard
-          title={editingId ? `Seviye Düzenle (#${editingId})` : "Yeni Seviye"}
+          title={editingId ? `Kariyer Düzenle (#${editingId})` : "Yeni Kariyer"}
           subtitle="Alt kariyer şartı 'kendi neslinden' sayılır; PV şartı spillover dahil toplam bacak hacmidir."
           className="mb-3"
         >
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label">Seviye Adı *</label>
+              <label className="form-label">Kariyer Adı *</label>
               <input
                 ref={nameRef}
                 className="form-control"
@@ -196,6 +202,17 @@ export default function SeviyelerPage() {
                 value={form.monthlyLimit}
                 onChange={(e) => setForm({ ...form, monthlyLimit: toNum(e.target.value) })}
               />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label">Kariyer Bonusu ($)</label>
+              <input
+                type="number"
+                min={0}
+                className="form-control"
+                value={form.careerBonus}
+                onChange={(e) => setForm({ ...form, careerBonus: toNum(e.target.value) })}
+              />
+              <div className="form-text">Dolar. Ömür boyu bir kez; ödeme güncel kurla TL'ye çevrilir.</div>
             </div>
             <div className="col-md-2">
               <label className="form-label">Kişisel Aktiflik (PV/ay)</label>
@@ -250,21 +267,22 @@ export default function SeviyelerPage() {
         </PageCard>
       )}
 
-      {/* Seviye listesi */}
-      <PageCard title="Seviye Listesi" subtitle={`${ranks.length} seviye`}>
+      {/* Kariyer listesi */}
+      <PageCard title="Kariyer Listesi" subtitle={`${ranks.length} kariyer`}>
         {ranks.length === 0 ? (
-          <InfoAlert>Henüz seviye yok. "Yeni Seviye" ile ekleyin.</InfoAlert>
+          <InfoAlert>Henüz kariyer yok. "Yeni Kariyer" ile ekleyin.</InfoAlert>
         ) : (
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Seviye</th>
+                  <th>Kariyer</th>
                   <th>Sol PV</th>
                   <th>Sağ PV</th>
                   <th>Alt Kariyer Şartı</th>
                   <th>Aktiflik</th>
                   <th>Aylık Binary Limit</th>
+                  <th>Kariyer Bonusu</th>
                   <th className="text-end">İşlemler</th>
                 </tr>
               </thead>
@@ -279,11 +297,12 @@ export default function SeviyelerPage() {
                         <MaterialIcon name="Trophy" size={15} className="text-warning me-1" />
                         {r.name}
                       </td>
-                      <td><span className="badge text-bg-primary"><MaterialIcon name="GitBranch" size={11} className="me-1" />{fmt(r.required_left_pv)}</span></td>
-                      <td><span className="badge text-bg-primary">{fmt(r.required_right_pv)}</span></td>
-                      <td><span className="badge text-bg-info">{downline}</span></td>
+                      <td>{fmt(r.required_left_pv)}</td>
+                      <td>{fmt(r.required_right_pv)}</td>
+                      <td>{downline}</td>
                       <td>{r.personal_activity_pv ?? 250} PV/ay</td>
                       <td>₺{fmt(r.monthly_binary_limit)}</td>
+                      <td>{usd2(r.career_bonus_amount ?? 250)}</td>
                       <td className="text-end">
                         <button className="btn btn-sm btn-outline-primary me-1" onClick={() => openEdit(r)} aria-label="Düzenle">
                           <MaterialIcon name="Pencil" size={14} />
@@ -303,17 +322,17 @@ export default function SeviyelerPage() {
 
       <ConfirmModal
         open={delTarget !== null}
-        title="Seviye Sil"
+        title="Kariyer Sil"
         tone="danger"
         confirmText="Sil"
         busy={deleting}
         onConfirm={confirmDelete}
         onCancel={() => setDelTarget(null)}
       >
-        <strong>{delTarget?.name}</strong> seviyesi kalıcı olarak silinecek. Emin misiniz?
+        <strong>{delTarget?.name}</strong> kariyeri kalıcı olarak silinecek. Emin misiniz?
         {delTarget && (
           <div className="alert alert-warning mt-2 mb-0 py-2 small">
-            Bu seviyeye ulaşmış kullanıcılar varsa silme işlemi reddedilir.
+            Bu kariyere ulaşmış kullanıcılar varsa silme işlemi reddedilir.
           </div>
         )}
       </ConfirmModal>

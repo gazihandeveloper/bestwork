@@ -520,17 +520,6 @@ export default function CuzdanlarPage() {
                   </div>
                 </div>
                 <div className="col-sm-6 col-lg">
-                  <div className="small-box text-bg-primary">
-                    <div className="inner">
-                      <h3>{tl(wallet.chip_balance)}</h3>
-                      <p>Chip Bakiyesi</p>
-                    </div>
-                    <span className="small-box-icon" aria-hidden="true">
-                      <MaterialIcon name="Coins" size={60} />
-                    </span>
-                  </div>
-                </div>
-                <div className="col-sm-6 col-lg">
                   <div className="small-box text-bg-danger">
                     <div className="inner">
                       <h3>{tl(wallet.blocked_balance)}</h3>

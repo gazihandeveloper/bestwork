@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Source_Sans_3 } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./adminlte-theme.css";
 import "./login-template.css";
 import { AuthProvider } from "@/lib/auth";
 import AuthGuard from "@/components/AuthGuard";
 
-const sourceSans = Source_Sans_3({
+const montserrat = Montserrat({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-source-sans",
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="/bestmanager/vendor/material-symbols.css" />
         <script defer src="/bestmanager/vendor/apexcharts.min.js" />
       </head>
-      <body className={`${sourceSans.variable} layout-fixed`}>
+      <body className={`${montserrat.variable} layout-fixed`}>
         <AuthProvider>
           <AuthGuard>{children}</AuthGuard>
         </AuthProvider>

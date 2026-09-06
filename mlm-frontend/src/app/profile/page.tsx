@@ -93,9 +93,6 @@ function ProfileContent() {
             <strong>Bakiye:</strong> {wallet?.balance.toFixed(2)} TL
           </p>
           <p>
-            <strong>Chip:</strong> {wallet?.chip_balance.toFixed(2)} TL
-          </p>
-          <p>
             <strong>Toplam Kazanç:</strong> {wallet?.total_earned.toFixed(2)} TL
           </p>
         </div>

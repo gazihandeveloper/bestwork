@@ -378,7 +378,7 @@ export async function updateSettings(settings: Record<string, string>): Promise<
   await api.put("/admin/settings", { settings });
 }
 
-// ── Seviyeler (kariyerler) ───────────────────────────────────────────────────
+// ── Kariyerler (rütbeler) ───────────────────────────────────────────────────
 export interface Rank {
   id: number;
   name: string;
@@ -388,6 +388,7 @@ export interface Rank {
   required_downline_rank_id?: number | null;
   required_downline_count?: number;
   personal_activity_pv?: number;
+  career_bonus_amount?: number;
   created_at?: string;
 }
 
@@ -399,6 +400,7 @@ export interface RankInput {
   required_downline_rank_id?: number | null;
   required_downline_count?: number;
   personal_activity_pv?: number;
+  career_bonus_amount?: number;
 }
 
 export async function listRanks(): Promise<Rank[]> {
@@ -443,6 +445,26 @@ export async function respawnUser(userId: number, newSponsorId: number): Promise
     user_id: userId,
     new_sponsor_id: newSponsorId,
   });
+  return data;
+}
+
+// ── PV/CV Promosyon ────────────────────────────────────────────────────────
+export interface UserStats {
+  id: number;
+  name: string;
+  email: string;
+  member_code: string;
+  total_pv_accumulated?: number;
+  total_cv_accumulated?: number;
+  package?: string | null;
+  rank?: string | null;
+}
+
+export async function adjustUserStats(
+  userId: number,
+  input: { delta_pv?: number; delta_cv?: number; reason: string }
+): Promise<{ message: string }> {
+  const { data } = await api.post<{ message: string }>(`/admin/users/${userId}/adjust-pv-cv`, input);
   return data;
 }
 

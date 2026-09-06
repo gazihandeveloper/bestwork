@@ -33,7 +33,7 @@ const groups: MenuGroup[] = [
     ],
   },
   {
-    title: "Prim",
+    title: "Prim Yönetimi",
     icon: <MaterialIcon name="Receipt" className="size-4" />,
     items: [
       { path: "/commissions", label: "Prim Detayları", icon: <MaterialIcon name="Receipt" className="size-4" /> },
