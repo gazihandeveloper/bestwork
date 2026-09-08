@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"math"
 	"net/http"
 	"strings"
 
@@ -9,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"mlm-backend/internal/models"
+	"mlm-backend/internal/money"
 	"mlm-backend/internal/services"
 )
 
@@ -137,7 +137,7 @@ func (h *EshopHandler) toProduct(p models.Product, catMap map[int64]models.Categ
 		sku = *p.SKU
 	}
 	// Fiyatı cent'e çevir (TL → kuruş).
-	priceCent := int64(math.Round(p.Price * 100))
+	priceCent := money.CentsFromTL(p.Price)
 
 	var cat *EshopCategory
 	if p.CategoryID != nil {
