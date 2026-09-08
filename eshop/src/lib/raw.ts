@@ -35,8 +35,23 @@ async function rawFetch<T>(endpoint: string, options: RequestInit = {}): Promise
   return body as T
 }
 
+
+// ── GET cache: TTL + in-flight dedup (ham uclar icin de) ──
+const rawCache = new Map<string, { promise: Promise<unknown>; ts: number }>();
+function rawTTL(endpoint: string): number {
+  return /(\/me(\?|$)|career|commissions|binary|wallet|pending)/.test(endpoint)
+    ? 20_000
+    : 120_000;
+}
 export function rawGet<T>(endpoint: string): Promise<T> {
-  return rawFetch<T>(endpoint)
+  const hit = rawCache.get(endpoint)
+  if (hit && Date.now() - hit.ts < rawTTL(endpoint)) {
+    return hit.promise as Promise<T>
+  }
+  const promise = rawFetch<T>(endpoint)
+  rawCache.set(endpoint, { promise, ts: Date.now() })
+  promise.catch(() => { rawCache.delete(endpoint) })
+  return promise
 }
 
 export function rawPost<T>(endpoint: string, body?: unknown): Promise<T> {

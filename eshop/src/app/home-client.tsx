@@ -83,6 +83,8 @@ export default function HomeClient({ initialProducts = [], initialCategories = [
   const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 2, minutes: 43, seconds: 29 })
 
     useEffect(() => {
+    // SSR (ilk acilis) verisi doluysa agi tekrar sorma; retry ile tazelenebilir
+    if (catalogRetry === 0 && (initialProducts.length > 0 || initialCategories.length > 0)) return
     let alive = true
     setCatalogError(false)
     get<{ items: Product[] }>('/eshop/products', { page: '1', limit: '10' })

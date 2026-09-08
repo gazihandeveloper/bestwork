@@ -118,12 +118,39 @@ export async function apiRequest<T>(
   return data
 }
 
+
+// ── GET cache: TTL + in-flight dedup (tekrar cekmeyi onler) ──
+const getCache = new Map<
+  string,
+  { promise: Promise<ApiResponse<unknown>>; ts: number }
+>();
+function getTTL(endpoint: string): number {
+  // Kisisel/auth'lu uclar kisa TTL; katalog genel uzun TTL
+  return /(\/me(\?|$)|dashboard|wallet|pending|orders|profile)/.test(endpoint)
+    ? 20_000
+    : 120_000;
+}
+function clearGetCache(prefix?: string) {
+  if (!prefix) { getCache.clear(); return; }
+  for (const k of getCache.keys()) if (k.startsWith(prefix)) getCache.delete(k);
+}
 /** GET isteği */
 export function get<T>(
   endpoint: string,
   params?: Record<string, string>
 ): Promise<ApiResponse<T>> {
-  return apiRequest<T>(endpoint, { method: 'GET', params })
+  const key = endpoint + '?' + JSON.stringify(params || {})
+  const hit = getCache.get(key)
+  if (hit && Date.now() - hit.ts < getTTL(endpoint)) {
+    return hit.promise as Promise<ApiResponse<T>>
+  }
+  const promise = apiRequest<T>(endpoint, { method: 'GET', params })
+  getCache.set(key, { promise: promise as Promise<ApiResponse<unknown>>, ts: Date.now() })
+  promise.catch(() => {
+    // Hata aninda cache hemen dusur - sonraki istek taze denesin
+    getCache.delete(key)
+  })
+  return promise
 }
 
 /** POST isteği */
