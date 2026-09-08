@@ -1,3 +1,15 @@
+# GUNCEL TOPOLOJI (2026-09-08) - asagidaki eski metin arsiv amacli
+
+- Kok site https://mahmutgazihanarslan.com.tr/ = eshop (Next) -> servis happyboon-frontend :3000 (kaynak: eshop/)
+- Yonetim paneli TEK: /bestmanager2 -> bestwork-yonetim2 (TailAdmin) :3007 (kaynak: mlm-yonetim-new/, NEXT_PUBLIC_BASE_PATH=/bestmanager2). Eski /bestmanager (bestwork-yonetim :3006) KALDIRILDI; /bestmanager -> 301 /bestmanager2
+- Eski uye uygulamasi /bestwork (mlm-frontend) KALDIRILDI (repo dan da cikarildi)
+- API /api*, /uploads, /health -> Go mlm-backend (bestwork-api :8090) + bestwork-cron
+- Dagitim: deploy-live.sh (eshop + yonetim2; once pg_dump guvenlik yedegi; sonra dogrulama). Go backend ayri akis (derle + migrate + swap + restart)
+- DB: PostgreSQL bestwork; otomatik yedek /usr/local/bin/bestwork-pgdump.sh (gunluk 2x, 14 gun); sirlar /etc/bestwork/api.env (600)
+- CI: .github/workflows/ci.yml (eskiz; GitHub Actions aktif edilince calisir)
+
+---
+
 # BestWork — Yayın (Deploy) Akışı
 
 ## ⚠️ Kural: 3 Adımlı İş Akışı
