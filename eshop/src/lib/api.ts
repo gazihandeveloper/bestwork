@@ -125,9 +125,9 @@ const getCache = new Map<
   { promise: Promise<ApiResponse<unknown>>; ts: number }
 >();
 function getTTL(endpoint: string): number {
-  // Kisisel/auth'lu uclar kisa TTL; katalog genel uzun TTL
+  // Kisisel/auth'lu uclar 60 sn TTL; katalog genel 120 sn (tekrar cekimi azaltir)
   return /(\/me(\?|$)|dashboard|wallet|pending|orders|profile)/.test(endpoint)
-    ? 20_000
+    ? 60_000
     : 120_000;
 }
 function clearGetCache(prefix?: string) {
