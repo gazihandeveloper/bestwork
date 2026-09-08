@@ -124,12 +124,12 @@ export default function GenelBakis() {
   }
 
   const cards = [
-    { label: "Toplam Ciro", value: tl(dash.total_revenue), sub: "Tüm zamanlar", cls: "text-gray-800" },
-    { label: "Dağıtılan Komisyon", value: tl(dash.total_commissions_paid), sub: "Toplam ödenen", cls: "text-gray-800" },
+    { label: "Toplam Ciro", value: tl(dash.total_revenue), sub: "Tüm zamanlar", cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
+    { label: "Dağıtılan Komisyon", value: tl(dash.total_commissions_paid), sub: "Toplam ödenen", cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
     { label: "Net Kâr", value: tl(dash.net_profit), sub: `Payout: %${payout}`, cls: "text-green-600" },
     { label: "Bekleyen Çekim", value: String(pending.length), sub: `Tutar: ${tl(pendingAmount)}`, cls: "text-amber-600" },
-    { label: "Aktif Üye", value: n(dash.active_users), sub: `%${activePct} aktif oranı`, cls: "text-gray-800" },
-    { label: "Toplam Ağaç", value: n(dash.total_users), sub: "Tüm zamanlar", cls: "text-gray-800" },
+    { label: "Aktif Üye", value: n(dash.active_users), sub: `%${activePct} aktif oranı`, cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
+    { label: "Toplam Ağaç", value: n(dash.total_users), sub: "Tüm zamanlar", cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
   ];
 
   const chartMax = Math.max(1, ...rev.map((p) => p.revenue), ...com.map((p) => p.revenue));
@@ -188,7 +188,7 @@ export default function GenelBakis() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Risk alarmları */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-          <h3 className="mb-3 font-bold text-gray-800">Risk &amp; Güvenlik Alarmları</h3>
+          <h3 className="mb-3 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">Risk &amp; Güvenlik Alarmları</h3>
           {payout > 50 && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">Payout %{payout} — %50 hedef aşıldı.</p>
           )}
@@ -207,14 +207,14 @@ export default function GenelBakis() {
 
         {/* Kariyer dağılımı */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-          <h3 className="mb-3 font-bold text-gray-800">Kariyer Dağılımı</h3>
+          <h3 className="mb-3 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">Kariyer Dağılımı</h3>
           {ranks.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">Dağılım verisi yok.</p>
           ) : (
             <ul className="space-y-2">
               {ranks.map((r) => (
                 <li key={r.rank_name} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">{(r.rank_name && r.rank_name !== "Ranksız") ? r.rank_name : "Girişimci"}</span>
+                  <span className="text-gray-600 dark:text-gray-400">{(r.rank_name && r.rank_name !== "Ranksız") ? r.rank_name : "Girişimci"}</span>
                   <span className="font-bold text-gray-800 dark:text-white/90">{n(r.count)}</span>
                 </li>
               ))}
@@ -224,7 +224,7 @@ export default function GenelBakis() {
 
         {/* Hızlı ödeme onayı */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-          <h3 className="mb-3 font-bold text-gray-800">Hızlı Ödeme Onayı</h3>
+          <h3 className="mb-3 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">Hızlı Ödeme Onayı</h3>
           <p className="mb-2 text-xs text-gray-400 dark:text-gray-500">{pending.length} bekliyor</p>
           {pending.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">Onay bekleyen çekim yok.</p>
@@ -232,7 +232,7 @@ export default function GenelBakis() {
             <ul className="space-y-2">
               {pending.slice(0, 5).map((w) => (
                 <li key={w.id} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-gray-700">#{w.id} · {tl(w.amount)}</span>
+                  <span className="text-gray-700 dark:text-gray-300">#{w.id} · {tl(w.amount)}</span>
                   <div className="flex gap-1">
                     <button type="button" disabled={busyW === w.id} onClick={() => act(w.id, "approve")} className="cursor-pointer rounded bg-green-600 px-2 py-1 text-xs font-bold text-white">Onayla</button>
                     <button type="button" disabled={busyW === w.id} onClick={() => act(w.id, "reject")} className="cursor-pointer rounded bg-red-500 px-2 py-1 text-xs font-bold text-white">Reddet</button>
@@ -247,7 +247,7 @@ export default function GenelBakis() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Son kayıtlar & liderler */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-          <h3 className="mb-3 font-bold text-gray-800">Son Kayıtlar &amp; Liderler</h3>
+          <h3 className="mb-3 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">Son Kayıtlar &amp; Liderler</h3>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-400 dark:text-gray-500">
@@ -257,7 +257,7 @@ export default function GenelBakis() {
             <tbody>
               {earners.slice(0, 5).map((e) => (
                 <tr key={e.user_id} className="border-t border-gray-100 dark:border-gray-800">
-                  <td className="py-2 text-gray-800">{e.name}</td>
+                  <td className="py-2 text-gray-800 dark:text-white/90">{e.name}</td>
                   <td className="py-2 font-mono text-gray-500 dark:text-gray-400">{e.member_code}</td>
                   <td className="py-2 text-gray-500 dark:text-gray-400">Girişimci</td>
                   <td className="py-2 text-right font-bold text-gray-800 dark:text-white/90">{tl(e.total_earned)}</td>
@@ -265,7 +265,7 @@ export default function GenelBakis() {
               ))}
               {earners.length === 0 && dash.recent_users.slice(0, 5).map((u) => (
                 <tr key={u.id} className="border-t border-gray-100 dark:border-gray-800">
-                  <td className="py-2 text-gray-800">{u.name}</td>
+                  <td className="py-2 text-gray-800 dark:text-white/90">{u.name}</td>
                   <td className="py-2 font-mono text-gray-500 dark:text-gray-400">{u.member_code}</td>
                   <td className="py-2 text-gray-500 dark:text-gray-400">{(u.role === "admin" || u.role === "super_admin") ? "Admin" : u.role === "customer" ? "Müşteri" : "Girişimci"}</td>
                   <td className="py-2 text-right text-gray-400 dark:text-gray-500">—</td>
@@ -277,15 +277,15 @@ export default function GenelBakis() {
 
         {/* En çok satanlar */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-          <h3 className="mb-3 font-bold text-gray-800">En Çok Satan Ürünler</h3>
+          <h3 className="mb-3 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">En Çok Satan Ürünler</h3>
           {products.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">Sipariş verisi yok.</p>
           ) : (
             <ul className="space-y-2">
               {products.map((p) => (
                 <li key={p.name} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700">{p.name}</span>
-                  <span className="text-gray-500">{n(p.quantity)} adet · <b className="text-gray-800">{tl(p.revenue)}</b></span>
+                  <span className="text-gray-700 dark:text-gray-300">{p.name}</span>
+                  <span className="text-gray-500 dark:text-gray-400">{n(p.quantity)} adet · <b className="text-gray-800 dark:text-white/90">{tl(p.revenue)}</b></span>
                 </li>
               ))}
             </ul>
@@ -295,7 +295,7 @@ export default function GenelBakis() {
 
       {/* Coğrafi dağılım */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
-        <h3 className="mb-2 font-bold text-gray-800">Coğrafi &amp; Bölgesel Dağılım</h3>
+        <h3 className="mb-2 font-bold text-gray-800 dark:text-white/90 dark:text-white/90">Coğrafi &amp; Bölgesel Dağılım</h3>
         <p className="text-sm text-gray-400 dark:text-gray-500">Üye kayıtlarında ülke/şehir bilgisi toplanmaya başlandığında ciro ve ağ büyümesinin ısı haritası burada görünecek.</p>
       </div>
     </div>
