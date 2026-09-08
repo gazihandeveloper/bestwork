@@ -14,9 +14,22 @@ const quicksand = Quicksand({
 })
 
 export const metadata: Metadata = {
-  title: 'BestWork - Online Market Alışverişi',
+  metadataBase: new URL('https://mahmutgazihanarslan.com.tr'),
+  title: { default: 'BestWork - Online Market Alışverişi', template: '%s | BestWork' },
   description:
     'En taze meyve, sebze, süt ürünleri ve daha fazlası. BestWork ile kapınıza kadar gelsin!',
+  keywords: ['BestWork', 'online market', 'alışveriş', 'taze ürün', 'organik'],
+  openGraph: {
+    title: 'BestWork - Online Market Alışverişi',
+    description: 'Taze ve temiz ürünler kapınıza kadar. BestWork ile alışverişin keyfini çıkarın.',
+    url: 'https://mahmutgazihanarslan.com.tr',
+    siteName: 'BestWork',
+    locale: 'tr_TR',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title: 'BestWork - Online Market Alışverişi', description: 'Taze ve temiz ürünler kapınıza kadar.' },
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/' },
 }
 
 export default function RootLayout({

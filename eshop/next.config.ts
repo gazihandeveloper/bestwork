@@ -47,6 +47,20 @@ const nextConfig: NextConfig = {
       { source: '/api/tickets', destination: 'http://localhost:8090/api/tickets' },
     ];
   },
+  async headers() {
+    return [
+      // HSTS: tum yanitlara (Cloudflare onunde de iletilir)
+      { source: '/:path*', headers: [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] },
+      // K4: kok sayfa HTML cache 1 yildan 5 dk'ya
+      { source: '/', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/products', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/products/:slug', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/about', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/contact', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/login', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+      { source: '/register', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
+    ]
+  },
 };
 
 export default nextConfig;
