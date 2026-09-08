@@ -36,6 +36,8 @@ export default function HomePage() {
   const [heroIndex, setHeroIndex] = useState(0)
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [catalogError, setCatalogError] = useState(false)
+  const [catalogRetry, setCatalogRetry] = useState(0)
 
   // Kategori ikon cozucu: admin panelindeki ikon adi oncelikli (yoksa slug)
   const CAT_ICON: Record<string, any> = {
@@ -75,14 +77,18 @@ export default function HomePage() {
   }
   const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 2, minutes: 43, seconds: 29 })
 
-  useEffect(() => {
-    get<{ items: Product[] }>('/eshop/products', { page: '1', limit: '10' }).then(res => {
-      if (res.success) setProducts(res.data?.items || [])
-    })
-    get<any>('/eshop/categories').then(res => {
-      if (res.success) setCategories(Array.isArray(res.data) ? res.data : [])
-    })
-  }, [])
+    useEffect(() => {
+    let alive = true
+    setCatalogError(false)
+    get<{ items: Product[] }>('/eshop/products', { page: '1', limit: '10' })
+      .then((res) => { if (alive && res.success) setProducts(res.data?.items || []) })
+      .catch(() => { if (alive) setCatalogError(true) })
+    get<any>('/eshop/categories')
+      .then((res) => { if (alive && res.success) setCategories(Array.isArray(res.data) ? res.data : []) })
+      .catch(() => { if (alive) setCatalogError(true) })
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogRetry])
 
   const [heroSlides, setHeroSlides] = useState<{ title: string; subtitle: string; bg: string }[]>([])
 
@@ -189,7 +195,14 @@ export default function HomePage() {
                 </h6>
               </Link>
             )) : (
+              catalogError ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-500 text-sm font-medium mb-3">Kategoriler yüklenemedi. Bağlantınızı kontrol edin.</p>
+                <button onClick={() => setCatalogRetry(v => v + 1)} className="px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600">Tekrar Dene</button>
+              </div>
+            ) : (
               <span className="col-span-full text-center text-gray-400 py-8">Kategori bulunamadı</span>
+            )
             )}
           </div>
         </div>
@@ -288,7 +301,14 @@ export default function HomePage() {
                 ))
               })()
             ) : (
-              <div className="col-span-4 text-center text-gray-400 py-8">Henüz ürün eklenmedi.</div>
+              catalogError ? (
+                <div className="col-span-4 text-center py-8">
+                  <p className="text-red-500 text-sm font-medium mb-3">Ürünler yüklenemedi. Bağlantınızı kontrol edin.</p>
+                  <button onClick={() => setCatalogRetry(v => v + 1)} className="px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-semibold hover:bg-brand-600">Tekrar Dene</button>
+                </div>
+              ) : (
+                <div className="col-span-4 text-center text-gray-400 py-8">Henüz ürün eklenmedi.</div>
+              )
             )}
           </div>
         </div>
