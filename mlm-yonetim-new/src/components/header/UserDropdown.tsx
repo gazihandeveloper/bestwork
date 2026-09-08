@@ -1,7 +1,6 @@
 "use client";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
@@ -10,6 +9,33 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mahmutgazihanarslan.
 export default function UserDropdown() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API_URL}/user/me`, {
+      credentials: "include",
+      headers: { "X-Admin-Scope": "1" },
+    })
+      .then((r) => r.json().catch(() => ({})))
+      .then((d) => {
+        const u = d?.user;
+        if (alive && u) setUser({ name: u.name || "", email: u.email || "" });
+      })
+      .catch(() => {});
+    return () => { alive = false };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fullName = user?.name || "Yönetici";
+  const firstName = fullName.split(" ")[0];
+  const initials = fullName
+    .split(" ")
+    .filter(Boolean)
+    .map((p: string) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
 function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   e.stopPropagation();
@@ -38,16 +64,14 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         onClick={toggleDropdown} 
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <Image
-            width={44}
-            height={44}
-            src="/images/user/owner.jpg"
-            alt="User"
-          />
+        <span
+          className="mr-3 inline-flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
+          style={{ backgroundColor: "rgb(41, 165, 108)" }}
+        >
+          {initials || "A"}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+        <span className="block mr-1 font-medium text-theme-sm">{firstName}</span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -76,10 +100,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
+            {fullName}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {user?.email || "—"}
           </span>
         </div>
 
