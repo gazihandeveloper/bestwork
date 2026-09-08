@@ -417,7 +417,7 @@ export default function AccountDashboardPage() {
       window.clearInterval(id)
       window.removeEventListener('focus', onFocus)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   // ── Türetilmiş değerler ────────────────────────────────────────────────

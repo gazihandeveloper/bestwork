@@ -395,7 +395,7 @@ export interface AdminMe {
   role?: string;
 }
 
-let meState: {
+const meState: {
   at: number;
   value: AdminMe | null;
   inflight: Promise<AdminMe | null> | null;

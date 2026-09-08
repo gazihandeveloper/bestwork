@@ -44,7 +44,7 @@ export default function RetailEarningsPage() {
 
   useEffect(() => {
     setMonth(currentMonth())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function RetailEarningsPage() {
     return () => {
       alive = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [month, page])
 
   const summary = data?.summary ?? {}

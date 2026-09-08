@@ -41,7 +41,7 @@ export default function PendingPage() {
 
   useEffect(() => {
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   const place = async (userId: number, position: 'L' | 'R', name: string) => {

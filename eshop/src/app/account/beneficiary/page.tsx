@@ -39,7 +39,7 @@ export default function BeneficiaryPage() {
 
   useEffect(() => {
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   const set = (k: keyof typeof EMPTY) => (e: ChangeEvent<HTMLInputElement>) =>

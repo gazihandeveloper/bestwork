@@ -38,7 +38,7 @@ export default function TreePage() {
 
   useEffect(() => {
     setPeriod(currentMonth())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   useEffect(() => {

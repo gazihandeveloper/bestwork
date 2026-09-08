@@ -68,7 +68,7 @@ export default function PaymentNotificationsPage() {
         if (r.success && Array.isArray(r.data)) setOrders(r.data)
       })
       .catch(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   const pickFile = async (file?: File) => {

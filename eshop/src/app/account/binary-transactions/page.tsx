@@ -58,7 +58,7 @@ export default function BinaryTransactionsPage() {
     return () => {
       alive = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [position, txType, page])
 
   const addCV = items.filter((t) => t.transaction_type === 'add').reduce((s, t) => s + (Number(t.cv) || 0), 0)

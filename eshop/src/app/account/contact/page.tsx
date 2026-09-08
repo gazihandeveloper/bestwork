@@ -39,7 +39,7 @@ export default function ContactPage() {
 
   useEffect(() => {
     loadTickets()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   const openFis = (f: any) => {

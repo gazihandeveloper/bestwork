@@ -115,7 +115,7 @@ export default function HomeClient({ initialProducts = [], initialCategories = [
         }
       })
       .catch(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   // Sayaç

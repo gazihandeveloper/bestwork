@@ -20,7 +20,7 @@ export default function UserDropdown() {
       })
       .catch(() => {});
     return () => { alive = false };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const fullName = user?.name || "Yönetici";
