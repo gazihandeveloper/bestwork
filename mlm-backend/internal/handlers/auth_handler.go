@@ -66,10 +66,10 @@ func (h *AuthHandler) CheckReferral(c *gin.Context) {
 
 // RegisterRequest kayıt isteğinin JSON gövdesidir.
 type RegisterRequest struct {
-	Name              string `json:"name" binding:"required"`
-	Email             string `json:"email" binding:"required,email"`
-	Phone             string `json:"phone"`
-	Password          string `json:"password" binding:"required,min=8,max=72"`
+	Name              string         `json:"name" binding:"required"`
+	Email             string         `json:"email" binding:"required,email"`
+	Phone             string         `json:"phone"`
+	Password          string         `json:"password" binding:"required,min=8,max=72"`
 	SponsorIdentifier string         `json:"sponsor_identifier"`
 	Role              string         `json:"role"`
 	Profile           map[string]any `json:"profile"`
@@ -316,8 +316,9 @@ type ForgotPasswordRequest struct {
 }
 
 // ForgotPassword "Şifremi unuttum" akışını başlatır: kullanıcıyı bulur,
-// tek kullanımlık kodu üretip hash'li olarak kaydeder ve döndürür.
-// (E-posta/SMS altyapısı kurulana dek kod doğrudan yanıtta iletilir.)
+// tek kullanımlık kodu üretip hash'li olarak kaydeder.
+// GÜVENLİK (K2): Kod HTTP yanıtında DÖNMEZ; e-posta/SMS kanalı kurulana dek
+// yalnızca sunucu loguna yazılır (sahibi journalctl'den okuyabilir).
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req ForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -343,7 +344,8 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		}
 	}
 	if err != nil || user == nil {
-		c.JSON(http.StatusOK, gin.H{"ok": true, "code": ""})
+		// Hesap yok: yanıt, başarılı durumla BİREBİR aynı (enumerasyon önleme).
+		c.JSON(http.StatusOK, gin.H{"ok": true, "message": "Sıfırlama kodu üretildi"})
 		return
 	}
 
@@ -361,7 +363,15 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"ok": true, "code": code})
+	// K2 (güvenlik): kod yanıtta dönmez. Log-only geçici kanal — e-posta/SMS
+	// altyapısı kurulana dek kod sunucu logundan okunabilir.
+	log.WithFields(log.Fields{
+		"action":     "password_reset_code_generated",
+		"user_id":    user.ID,
+		"reset_code": code,
+	}).Warn("Sifirlama kodu uretildi (log-only, eposta/SMS kanali yok)")
+
+	c.JSON(http.StatusOK, gin.H{"ok": true, "message": "Sıfırlama kodu üretildi"})
 }
 
 // ResetPasswordRequest sıfırlama kodunu ve yeni şifreyi taşır.
