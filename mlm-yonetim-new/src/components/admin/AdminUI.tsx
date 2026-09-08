@@ -41,7 +41,7 @@ export function AdminCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-gray-900 ${className}`}
+      className={`rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B] ${className}`}
     >
       {(title || actions) && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
@@ -193,7 +193,7 @@ export function AdminModal({
         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-[#1E293B]">
         <div className="mb-4 flex items-start justify-between gap-4">
           <h3
             className={`text-lg font-semibold ${

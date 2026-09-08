@@ -141,7 +141,7 @@ export default function DestekPage() {
       {/* Yazışma modalı */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelected(null)}>
-          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white shadow-xl dark:bg-gray-900" onClick={(e) => e.stopPropagation()}>
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white shadow-xl dark:bg-[#1E293B]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-5 py-3">
               <div>
                 <p className="font-mono text-sm font-bold text-brand-600">{code(selected)}</p>

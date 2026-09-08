@@ -286,7 +286,7 @@ export default function SliderPage() {
           {slides.map((s) => (
             <div
               key={s.id}
-              className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-gray-900"
+              className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B]"
             >
               <div className="relative" style={{ height: 190, background: "#111" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

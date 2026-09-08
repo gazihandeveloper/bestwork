@@ -201,7 +201,7 @@ export default function GuvenlikSeridiPage() {
           {items.map((b) => (
             <div
               key={b.id}
-              className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900"
+              className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B]"
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-sm font-semibold uppercase tracking-wide text-brand-500 dark:bg-brand-500/15 dark:text-brand-400">

@@ -46,7 +46,7 @@ export default function LiveStats() {
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900"
+            className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B]"
           >
             <div className="mb-2 h-9 w-9 animate-pulse rounded-lg bg-gray-100 dark:bg-white/[0.04]" />
             <div className="h-3 w-16 animate-pulse rounded bg-gray-100 dark:bg-white/[0.04]" />
@@ -62,7 +62,7 @@ export default function LiveStats() {
       {cards.map((c, i) => (
         <div
           key={i}
-          className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900"
+          className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B]"
         >
           <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-lg dark:bg-white/[0.04]">
             {c.icon}

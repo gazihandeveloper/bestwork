@@ -54,7 +54,7 @@ export default function SignInForm() {
     }
   };
   return (
-    <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-2xl px-6 py-8 sm:px-10 sm:py-10">
+    <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl px-6 py-8 sm:px-10 sm:py-10">
       <div className="text-center mb-8">
         <span className="text-3xl font-extrabold tracking-tight" style={{ color: "rgb(41, 165, 108)" }}>
           BestWork

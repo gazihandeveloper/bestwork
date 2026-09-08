@@ -141,7 +141,7 @@ export default function GenelBakis() {
       {/* KPI */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900">
+          <div key={c.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-[#1E293B]">
             <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">{c.label}</p>
             <p className={`mt-1 text-xl font-semibold ${c.cls}`}>{c.value}</p>
             <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{c.sub}</p>
@@ -150,7 +150,7 @@ export default function GenelBakis() {
       </div>
 
       {/* Ciro & Komisyon karşılaştırma */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="font-bold text-gray-800 dark:text-white/90">Ciro &amp; Komisyon Karşılaştırma</h3>
@@ -187,7 +187,7 @@ export default function GenelBakis() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Risk alarmları */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
           <h3 className="mb-3 font-bold text-gray-800">Risk &amp; Güvenlik Alarmları</h3>
           {payout > 50 && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">Payout %{payout} — %50 hedef aşıldı.</p>
@@ -206,7 +206,7 @@ export default function GenelBakis() {
         </div>
 
         {/* Kariyer dağılımı */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
           <h3 className="mb-3 font-bold text-gray-800">Kariyer Dağılımı</h3>
           {ranks.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">Dağılım verisi yok.</p>
@@ -223,7 +223,7 @@ export default function GenelBakis() {
         </div>
 
         {/* Hızlı ödeme onayı */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
           <h3 className="mb-3 font-bold text-gray-800">Hızlı Ödeme Onayı</h3>
           <p className="mb-2 text-xs text-gray-400 dark:text-gray-500">{pending.length} bekliyor</p>
           {pending.length === 0 ? (
@@ -246,7 +246,7 @@ export default function GenelBakis() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Son kayıtlar & liderler */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
           <h3 className="mb-3 font-bold text-gray-800">Son Kayıtlar &amp; Liderler</h3>
           <table className="w-full text-sm">
             <thead>
@@ -276,7 +276,7 @@ export default function GenelBakis() {
         </div>
 
         {/* En çok satanlar */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
           <h3 className="mb-3 font-bold text-gray-800">En Çok Satan Ürünler</h3>
           {products.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">Sipariş verisi yok.</p>
@@ -294,7 +294,7 @@ export default function GenelBakis() {
       </div>
 
       {/* Coğrafi dağılım */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-[#1E293B]">
         <h3 className="mb-2 font-bold text-gray-800">Coğrafi &amp; Bölgesel Dağılım</h3>
         <p className="text-sm text-gray-400 dark:text-gray-500">Üye kayıtlarında ülke/şehir bilgisi toplanmaya başlandığında ciro ve ağ büyümesinin ısı haritası burada görünecek.</p>
       </div>
