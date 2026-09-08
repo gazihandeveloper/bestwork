@@ -28,6 +28,7 @@ build_one() { # $1=isim $2=repo klasoru $3=hedef $4=servis
   log "[build] $name"
   npm run build
   log "[restart] $svc"
+  chown -R bestwork:bestwork "$dst" 2>/dev/null || true
   systemctl restart "$svc"
   log "OK $name"
 }
