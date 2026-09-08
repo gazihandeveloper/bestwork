@@ -1,16 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { getMe, type AdminMe } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mahmutgazihanarslan.com.tr/api";
 
-type Me = {
-  id?: number;
-  name?: string;
-  email?: string;
-  phone?: string | null;
-  member_code?: string;
-  role?: string;
-};
+
 
 const roleLabel: Record<string, string> = {
   super_admin: "Süper Yönetici",
@@ -19,15 +12,14 @@ const roleLabel: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const [me, setMe] = useState<Me | null>(null);
+  const [me, setMe] = useState<AdminMe | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
-    fetch(`${API_URL}/user/me`, { credentials: "include", headers: { "X-Admin-Scope": "1" } })
-      .then((r) => r.json().catch(() => ({})))
-      .then((d) => {
-        if (alive && d?.user) setMe(d.user as Me);
+    getMe()
+      .then((u) => {
+        if (alive && u) setMe(u as AdminMe);
       })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false); });

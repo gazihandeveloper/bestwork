@@ -44,7 +44,10 @@ async function request<T = unknown>(
       /* yoksay */
     }
     if (res.status === 401 && typeof window !== "undefined") {
-      window.location.href = "/bestmanager2/signin";
+      // basePath'ten bagimsiz: mevcut panel yolu ne ise o prefix ile signin'e git
+      const m = window.location.pathname.match(/^\/(bestmanager2?|bestmanager)/);
+      const prefix = m ? m[1] : "bestmanager";
+      window.location.href = `/${prefix}/signin`;
     }
     throw new Error(msg);
   }
@@ -380,4 +383,44 @@ export async function updateBenefit(id: number, input: BenefitInput): Promise<Be
 
 export async function deleteBenefit(id: number): Promise<void> {
   await request("DELETE", `/admin/benefits/${id}`);
+}
+
+// ── Oturum (me) ────────────────────────────────────────────────────────────
+export interface AdminMe {
+  id?: number;
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  member_code?: string;
+  role?: string;
+}
+
+let meState: {
+  at: number;
+  value: AdminMe | null;
+  inflight: Promise<AdminMe | null> | null;
+} = { at: 0, value: null, inflight: null };
+
+// Ayni anda cagrilar tek istege dusurulur (dedup) + 60 sn TTL.
+export function getMe(force = false): Promise<AdminMe | null> {
+  const now = Date.now();
+  if (!force && meState.value !== null && now - meState.at < 60_000) {
+    return Promise.resolve(meState.value);
+  }
+  if (!force && meState.inflight) return meState.inflight;
+  meState.inflight = request<{ user: AdminMe }>("GET", "/user/me")
+    .then((d) => {
+      meState.value = d?.user ?? null;
+      meState.at = Date.now();
+      return meState.value;
+    })
+    .catch(() => {
+      meState.value = null;
+      meState.at = Date.now();
+      return null;
+    })
+    .finally(() => {
+      meState.inflight = null;
+    });
+  return meState.inflight;
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { getMe } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
@@ -13,13 +14,8 @@ export default function UserDropdown() {
 
   useEffect(() => {
     let alive = true;
-    fetch(`${API_URL}/user/me`, {
-      credentials: "include",
-      headers: { "X-Admin-Scope": "1" },
-    })
-      .then((r) => r.json().catch(() => ({})))
-      .then((d) => {
-        const u = d?.user;
+    getMe()
+      .then((u) => {
         if (alive && u) setUser({ name: u.name || "", email: u.email || "" });
       })
       .catch(() => {});
