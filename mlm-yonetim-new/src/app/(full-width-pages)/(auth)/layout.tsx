@@ -14,7 +14,7 @@ export default function AuthLayout({
       <ThemeProvider>
         <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  dark:bg-gray-900 sm:p-0">
           {children}
-          <div className="lg:w-1/2 w-full h-full bg-brand-950 dark:bg-white/5 lg:grid items-center hidden">
+          <div className="lg:w-1/2 w-full h-full lg:grid items-center hidden" style={{ backgroundColor: "rgb(41, 165, 108)" }}>
             <div className="flex flex-col items-center justify-center h-full px-8">
               <Link href="/" className="block mb-4">
                 <span className="flex flex-col items-center text-center leading-none">
