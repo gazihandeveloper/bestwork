@@ -25,11 +25,14 @@ import { useI18n } from '@/lib/i18n'
 import { get } from '@/lib/api'
 
 function LiveClock() {
-  const [now, setNow] = useState(new Date())
+  // Hidrasyon uyumsuzlugu (#418) onleme: ilk render'da null; saat yalnizca istemcide baslar
+  const [now, setNow] = useState<Date | null>(null)
   useEffect(() => {
+    setNow(new Date())
     const id = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(id)
   }, [])
+  if (!now) return null
   const date = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const time = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   return (
