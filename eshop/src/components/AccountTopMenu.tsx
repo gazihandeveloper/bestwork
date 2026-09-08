@@ -69,7 +69,7 @@ const MENU_GROUPS: MenuGroup[] = [
     title: 'İşlemlerim',
     icon: <ShoppingCart size={16} />,
     items: [
-      { path: '/shop', eshopPath: '/eshop/products', label: 'Alışveriş', icon: <ShoppingCart size={16} /> },
+      { path: '/shop', eshopPath: '/products', label: 'Alışveriş', icon: <ShoppingCart size={16} /> },
       { path: '/eshop/orders', eshopPath: '/account/orders', label: 'Siparişlerim', icon: <Package size={16} /> },
       { path: '/payment-notifications', eshopPath: '/account/payment-notifications', label: 'EFT/HAVALE Bildirimleri', icon: <Landmark size={16} /> },
       { path: '/retail-earnings', eshopPath: '/account/retail-earnings', label: 'Müşteri Kazancı', icon: <Receipt size={16} /> },

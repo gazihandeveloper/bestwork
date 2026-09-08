@@ -106,7 +106,6 @@ export function Header() {
             className="lg:hidden p-2 text-gray-600 hover:text-brand-500 z-50 relative"
             onClick={(e) => {
               e.stopPropagation()
-              console.log('HAMBURGER TIKLANDI! Açık:', !mobileMenuOpen)
               setMobileMenuOpen(prev => !prev)
             }}
             aria-label="Menüyü aç"

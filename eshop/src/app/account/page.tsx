@@ -409,7 +409,7 @@ export default function AccountDashboardPage() {
       // yok say
     }
 
-    const id = window.setInterval(refresh, 5000)
+    const id = window.setInterval(refresh, 30000)
     const onFocus = () => refresh()
     window.addEventListener('focus', onFocus)
     return () => {
