@@ -40,8 +40,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${quicksand.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-gray-50 font-sans">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
-
+      
         <Providers>
           <Toaster
             position="top-right"
