@@ -117,7 +117,7 @@ export default function GenelBakis() {
     return (
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-28 animate-pulse rounded-2xl border border-gray-200 bg-white" />
+          <div key={i} className="h-28 animate-pulse rounded-2xl border border-gray-200 dark:border-gray-800 bg-white" />
         ))}
       </div>
     );
@@ -142,9 +142,9 @@ export default function GenelBakis() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         {cards.map((c) => (
           <div key={c.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-[13px] font-medium text-gray-500">{c.label}</p>
+            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">{c.label}</p>
             <p className={`mt-1 text-xl font-semibold ${c.cls}`}>{c.value}</p>
-            <p className="mt-1 text-xs text-gray-400">{c.sub}</p>
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{c.sub}</p>
           </div>
         ))}
       </div>
@@ -153,20 +153,20 @@ export default function GenelBakis() {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-gray-800">Ciro &amp; Komisyon Karşılaştırma</h3>
-            <p className="text-xs text-gray-400">Toplam Ciro {tl(dash.total_revenue)} · Komisyon {tl(dash.total_commissions_paid)} · Payout %{payout}</p>
+            <h3 className="font-bold text-gray-800 dark:text-white/90">Ciro &amp; Komisyon Karşılaştırma</h3>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Toplam Ciro {tl(dash.total_revenue)} · Komisyon {tl(dash.total_commissions_paid)} · Payout %{payout}</p>
           </div>
           <div className="flex gap-1">
             {(["daily", "weekly", "monthly"] as Period[]).map((p) => (
               <button key={p} type="button" onClick={() => setPeriod(p)}
-                className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-bold ${period === p ? "bg-brand-600 text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-bold ${period === p ? "bg-brand-600 text-white" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5"}`}>
                 {{ daily: "Günlük", weekly: "Haftalık", monthly: "Aylık" }[p]}
               </button>
             ))}
           </div>
         </div>
         {rev.length === 0 && com.length === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-400">Bu dönem için henüz veri yok.</p>
+          <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">Bu dönem için henüz veri yok.</p>
         ) : (
           <div className="flex h-48 items-end gap-2">
             {rev.map((p, i) => {
@@ -177,7 +177,7 @@ export default function GenelBakis() {
                     <div className="flex-1 rounded-t bg-brand-500" style={{ height: `${(p.revenue / chartMax) * 100}%` }} title={`Ciro ${tl(p.revenue)}`} />
                     <div className="flex-1 rounded-t bg-amber-400" style={{ height: `${(c / chartMax) * 100}%` }} title={`Komisyon ${tl(c)}`} />
                   </div>
-                  <span className="text-[10px] text-gray-400">{p.date?.slice(5) || p.date}</span>
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500">{p.date?.slice(5) || p.date}</span>
                 </div>
               );
             })}
@@ -193,9 +193,9 @@ export default function GenelBakis() {
             <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">Payout %{payout} — %50 hedef aşıldı.</p>
           )}
           {fraud.length === 0 && payout <= 50 ? (
-            <p className="text-sm text-gray-400">Şu anda anormal durum yok.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Şu anda anormal durum yok.</p>
           ) : (
-            <ul className="space-y-2 text-xs text-gray-600">
+            <ul className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
               {fraud.map((f, i) => (
                 <li key={i} className="rounded-lg bg-red-50 px-3 py-2 text-red-700">
                   {f.field === "tc" ? "TC" : f.field === "iban" ? "IBAN" : "Telefon"} · {f.value} → {f.count} hesap
@@ -209,13 +209,13 @@ export default function GenelBakis() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h3 className="mb-3 font-bold text-gray-800">Kariyer Dağılımı</h3>
           {ranks.length === 0 ? (
-            <p className="text-sm text-gray-400">Dağılım verisi yok.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Dağılım verisi yok.</p>
           ) : (
             <ul className="space-y-2">
               {ranks.map((r) => (
                 <li key={r.rank_name} className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">{(r.rank_name && r.rank_name !== "Ranksız") ? r.rank_name : "Girişimci"}</span>
-                  <span className="font-bold text-gray-800">{n(r.count)}</span>
+                  <span className="font-bold text-gray-800 dark:text-white/90">{n(r.count)}</span>
                 </li>
               ))}
             </ul>
@@ -225,9 +225,9 @@ export default function GenelBakis() {
         {/* Hızlı ödeme onayı */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h3 className="mb-3 font-bold text-gray-800">Hızlı Ödeme Onayı</h3>
-          <p className="mb-2 text-xs text-gray-400">{pending.length} bekliyor</p>
+          <p className="mb-2 text-xs text-gray-400 dark:text-gray-500">{pending.length} bekliyor</p>
           {pending.length === 0 ? (
-            <p className="text-sm text-gray-400">Onay bekleyen çekim yok.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Onay bekleyen çekim yok.</p>
           ) : (
             <ul className="space-y-2">
               {pending.slice(0, 5).map((w) => (
@@ -250,25 +250,25 @@ export default function GenelBakis() {
           <h3 className="mb-3 font-bold text-gray-800">Son Kayıtlar &amp; Liderler</h3>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400">
+              <tr className="text-left text-gray-400 dark:text-gray-500">
                 <th className="pb-2">Üye</th><th className="pb-2">Üye No</th><th className="pb-2">Rol</th><th className="pb-2 text-right">Toplam Kazanç</th>
               </tr>
             </thead>
             <tbody>
               {earners.slice(0, 5).map((e) => (
-                <tr key={e.user_id} className="border-t border-gray-100">
+                <tr key={e.user_id} className="border-t border-gray-100 dark:border-gray-800">
                   <td className="py-2 text-gray-800">{e.name}</td>
-                  <td className="py-2 font-mono text-gray-500">{e.member_code}</td>
-                  <td className="py-2 text-gray-500">Girişimci</td>
-                  <td className="py-2 text-right font-bold text-gray-800">{tl(e.total_earned)}</td>
+                  <td className="py-2 font-mono text-gray-500 dark:text-gray-400">{e.member_code}</td>
+                  <td className="py-2 text-gray-500 dark:text-gray-400">Girişimci</td>
+                  <td className="py-2 text-right font-bold text-gray-800 dark:text-white/90">{tl(e.total_earned)}</td>
                 </tr>
               ))}
               {earners.length === 0 && dash.recent_users.slice(0, 5).map((u) => (
-                <tr key={u.id} className="border-t border-gray-100">
+                <tr key={u.id} className="border-t border-gray-100 dark:border-gray-800">
                   <td className="py-2 text-gray-800">{u.name}</td>
-                  <td className="py-2 font-mono text-gray-500">{u.member_code}</td>
-                  <td className="py-2 text-gray-500">{(u.role === "admin" || u.role === "super_admin") ? "Admin" : u.role === "customer" ? "Müşteri" : "Girişimci"}</td>
-                  <td className="py-2 text-right text-gray-400">—</td>
+                  <td className="py-2 font-mono text-gray-500 dark:text-gray-400">{u.member_code}</td>
+                  <td className="py-2 text-gray-500 dark:text-gray-400">{(u.role === "admin" || u.role === "super_admin") ? "Admin" : u.role === "customer" ? "Müşteri" : "Girişimci"}</td>
+                  <td className="py-2 text-right text-gray-400 dark:text-gray-500">—</td>
                 </tr>
               ))}
             </tbody>
@@ -279,7 +279,7 @@ export default function GenelBakis() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h3 className="mb-3 font-bold text-gray-800">En Çok Satan Ürünler</h3>
           {products.length === 0 ? (
-            <p className="text-sm text-gray-400">Sipariş verisi yok.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Sipariş verisi yok.</p>
           ) : (
             <ul className="space-y-2">
               {products.map((p) => (
@@ -296,7 +296,7 @@ export default function GenelBakis() {
       {/* Coğrafi dağılım */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <h3 className="mb-2 font-bold text-gray-800">Coğrafi &amp; Bölgesel Dağılım</h3>
-        <p className="text-sm text-gray-400">Üye kayıtlarında ülke/şehir bilgisi toplanmaya başlandığında ciro ve ağ büyümesinin ısı haritası burada görünecek.</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">Üye kayıtlarında ülke/şehir bilgisi toplanmaya başlandığında ciro ve ağ büyümesinin ısı haritası burada görünecek.</p>
       </div>
     </div>
   );
