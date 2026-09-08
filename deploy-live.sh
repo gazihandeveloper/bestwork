@@ -36,7 +36,7 @@ build_one() { # $1=isim $2=repo klasoru $3=hedef $4=servis
 build_one "eshop"    eshop           "$WWW/happyboon/frontend" happyboon-frontend
 log "eshop basePath kokta, env yok"
 
-export NEXT_PUBLIC_BASE_PATH=/bestmanager2
+export NEXT_PUBLIC_BASE_PATH=/bestmanager
 export NEXT_PUBLIC_API_URL=https://mahmutgazihanarslan.com.tr/api
 build_one "yonetim2" mlm-yonetim-new "$WWW/bestwork/yonetim2" bestwork-yonetim2
 unset NEXT_PUBLIC_BASE_PATH
