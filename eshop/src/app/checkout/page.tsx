@@ -39,13 +39,41 @@ export default function CheckoutPage() {
     )
   }
 
+  const [error, setError] = useState('')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+    const fd = new FormData(e.currentTarget as HTMLFormElement)
+    const method = String(fd.get('payment') || 'transfer')
+    if (method !== 'transfer') {
+      setError('Kredi kartı / kapıda ödeme henüz aktif değil. Lütfen Havale / EFT seçin.')
+      return
+    }
     setSubmitting(true)
-    // API entegrasyonu yapılacak
-    setTimeout(() => {
+    try {
+      const items = cart.items.map((it) => ({
+        product_id: Number(it.productId ?? it.product?.id),
+        quantity: it.quantity,
+      }))
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, payment_method: 'eft_havale', retail: false }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || 'Sipariş oluşturulamadı')
       router.push('/account/orders')
-    }, 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sipariş oluşturulamadı')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -81,6 +109,9 @@ export default function CheckoutPage() {
                   <CreditCard size={20} className="text-brand-500" />
                   Ödeme Yöntemi
                 </h3>
+                <p className="text-xs text-gray-400 mb-2">
+                  Şu an yalnızca Havale / EFT ile sipariş alınabilmektedir.
+                </p>
                 <div className="space-y-3">
                   {[
                     { id: 'credit-card', label: 'Kredi Kartı / Banka Kartı', icon: '/images/theme/payment-method.png' },
@@ -94,7 +125,7 @@ export default function CheckoutPage() {
                       <input
                         type="radio"
                         name="payment"
-                        defaultChecked={method.id === 'credit-card'}
+                        defaultChecked={method.id === 'transfer'}
                         className="text-brand-500 focus:ring-brand-300"
                       />
                       <span className="text-sm font-bold text-gray-700">{method.label}</span>
@@ -165,6 +196,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {error && (
+                <p className="mt-4 text-xs font-medium text-red-600">{error}</p>
+              )}
               <Button
                 type="submit"
                 variant="brand"
