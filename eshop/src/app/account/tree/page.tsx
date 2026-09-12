@@ -20,12 +20,13 @@ const currentMonth = () => {
 export default function TreePage() {
   const [root, setRoot] = useState<TreeNode | null>(null)
   const [minMonth, setMinMonth] = useState('')
-  const [period, setPeriod] = useState('')
+  const [period, setPeriod] = useState<string>(() => currentMonth())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Not: setLoading(true) burada senkron çağrılmaz (effect içinde setState uyarısı).
+  // Yükleme durumu başlangıçta true; dönem değişince event handler true yapar.
   const load = useCallback((month: string) => {
-    setLoading(true)
     rawGet<{ tree?: TreeNode | null; min_month?: string }>(`/tree?depth=${DEPTH}&month=${month}`)
       .then((r) => {
         setRoot(r.tree ?? null)
@@ -37,13 +38,14 @@ export default function TreePage() {
   }, [])
 
   useEffect(() => {
-    setPeriod(currentMonth())
-     
-  }, [])
-
-  useEffect(() => {
-    if (period) load(period)
+    load(period)
   }, [period, load])
+
+  const handlePeriodChange = (month: string) => {
+    if (!month || month === period) return
+    setLoading(true)
+    setPeriod(month)
+  }
 
   return (
     <div className="space-y-4">
@@ -54,7 +56,9 @@ export default function TreePage() {
           <h1 className="flex items-center gap-2 text-2xl font-extrabold text-gray-900">
             <GitFork size={24} className="text-brand-600" /> Binary Ağacım
           </h1>
-          <p className="text-sm text-gray-400">Düğüme tıklayın; sol/sağ CV, ekip ve PV detaylarını görün.</p>
+          <p className="text-sm text-gray-400">
+            Kartlarda sol/sağ CV, ekip ve PV görünür. Karta tıklayınca sponsor ve güncel ekip sayıları yüklenir.
+          </p>
         </div>
         <Link
           href="/account"
@@ -76,7 +80,7 @@ export default function TreePage() {
             value={period}
             min={minMonth || '2024-01'}
             max={currentMonth()}
-            onChange={(e) => e.target.value && setPeriod(e.target.value)}
+            onChange={(e) => handlePeriodChange(e.target.value)}
             className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
           />
         </div>
@@ -95,7 +99,7 @@ export default function TreePage() {
           Ağaç verisi bulunamadı.
         </div>
       ) : (
-        <BinaryTreeView root={root} />
+        <BinaryTreeView key={period} root={root} />
       )}
     </div>
   )
