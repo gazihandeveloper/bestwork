@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Search, Trash2, Square, CheckSquare } from '@/lib/google-icons'
+import { Plus, Search, Trash2, Square, CheckSquare } from '@/components/icons'
 import { formatPrice, get, post, del } from '@/lib/api'
 import type { Product } from '@/types'
 import toast from 'react-hot-toast'

@@ -3,7 +3,7 @@
 // ============================================
 'use client'
 
-import { Star, Check, X } from '@/lib/google-icons'
+import { Star, Check, X } from '@/components/icons'
 
 export default function AdminReviewsPage() {
   return (

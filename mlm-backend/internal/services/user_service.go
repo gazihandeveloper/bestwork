@@ -600,7 +600,7 @@ func (s *UserService) UpdateUserRank(ctx context.Context, adminID int64, adminNa
 // AdjustPVAndCV üyenin birikmiş PV/CV'sini manuel düzeltir (düzeltme loglu).
 // Düzeltme sonrası üst hattaki tüm ataların bacak toplamları kanonik olarak
 // yeniden hesaplanır ve canlı binary eşleşmesi çalıştırılır.
-func (s *UserService) AdjustPVAndCV(ctx context.Context, adminID int64, adminName string, userID int64, deltaPV, deltaCV int64, reason string) error {
+func (s *UserService) AdjustPVAndCV(ctx context.Context, adminID int64, adminName string, userID int64, deltaPV, deltaCV float64, reason string) error {
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("transaction başlatılamadı: %w", err)
@@ -609,8 +609,8 @@ func (s *UserService) AdjustPVAndCV(ctx context.Context, adminID int64, adminNam
 
 	var (
 		parentID *int64
-		curPV    int64
-		curCV    int64
+		curPV    float64
+		curCV    float64
 	)
 	err = tx.QueryRow(ctx,
 		`SELECT parent_id, total_pv_accumulated, total_cv_accumulated FROM users WHERE id = $1 FOR UPDATE`, userID).

@@ -113,14 +113,17 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
   const [selected, setSelected] = useState<number | null>(null)
   const [cards, setCards] = useState<Record<number, UserCard>>({})
   const [zoom, setZoom] = useState(1)
-  const [size, setSize] = useState({ w: 1024, h: 620 })
+  // Ölçüm gelene kadar sığdırma yapılmaz (0 = ölçülmedi): eskiden 1024×620
+  // varsayımıyla ilk kare çiziliyor, ardından görünüm zıplıyordu.
+  const [size, setSize] = useState({ w: 0, h: 0 })
 
   const cardCache = useRef<Map<number, UserCard>>(new Map())
   const svgRef = useRef<SVGSVGElement | null>(null)
   const gRef = useRef<SVGGElement | null>(null)
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
-  const initialRef = useRef<d3.ZoomTransform>(d3.zoomIdentity)
+  // "Sığdır"ın hedefi (tüm ağaç); açılış görünümü okunabilirlik öncelikli olabilir.
+  const fitRef = useRef<d3.ZoomTransform>(d3.zoomIdentity)
   const draggedRef = useRef(false)
   const interactedRef = useRef(false)
   const fittedRootRef = useRef<TreeNode | null>(null)
@@ -214,7 +217,9 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
 
     const zb = d3
       .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.2, 2.5])
+      // Alt sınır 0.2 idi; geniş bir ağaç dar ekranda 0.12 civarı bir ölçek
+      // gerektirdiğinden "Sığdır" tuvalden taşıp kartları kırpıyordu.
+      .scaleExtent([0.1, 2.5])
       .on('start', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
         if (event.sourceEvent) draggedRef.current = false
       })
@@ -237,27 +242,63 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
 
   /* ── Genişlik + yükseklik sığdırması (BUG-3) ──
      Ağaç değişince yeniden sığdır; kullanıcı zoom yaptıysa pencere
-     yeniden boyutlanınca mevcut görünümü koru. */
+     yeniden boyutlanınca mevcut görünümü koru.
+     Responsive: ölçüm gelmeden çalışmaz, dar ekranda iç boşluk azalır,
+     yazıyı okunamaz hâle getiren aşırı küçültme engellenir. */
   useEffect(() => {
     const svg = svgRef.current
     const zb = zoomRef.current
-    if (!svg || !zb) return
+    if (!svg || !zb || size.w <= 0) return
 
     const rootChanged = fittedRootRef.current !== root
     if (!rootChanged && interactedRef.current) return
 
-    const padX = 56
-    const padY = 40
-    const contentW = x1 - x0 + CARD_W
-    const contentH = y1 - y0 + CARD_H
+    // Dar ekranda 56px'lik yan boşluk tuvalin üçte birini yiyordu.
+    const darEkran = size.w < 640
+    // 1024px altında (telefon/tablet) okunabilirlik, geniş ekranda genel bakış önceliklidir.
+    const kucukEkran = size.w < 1024
+    const padX = darEkran ? 12 : 56
+    const padY = darEkran ? 24 : 40
+
+    /* Gerçek görsel iz: kart + foreignObject dolgusu (FO_W/FO_H). Eskiden
+       yalnızca CARD_W/CARD_H sayıldığı için 28px eksik hesaplanıyor ve en
+       dıştaki iki kart tuvalden taşıp kırpılıyordu. */
+    const contentW = x1 - x0 + FO_W
+    const contentH = y1 - y0 + FO_H
     const fit = Math.min(
       1,
-      Math.max(0.2, Math.min((size.w - padX * 2) / contentW, (size.h - padY * 2) / contentH))
+      Math.max(
+        0.1,
+        Math.min((size.w - padX * 2) / contentW, (size.h - padY * 2) / contentH)
+      )
     )
-    const tx = (size.w - contentW * fit) / 2 - x0 * fit + (CARD_W / 2) * fit
-    const ty = (size.h - contentH * fit) / 2 - y0 * fit
-    const initial = d3.zoomIdentity.translate(tx, ty).scale(fit)
-    initialRef.current = initial
+
+    /* Tüm ağacı dar ekrana sığdırmak yazıyı 3-4px'e düşürüyordu. Okunabilir
+       bir alt sınır uygulanır; sığmayan kısmı kullanıcı kaydırarak görür.
+       "Sığdır" düğmesi gerçek sığdırma ölçeğine (fit) döner. */
+    const okunabilirAlt = kucukEkran ? 0.5 : 0.34
+    const olcek = Math.min(1, Math.max(fit, okunabilirAlt))
+
+    // "Sığdır" düğmesinin hedefi: ağacın tamamı (fit), okunabilirlik sınırı olmadan.
+    fitRef.current = d3.zoomIdentity
+      .translate(
+        (size.w - contentW * fit) / 2 - (x0 - FO_W / 2) * fit,
+        (size.h - contentH * fit) / 2 - (y0 - FO_PAD) * fit
+      )
+      .scale(fit)
+
+    let tx: number
+    let ty: number
+    if (olcek > fit + 0.001) {
+      // Ağaç sığmıyor: kökü üst-ortaya hizala, gerisi kaydırmayla gelsin.
+      tx = size.w / 2 - rt.x * olcek
+      ty = padY - (y0 - FO_PAD) * olcek
+    } else {
+      // Tamamı sığıyor: içeriği tuvalin ortasına yerleştir.
+      tx = (size.w - contentW * olcek) / 2 - (x0 - FO_W / 2) * olcek
+      ty = (size.h - contentH * olcek) / 2 - (y0 - FO_PAD) * olcek
+    }
+    const initial = d3.zoomIdentity.translate(tx, ty).scale(olcek)
 
     if (rootChanged) {
       fittedRootRef.current = root
@@ -279,8 +320,9 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
     const svg = svgRef.current
     const zb = zoomRef.current
     if (!svg || !zb) return
-    interactedRef.current = false
-    d3.select(svg).transition().duration(260).call(zb.transform, initialRef.current)
+    // "Sığdır": ağacın tamamı görünsün (açılıştaki okunabilir ölçekten bağımsız).
+    interactedRef.current = true
+    d3.select(svg).transition().duration(260).call(zb.transform, fitRef.current)
   }
 
   const links = rt.links()
@@ -333,10 +375,11 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
         </div>
       </div>
 
-      {/* Tuval */}
+      {/* Tuval — yükseklik ekrana göre: eskiden min 620px sabitti ve kısa
+          ekranlarda (yatay telefon) tuval tek başına ekrandan büyüktü. */}
       <div
         ref={wrapRef}
-        className="relative h-[calc(100vh-240px)] min-h-[620px] w-full overflow-hidden bg-[radial-gradient(#e9eef5_1px,transparent_1px)] [background-size:22px_22px]"
+        className="relative h-[calc(100vh-240px)] min-h-[320px] w-full overflow-hidden bg-[radial-gradient(#e9eef5_1px,transparent_1px)] [background-size:22px_22px] sm:min-h-[400px] lg:min-h-[620px]"
       >
         <svg ref={svgRef} className="block h-full w-full cursor-grab touch-none active:cursor-grabbing">
           <defs>
@@ -400,8 +443,10 @@ export function BinaryTreeView({ root }: { root: TreeNode }) {
           </g>
         </svg>
 
-        <div className="pointer-events-none absolute bottom-2 left-3 rounded-lg bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-400 shadow-sm backdrop-blur">
-          Sürükle: kaydır · Tekerlek: yakınlaştır · Karta tıkla: detay
+        {/* İpucu: dokunmatik cihazlarda "tekerlek" yerine iki parmak */}
+        <div className="pointer-events-none absolute bottom-2 left-3 max-w-[calc(100%-1.5rem)] rounded-lg bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-400 shadow-sm backdrop-blur">
+          <span className="hidden sm:inline">Sürükle: kaydır · Tekerlek: yakınlaştır · Karta tıkla: detay</span>
+          <span className="sm:hidden">Sürükle: kaydır · İki parmak: yakınlaştır · Karta tıkla: detay</span>
         </div>
       </div>
     </div>
@@ -443,10 +488,14 @@ function NodeCard({
   const rPv = display.total_pv_right ?? node.total_pv_right
   const sponsor = display.sponsor_name
 
-  const rows: Array<{ l: string; lv?: number; r: string; rv?: number }> = [
-    { l: 'SOL.CV', lv: lCv, r: 'SAĞ.CV', rv: rCv },
-    { l: 'SOL.PV', lv: lPv, r: 'SAĞ.PV', rv: rPv },
-    { l: 'SOL.EK', lv: lTeam, r: 'SAĞ.EK', rv: rTeam },
+  /* Renk kuralı: PV mor, CV yeşil (tüm sayfalarda aynı).
+     EK satırı PV/CV olmadığı için sol/sağ renk ayrımını korur. */
+  const YESIL = 'text-[#16a34a]'   // CV
+  const MOR = 'text-[#9333ea]'     // PV
+  const rows: Array<{ l: string; lv?: number; r: string; rv?: number; sol: string; sag: string }> = [
+    { l: 'SOL.CV', lv: lCv, r: 'SAĞ.CV', rv: rCv, sol: YESIL, sag: YESIL },
+    { l: 'SOL.PV', lv: lPv, r: 'SAĞ.PV', rv: rPv, sol: MOR, sag: MOR },
+    { l: 'SOL.EK', lv: lTeam, r: 'SAĞ.EK', rv: rTeam, sol: 'text-[#38bdf8]', sag: 'text-[#a855f7]' },
   ]
 
   return (
@@ -544,13 +593,13 @@ function NodeCard({
           <div key={row.l} className="flex border-b border-[#e2e8f0] last:border-b-0">
             <div className="flex-1 border-r border-[#e2e8f0] px-3 py-2">
               <div className="text-[11px] font-bold tracking-[0.5px] text-[#94a3b8]">{row.l}</div>
-              <div className="font-mono text-[20px] leading-tight font-extrabold text-[#38bdf8]">
+              <div className={`font-mono text-[20px] leading-tight font-extrabold ${row.sol}`}>
                 {fmt(row.lv)}
               </div>
             </div>
             <div className="flex-1 px-3 py-2">
               <div className="text-[11px] font-bold tracking-[0.5px] text-[#94a3b8]">{row.r}</div>
-              <div className="font-mono text-[20px] leading-tight font-extrabold text-[#a855f7]">
+              <div className={`font-mono text-[20px] leading-tight font-extrabold ${row.sag}`}>
                 {fmt(row.rv)}
               </div>
             </div>

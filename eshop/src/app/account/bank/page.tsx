@@ -5,7 +5,7 @@
 
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import Link from 'next/link'
-import { House, Trash2, Pencil, Landmark, X } from '@/lib/google-icons'
+import { House, Trash2, Pencil, Landmark, X } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { rawGet, rawPost, rawPut, rawDel } from '@/lib/raw'
 import toast from 'react-hot-toast'

@@ -4,7 +4,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, ShoppingCart, Trash2, User, RefreshCw } from '@/lib/google-icons'
+import { Eye, ShoppingCart, Trash2, User, RefreshCw } from '@/components/icons'
 import { get, del, formatPrice } from '@/lib/api'
 import toast from 'react-hot-toast'
 

@@ -45,8 +45,8 @@ type EshopProduct struct {
 	Description  string         `json:"description"`
 	Price        int64          `json:"price"`
 	ComparePrice int64          `json:"comparePrice,omitempty"`
-	PV           int64          `json:"pv"`
-	CV           int64          `json:"cv"`
+	PV           float64          `json:"pv"`
+	CV           float64          `json:"cv"`
 	Images       []string       `json:"images"`
 	Thumbnail    string         `json:"thumbnail"`
 	CategoryID   *int64         `json:"categoryId,omitempty"`

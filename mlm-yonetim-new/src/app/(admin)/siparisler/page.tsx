@@ -23,6 +23,7 @@ import {
   getErrorMessage,
   type PaymentNotification,
   type AdminOrder,
+  formatPV,
 } from "@/lib/api";
 
 const tl = (v: number) =>
@@ -409,7 +410,7 @@ export default function SiparislerPage() {
                                   </span>
                                   <span className="text-gray-500 dark:text-gray-400">
                                     {" "}
-                                    × {it.quantity} — {tl(it.price)} (PV {it.pv} / CV {it.cv})
+                                    × {it.quantity} — {tl(it.price)} (PV {formatPV(it.pv)} / CV {formatPV(it.cv)})
                                   </span>
                                 </li>
                               ))}

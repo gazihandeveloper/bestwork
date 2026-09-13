@@ -424,3 +424,11 @@ export function getMe(force = false): Promise<AdminMe | null> {
     });
   return meState.inflight;
 }
+
+
+/** PV/CV değerini biçimlendirir: küsurat varsa gösterir (100 · 25,5 · 12,75). */
+export function formatPV(value?: number | string | null): string {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return "0";
+  return n.toLocaleString("tr-TR", { maximumFractionDigits: 2 });
+}

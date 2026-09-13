@@ -118,13 +118,13 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 		productID int64
 		quantity  int
 		price     float64
-		pv        int64
-		cv        int64
+		pv        float64
+		cv        float64
 	}
 	itemRows := make([]itemRow, 0, len(items))
 
 	var totalAmountCents int64
-	var totalPV, totalCV int64
+	var totalPV, totalCV float64
 
 	for _, item := range items {
 		if item.Quantity <= 0 {
@@ -154,12 +154,14 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 		unitPrice := centsToMoney(unitPriceCents)
 
 		// PV/CV de paket indirimiyle oranlanır: Katalog Değeri × (1 - İndirim Oranı)
-		qty := int64(item.Quantity)
-		pv := p.PV * qty
-		cv := p.CV * qty
+		// PV/CV ondalıklıdır (numeric(14,2)): küsurat korunur, 2 haneye yuvarlanır.
+		qty := int64(item.Quantity)          // para hesabı (kuruş) tam sayı adetle
+		qtyF := float64(item.Quantity)       // PV/CV hesabı ondalıklı olabilir
+		pv := round2(p.PV * qtyF)
+		cv := round2(p.CV * qtyF)
 		if discountRate > 0 {
-			pv = int64(float64(pv)*(1-discountRate) + 0.5)
-			cv = int64(float64(cv)*(1-discountRate) + 0.5)
+			pv = round2(pv * (1 - discountRate))
+			cv = round2(cv * (1 - discountRate))
 		}
 		itemRows = append(itemRows, itemRow{
 			productID: p.ID,
@@ -251,7 +253,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 func ProcessOrderEffects(ctx context.Context, q DBTX, orderID int64) error {
 	var (
 		orderUserID      int64
-		totalPV, totalCV int64
+		totalPV, totalCV float64
 		effectsApplied   bool
 		status           string
 	)
@@ -274,7 +276,7 @@ func ProcessOrderEffects(ctx context.Context, q DBTX, orderID int64) error {
 	// Kullanıcıyı kilitle
 	var (
 		sponsorID          *int64
-		totalPVAccumulated int64
+		totalPVAccumulated float64
 		role               string
 	)
 	if err := q.QueryRow(ctx,
@@ -368,14 +370,14 @@ func addToPendingPoolIfEligible(ctx context.Context, q DBTX, userID int64, spons
 // sipariş PV'si sponsorun kişisel PV birikimine eklenir, perakende komisyonu
 // (toplam CV × sponsor paketinin referans oranı) cüzdana ödenir ve
 // sponsorun paket seviyesi güncellenir.
-func applyRetailBonus(ctx context.Context, tx DBTX, sponsorID *int64, customerID int64, totalPV, totalCV int64, orderID int64) error {
+func applyRetailBonus(ctx context.Context, tx DBTX, sponsorID *int64, customerID int64, totalPV, totalCV float64, orderID int64) error {
 	if sponsorID == nil {
 		return errors.New("müşteri kaydında sponsor eksik")
 	}
 
 	var (
 		sponsorPackageID *int
-		sponsorPV        int64
+		sponsorPV        float64
 	)
 	if err := tx.QueryRow(ctx,
 		`SELECT package_id, total_pv_accumulated FROM users WHERE id = $1 FOR UPDATE`, *sponsorID).
@@ -430,7 +432,7 @@ func applyRetailBonus(ctx context.Context, tx DBTX, sponsorID *int64, customerID
 }
 
 // applyReferralBonus sponsorun paketine göre referans bonusu öder.
-func applyReferralBonus(ctx context.Context, tx DBTX, sponsorID *int64, fromUserID int64, totalCV int64, orderID int64) error {
+func applyReferralBonus(ctx context.Context, tx DBTX, sponsorID *int64, fromUserID int64, totalCV float64, orderID int64) error {
 	if sponsorID == nil {
 		return nil
 	}
@@ -699,6 +701,20 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, adminID int64, adm
 	if status == "cancelled" {
 		if err := reverseOrderCommissions(ctx, tx, orderID, adminID, adminName, note); err != nil {
 			return err
+		}
+	}
+
+	// Sipariş "paid" durumuna geçtiğinde puan/komisyon etkilerini uygula.
+	// ÖNEMLİ: Bu çağrı yalnızca ödeme bildirimi onayında yapılıyordu; panelden
+	// doğrudan "ödendi" işaretlenen siparişlerde PV/CV birikimi, referans primi,
+	// perakende kazancı ve binary ağaç güncellemesi HİÇ işlenmiyordu.
+	// ProcessOrderEffects idempotenttir (orders.effects_applied bayrağı),
+	// tekrar çağrılsa bile etkiler ikinci kez uygulanmaz.
+	if status == "paid" {
+		if err := ProcessOrderEffects(ctx, tx, orderID); err != nil {
+			if !errors.Is(err, ErrOrderNotPaid) {
+				return fmt.Errorf("sipariş etkileri uygulanamadı: %w", err)
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 'use client'
-import { UserCheck } from '@/lib/google-icons'
+import { UserCheck } from '@/components/icons'
 
 export default function UserApprovalsPage() {
   return (

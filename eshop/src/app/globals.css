@@ -6,7 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+  --font-sans: 'Open Sans', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Courier New', monospace;
 
   /* Brand Renkleri */
@@ -48,7 +48,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Open Sans', 'Segoe UI', system-ui, sans-serif;
   font-size: 20px;
 }
 
@@ -170,3 +170,24 @@ body {
   text-transform: uppercase;
 }
 
+/* ============================================
+   Tipografi — başlık dışı metinler kalın değil
+   --------------------------------------------
+   İstek: Open Sans ile gövde metinleri kalın görünmesin.
+   h1–h6 (başlıklar) ve marka logosu (.bw-logo) hariç tüm metinler
+   normal ağırlığa (400) çekilir. !important, Tailwind'in
+   font-bold / font-semibold / font-extrabold sınıflarını geçersiz kılar.
+   ============================================ */
+body {
+  font-weight: 400;
+}
+
+body *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+  font-weight: 400 !important;
+}
+
+/* Marka logosu: kalınlığı korunur (sınıf seçici, tip seçicilerden daha güçlü) */
+body .bw-logo,
+body .bw-logo span {
+  font-weight: 800 !important;
+}

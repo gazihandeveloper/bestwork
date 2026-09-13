@@ -8,7 +8,7 @@ import Link from 'next/link'
 import {
   ShoppingBag, ShoppingCart, Users, DollarSign, Package,
   Plus, TrendingUp, Clock, AlertCircle, CheckCircle,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 import { formatPrice, orderStatusColor, orderStatusText, get } from '@/lib/api'
 import type { DashboardStats } from '@/types'
 

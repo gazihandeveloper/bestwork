@@ -1,5 +1,5 @@
 'use client'
-import { SwatchBook } from '@/lib/google-icons'
+import { SwatchBook } from '@/components/icons'
 
 export default function StyleManagementPage() {
   return (

@@ -335,7 +335,7 @@ func placeUserInTx(ctx context.Context, tx DBTX, poolID, sponsorID, parentID, us
 	}
 
 	// Kullanıcının birikmiş PV ve CV toplamlarını al
-	var totalPV, totalCV int64
+	var totalPV, totalCV float64
 	if err := tx.QueryRow(ctx,
 		`SELECT total_pv_accumulated, total_cv_accumulated FROM users WHERE id = $1`, userID).Scan(&totalPV, &totalCV); err != nil {
 		return fmt.Errorf("PV/CV toplamları okunamadı: %w", err)

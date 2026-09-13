@@ -1,5 +1,5 @@
 'use client'
-import { FolderTree } from '@/lib/google-icons'
+import { FolderTree } from '@/components/icons'
 
 export default function BlogCategoriesPage() {
   return (

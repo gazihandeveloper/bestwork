@@ -9,8 +9,8 @@ type BinaryTransaction struct {
 	UserID          int64     `json:"user_id"`
 	Position        string    `json:"position"`
 	TransactionType string    `json:"transaction_type"`
-	PV              int64     `json:"pv"`
-	CV              int64     `json:"cv"`
+	PV              float64     `json:"pv"`
+	CV              float64     `json:"cv"`
 	Description     *string   `json:"description"`
 	RelatedOrderID  *int64    `json:"related_order_id"`
 	CreatedAt       time.Time `json:"created_at"`

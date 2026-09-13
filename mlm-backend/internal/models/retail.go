@@ -10,7 +10,7 @@ type RetailEarningItem struct {
 	CustomerMemberCode string    `json:"customer_member_code"`
 	OrderID            *int64    `json:"order_id"`
 	OrderAmount        *float64  `json:"order_amount"`
-	RelatedCV          *int64    `json:"related_cv"`
+	RelatedCV          *float64    `json:"related_cv"`
 	Amount             float64   `json:"amount"`
 	CreatedAt          time.Time `json:"created_at"`
 }
@@ -19,5 +19,5 @@ type RetailEarningItem struct {
 type RetailSummary struct {
 	TotalAmount float64 `json:"total_amount"`
 	OrderCount  int64   `json:"order_count"`
-	TotalCV     int64   `json:"total_cv"`
+	TotalCV     float64   `json:"total_cv"`
 }

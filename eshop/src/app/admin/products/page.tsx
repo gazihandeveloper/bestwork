@@ -7,7 +7,7 @@ import Link from 'next/link'
 import {
   ShoppingBag, Plus, FolderTree, Building2, MessageSquare,
   Palette, Filter, ListChecks, Layers, ChevronRight, Star,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 
 const productCards = [
   { href: '/admin/products/list', icon: ShoppingBag, title: 'Ürünler', desc: 'Tüm ürünleri listeleyin veya yeni ürün ekleyin', color: 'bg-brand-50 text-brand-500', count: '8' },

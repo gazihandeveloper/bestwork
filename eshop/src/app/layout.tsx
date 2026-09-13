@@ -2,11 +2,21 @@
 // BestWork - Root Layout
 // ============================================
 import type { Metadata } from 'next'
-import { Quicksand } from 'next/font/google'
+import { Open_Sans, Quicksand } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { Providers } from './providers'
 
+/* Site geneli yazı tipi — flptr.com ile aynı: Open Sans (400/600/700)
+   Logo "extrabold" (800) kullandığı için 800 de yüklenir. */
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-opensans',
+})
+
+/* Logo fontu — marka kimliği olarak Quicksand'ın yuvarlak hatları korunur;
+   site geneli metinler Open Sans kullanır. */
 const quicksand = Quicksand({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -38,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="tr" className={`${quicksand.variable} h-full`}>
+    <html lang="tr" className={`${openSans.variable} ${quicksand.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-gray-50 font-sans">
       
         <Providers>

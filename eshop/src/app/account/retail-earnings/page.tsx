@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, ShoppingBag, ChevronLeft, ChevronRight, CalendarDays, Receipt } from '@/lib/google-icons'
+import { House, ShoppingBag, ChevronLeft, ChevronRight, CalendarDays, Receipt } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { rawGet } from '@/lib/raw'
 
@@ -123,7 +123,7 @@ export default function RetailEarningsPage() {
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <p className="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Toplam CV</p>
-          <p className="mt-1 text-xl font-extrabold text-violet-600">{(Number(summary.total_cv) || 0).toLocaleString('tr-TR')} CV</p>
+          <p className="mt-1 text-xl font-extrabold text-green-600">{(Number(summary.total_cv) || 0).toLocaleString('tr-TR')} CV</p>
         </div>
       </div>
 
@@ -173,7 +173,7 @@ export default function RetailEarningsPage() {
                         ? `${Number(it.order_amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL`
                         : '—'}
                     </td>
-                    <td className="px-4 py-2.5 text-right text-violet-600">{it.related_cv != null ? `${Number(it.related_cv).toLocaleString('tr-TR')} CV` : '—'}</td>
+                    <td className="px-4 py-2.5 text-right text-green-600">{it.related_cv != null ? `${Number(it.related_cv).toLocaleString('tr-TR')} CV` : '—'}</td>
                     <td className="px-4 py-2.5 text-right font-extrabold text-green-600">
                       +{Number(it.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL
                     </td>

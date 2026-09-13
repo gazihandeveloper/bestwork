@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Trophy, ChevronLeft, ChevronRight } from '@/lib/google-icons'
+import { House, Trophy, ChevronLeft, ChevronRight } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -141,7 +141,7 @@ export default function LeadershipBonusPage() {
                     <td className="px-4 py-2.5 text-gray-600">
                       {c.from_user_id != null ? `Üye #${c.from_user_id}` : '-'}
                     </td>
-                    <td className="px-4 py-2.5 text-right text-gray-500">
+                    <td className="px-4 py-2.5 text-right font-semibold text-green-600">
                       {c.related_cv != null ? `${Number(c.related_cv).toLocaleString('tr-TR')} CV` : '-'}
                     </td>
                   </tr>

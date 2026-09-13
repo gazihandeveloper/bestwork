@@ -25,10 +25,10 @@ type TeamSummary struct {
 	BinaryTeamCount    int64 `json:"binary_team_count"`
 	LeftTeamCount      int64 `json:"left_team_count"`
 	RightTeamCount     int64 `json:"right_team_count"`
-	TotalPVLeft        int64 `json:"total_pv_left"`
-	TotalPVRight       int64 `json:"total_pv_right"`
-	TotalCVLeft        int64 `json:"total_cv_left"`
-	TotalCVRight       int64 `json:"total_cv_right"`
+	TotalPVLeft        float64 `json:"total_pv_left"`
+	TotalPVRight       float64 `json:"total_pv_right"`
+	TotalCVLeft        float64 `json:"total_cv_left"`
+	TotalCVRight       float64 `json:"total_cv_right"`
 }
 
 // Commission veritabanındaki commissions tablosunun Go karşılığıdır.
@@ -38,7 +38,7 @@ type Commission struct {
 	FromUserID     *int64     `json:"from_user_id"`
 	Type           string     `json:"type"`
 	Amount         float64    `json:"amount"`
-	RelatedCV      *int64     `json:"related_cv"`
+	RelatedCV      *float64     `json:"related_cv"`
 	RelatedOrderID *int64     `json:"related_order_id"`
 	Status         string     `json:"status"`
 	CreatedAt      time.Time  `json:"created_at"`
@@ -64,16 +64,16 @@ type UserDashboard struct {
 	TotalMatchingEarnings float64      `json:"total_matching_earnings"`
 	TotalRetailEarnings   float64      `json:"total_retail_earnings"`
 	MonthlyEarned         float64      `json:"monthly_earned"`
-	MonthlyMatchedCV      int64        `json:"monthly_matched_cv"`
-	LegCVLeftTotal        int64        `json:"leg_cv_left_total"`
-	LegCVRightTotal       int64        `json:"leg_cv_right_total"`
+	MonthlyMatchedCV      float64        `json:"monthly_matched_cv"`
+	LegCVLeftTotal        float64        `json:"leg_cv_left_total"`
+	LegCVRightTotal       float64        `json:"leg_cv_right_total"`
 	MonthlyMatchCount     int64        `json:"monthly_match_count"`
 	LeftTeamCount         int64        `json:"left_team_count"`
 	RightTeamCount        int64        `json:"right_team_count"`
-	LeftPV                int64        `json:"left_pv"`
-	RightPV               int64        `json:"right_pv"`
-	LeftCV                int64        `json:"left_cv"`
-	RightCV               int64        `json:"right_cv"`
+	LeftPV                float64        `json:"left_pv"`
+	RightPV               float64        `json:"right_pv"`
+	LeftCV                float64        `json:"left_cv"`
+	RightCV               float64        `json:"right_cv"`
 	RecentCommissions     []Commission `json:"recent_commissions"`
 	RecentOrders          []Order      `json:"recent_orders"`
 	CurrentRank           *Rank        `json:"current_rank"`
@@ -122,10 +122,10 @@ type UserInfoCard struct {
 	SponsorName    *string  `json:"sponsor_name"`
 	WalletBalance  float64  `json:"wallet_balance"`
 	ChipBalance    float64  `json:"chip_balance"`
-	TotalPVLeft    int64    `json:"total_pv_left"`
-	TotalPVRight   int64    `json:"total_pv_right"`
-	TotalCVLeft    int64    `json:"total_cv_left"`
-	TotalCVRight   int64    `json:"total_cv_right"`
+	TotalPVLeft    float64    `json:"total_pv_left"`
+	TotalPVRight   float64    `json:"total_pv_right"`
+	TotalCVLeft    float64    `json:"total_cv_left"`
+	TotalCVRight   float64    `json:"total_cv_right"`
 	LeftTeamCount  int64    `json:"left_team_count"`
 	RightTeamCount int64    `json:"right_team_count"`
 	TotalTeamCount int64    `json:"total_team_count"`
@@ -140,12 +140,12 @@ type TreeNode struct {
 	Package           *string   `json:"package"`
 	Rank              *string   `json:"rank"`
 	ImagePath         *string   `json:"image_path"`
-	TotalPVAccumulated int64    `json:"total_pv_accumulated"`
-	TotalCVAccumulated int64    `json:"total_cv_accumulated"`
-	TotalPVLeft        int64    `json:"total_pv_left"`
-	TotalPVRight       int64    `json:"total_pv_right"`
-	TotalCVLeft        int64    `json:"total_cv_left"`
-	TotalCVRight       int64    `json:"total_cv_right"`
+	TotalPVAccumulated float64    `json:"total_pv_accumulated"`
+	TotalCVAccumulated float64    `json:"total_cv_accumulated"`
+	TotalPVLeft        float64    `json:"total_pv_left"`
+	TotalPVRight       float64    `json:"total_pv_right"`
+	TotalCVLeft        float64    `json:"total_cv_left"`
+	TotalCVRight       float64    `json:"total_cv_right"`
 	IsActive           bool     `json:"is_active"`
 	Role               string   `json:"role"`
 	LeftChild          *TreeNode `json:"left_child"`

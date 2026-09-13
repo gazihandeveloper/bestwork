@@ -1,5 +1,5 @@
 'use client'
-import { Landmark } from '@/lib/google-icons'
+import { Landmark } from '@/components/icons'
 
 export default function BankPosPage() {
   return <div className="space-y-6"><div><h1 className="text-2xl font-bold text-gray-800">Banka Sanalpos</h1><p className="text-sm text-gray-500">Garanti, İşbankası, Yapıkredi +18 Banka</p></div>

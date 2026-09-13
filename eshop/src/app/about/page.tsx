@@ -6,7 +6,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { MainLayout } from '@/app/main-layout'
-import { Truck, Shield, Leaf, Users, Heart, Star } from '@/lib/google-icons'
+import { Truck, Shield, Leaf, Users, Heart, Star } from '@/components/icons'
 
 const features = [
   { icon: Truck, title: 'Hızlı Teslimat', desc: 'Siparişleriniz aynı gün kapınızda. İstanbul içi 2 saatte teslimat.' },

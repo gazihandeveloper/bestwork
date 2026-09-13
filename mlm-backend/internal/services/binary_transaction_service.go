@@ -22,7 +22,7 @@ func NewBinaryTransactionService(db *pgxpool.Pool) *BinaryTransactionService {
 
 // AddBinaryTransaction bir bacak hareketi kaydı ekler.
 // Transaction içinde çalışabilmesi için DBTX arayüzü kullanılır.
-func AddBinaryTransaction(ctx context.Context, q DBTX, userID int64, position, transactionType string, pv, cv int64, description string, relatedOrderID *int64) error {
+func AddBinaryTransaction(ctx context.Context, q DBTX, userID int64, position, transactionType string, pv, cv float64, description string, relatedOrderID *int64) error {
 	if position != "L" && position != "R" {
 		return errors.New("geçersiz pozisyon: L veya R olmalıdır")
 	}

@@ -2,7 +2,7 @@
 // BestWork - Yıldız Değerlendirme
 // ============================================
 
-import { Star } from '@/lib/google-icons'
+import { Star } from '@/components/icons'
 
 interface StarRatingProps {
   rating: number

@@ -20,12 +20,12 @@ type User struct {
 	IsInPendingPool          bool       `json:"is_in_pending_pool"`
 	PendingSince             *time.Time `json:"pending_since"`
 	CurrentRankID            *int       `json:"current_rank_id"`
-	TotalPVLeft              int64      `json:"total_pv_left"`
-	TotalPVRight             int64      `json:"total_pv_right"`
-	TotalCVLeft              int64      `json:"total_cv_left"`
-	TotalCVRight             int64      `json:"total_cv_right"`
-	TotalPVAccumulated       int64      `json:"total_pv_accumulated"`
-	TotalCVAccumulated       int64      `json:"total_cv_accumulated"`
+	TotalPVLeft              float64      `json:"total_pv_left"`
+	TotalPVRight             float64      `json:"total_pv_right"`
+	TotalCVLeft              float64      `json:"total_cv_left"`
+	TotalCVRight             float64      `json:"total_cv_right"`
+	TotalPVAccumulated       float64      `json:"total_pv_accumulated"`
+	TotalCVAccumulated       float64      `json:"total_cv_accumulated"`
 	CurrentMonthBinaryEarned float64    `json:"current_month_binary_earned"`
 	MonthPlatinumCount       int        `json:"current_month_platinum_count"`
 	CreatedAt                time.Time  `json:"created_at"`

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Mail, Phone, Calendar, Shield, User as UserIcon } from '@/lib/google-icons'
+import { ArrowLeft, Mail, Phone, Calendar, Shield, User as UserIcon } from '@/components/icons'
 import { formatPrice, get } from '@/lib/api'
 import type { User, Order, Wallet } from '@/types'
 

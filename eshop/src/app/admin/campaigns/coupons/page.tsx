@@ -1,5 +1,5 @@
 'use client'
-import { Ticket, Plus } from '@/lib/google-icons'
+import { Ticket, Plus } from '@/components/icons'
 import { Button } from '@/components/ui/Button'
 
 export default function CouponsPage() {

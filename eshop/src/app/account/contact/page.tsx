@@ -5,7 +5,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { House, Headset, Mail, Phone, Send, CircleAlert, Receipt } from '@/lib/google-icons'
+import { House, Headset, Mail, Phone, Send, CircleAlert, Receipt } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { rawPost, rawGet } from '@/lib/raw'
 import { get, post } from '@/lib/api'

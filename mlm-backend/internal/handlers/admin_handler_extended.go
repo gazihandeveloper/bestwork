@@ -371,8 +371,8 @@ func (h *AdminHandler) AdjustPVAndCV(c *gin.Context) {
 		return
 	}
 	var req struct {
-		DeltaPV int64  `json:"delta_pv"`
-		DeltaCV int64  `json:"delta_cv"`
+		DeltaPV float64  `json:"delta_pv"`
+		DeltaCV float64  `json:"delta_cv"`
 		Reason  string `json:"reason" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {

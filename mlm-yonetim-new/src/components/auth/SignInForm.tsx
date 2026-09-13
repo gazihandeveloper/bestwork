@@ -3,10 +3,10 @@ import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@/components/icons";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mahmutgazihanarslan.com.tr/api";
 
@@ -56,9 +56,18 @@ export default function SignInForm() {
   return (
     <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl px-6 py-8 sm:px-10 sm:py-10">
       <div className="text-center mb-8">
-        <span className="text-3xl font-extrabold tracking-tight" style={{ color: "rgb(41, 165, 108)" }}>
-          BestWork
-          <span className="text-[0.6em] text-gray-700 font-bold ml-0.5 align-super">®</span>
+        {/* Marka logosu — sitedeki LOGO ile aynı font (Quicksand), ® Georgia serif, koyu ton */}
+        <span
+          className="text-3xl font-extrabold tracking-tight text-black dark:text-white"
+          style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
+        >
+          BEST<span className="ml-0.5">WORK</span>
+          <span
+            className="ml-0.5 align-super text-[0.6em] font-bold text-black dark:text-white"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            ®
+          </span>
         </span>
         <p className="mt-1 text-[11px] font-bold tracking-[0.25em] text-gray-400 uppercase">
           Yönetim Merkezi
@@ -107,7 +116,7 @@ export default function SignInForm() {
                 {showPassword ? (
                   <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
                 ) : (
-                  <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                  <EyeSlashIcon className="fill-gray-500 dark:fill-gray-400" />
                 )}
               </span>
             </div>

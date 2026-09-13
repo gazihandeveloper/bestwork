@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Package } from '@/lib/google-icons'
+import { ArrowLeft, Package } from '@/components/icons'
 import { formatPrice, orderStatusColor, orderStatusText, get } from '@/lib/api'
 import type { Order } from '@/types'
 

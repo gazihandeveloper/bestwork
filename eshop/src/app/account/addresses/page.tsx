@@ -4,7 +4,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, Plus, Pencil, Trash2 } from '@/lib/google-icons'
+import { MapPin, Plus, Pencil, Trash2 } from '@/components/icons'
 
 interface Address {
   id: number

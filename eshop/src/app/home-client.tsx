@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, ChevronLeft, ChevronRight, CupSoda, Zap, Sparkles, Droplets, Package as PkgIcon, Box, Coffee, Leaf, Pill, Apple, HeartPulse, FlaskConical, Tag as TagIcon, Gift, ShieldCheck, ShoppingCart } from '@/lib/google-icons'
+import { ArrowRight, ChevronLeft, ChevronRight, CupSoda, Zap, Sparkles, Droplets, Package as PkgIcon, Box, Coffee, Leaf, Pill, Apple, HeartPulse, FlaskConical, Tag as TagIcon, Gift, ShieldCheck, ShoppingCart } from '@/components/icons'
 import { MainLayout } from './main-layout'
 import { ProductCard } from '@/components/product/ProductCard'
 import { StarRating } from '@/components/product/StarRating'

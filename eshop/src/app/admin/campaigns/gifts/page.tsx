@@ -1,5 +1,5 @@
 'use client'
-import { Gift } from '@/lib/google-icons'
+import { Gift } from '@/components/icons'
 
 export default function GiftsPage() {
   return (

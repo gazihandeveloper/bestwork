@@ -1,5 +1,5 @@
 'use client'
-import { Paintbrush } from '@/lib/google-icons'
+import { Paintbrush } from '@/components/icons'
 
 export default function ThemeDesignPage() {
   return (

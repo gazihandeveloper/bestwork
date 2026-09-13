@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { BarChart3, TrendingUp, Users, ShoppingCart, ChevronRight } from '@/lib/google-icons'
+import { BarChart3, TrendingUp, Users, ShoppingCart, ChevronRight } from '@/components/icons'
 
 const reportCards = [
   { href: '/admin/reports', icon: TrendingUp, title: 'En Çok Satanlar', desc: 'Hangi ürünler daha çok satılıyor', color: 'bg-green-50 text-green-500' },

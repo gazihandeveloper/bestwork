@@ -14,3 +14,11 @@ bin/
 
 .tools/
 *.tsbuildinfo
+
+# yerel DSH calisma alanı (asla commit edilmez)
+.npm-cache/
+.npm-logs/
+.dsh-backup/
+.npmrc
+.ssh/
+.local-logs/

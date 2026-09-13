@@ -5,7 +5,7 @@
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { House, Lock, LogOut } from '@/lib/google-icons'
+import { House, Lock, LogOut } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { useAuth } from '@/contexts/AuthContext'
 import { rawPost } from '@/lib/raw'

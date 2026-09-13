@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Eye, EyeOff, UserPlus } from '@/lib/google-icons'
+import { Eye, EyeOff, UserPlus } from '@/components/icons'
 import { MainLayout } from '@/app/main-layout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -61,8 +61,8 @@ export default function RegisterPage() {
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
             <div className="text-center mb-8">
-              <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#29A56C' }}>
-                BestWork<span className="text-[0.55em] text-gray-700 font-bold ml-0.5 align-super relative top-[-0.4em]" style={{ fontFamily: "serif" }}>®</span>
+              <span className="bw-logo text-3xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+                BestWork<span className="text-[0.55em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.4em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
               </span>
               <h1 className="text-2xl font-bold text-gray-800">Hesap Oluştur</h1>
               <p className="text-sm text-gray-500 mt-1">BestWork&apos;a katılın</p>

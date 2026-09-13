@@ -1,0 +1,11 @@
+{
+  "name": "bestwork-icon-tools",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "BestWork ikon üretici — Lucide ikonlarını derin ESM import ile yerel modüle bağlar. Hiçbir bağımlılığı yoktur.",
+  "scripts": {
+    "build": "node build-icons.mjs",
+    "check": "node build-icons.mjs --check"
+  }
+}

@@ -43,7 +43,7 @@ func scanProduct(row pgx.Row) (*models.Product, error) {
 }
 
 // CreateProduct yeni ürün ekler.
-func (s *ProductService) CreateProduct(ctx context.Context, name, description, imagePath, category, sku string, price float64, pv, cv int64, stock int, categoryID *int64) (*models.Product, error) {
+func (s *ProductService) CreateProduct(ctx context.Context, name, description, imagePath, category, sku string, price float64, pv, cv float64, stock int, categoryID *int64) (*models.Product, error) {
 	name = strings.TrimSpace(name)
 	if name == "" || price <= 0 || pv < 0 || cv < 0 || stock < 0 {
 		return nil, errors.New("geçersiz ürün bilgileri: ad boş olamaz, fiyat > 0 ve PV/CV/stok >= 0 olmalıdır")

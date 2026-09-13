@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { House, Users, Search, ShieldCheck, ShoppingBag, CircleCheck, Clock, Package as PackageIcon } from '@/lib/google-icons'
+import { House, Users, Search, ShieldCheck, ShoppingBag, CircleCheck, Clock, Package as PackageIcon } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 
@@ -66,7 +66,7 @@ export default function SponsorTreePage() {
     { label: 'Aktif / Ağaçta', value: activeCount, icon: <CircleCheck size={18} />, cls: 'bg-green-50 text-green-600' },
     { label: 'Bekleyen', value: pendingCount, icon: <Clock size={18} />, cls: 'bg-amber-50 text-amber-600' },
     { label: 'Paketli', value: packedCount, icon: <PackageIcon size={18} />, cls: 'bg-blue-50 text-blue-600' },
-    { label: 'Toplam PV', value: totalPV.toLocaleString('tr-TR'), icon: <PackageIcon size={18} />, cls: 'bg-violet-50 text-violet-600' },
+    { label: 'Toplam PV', value: totalPV.toLocaleString('tr-TR'), icon: <PackageIcon size={18} />, cls: 'bg-purple-50 text-purple-600' },
   ]
 
   const roleBadge = (u: TeamUser) => {
@@ -183,7 +183,7 @@ export default function SponsorTreePage() {
                         {dim ? 'Pasif' : 'Aktif'}
                       </span>
                     )}
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">
+                    <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700">
                       {(Number(u.total_pv_accumulated) || 0).toLocaleString('tr-TR')} PV
                     </span>
                   </div>

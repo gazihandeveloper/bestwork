@@ -29,8 +29,8 @@ type PackageRequest struct {
 	BinaryBonusRate   float64 `json:"binary_bonus_rate" binding:"gte=0,lte=1"`
 	MatchingBonusRate float64 `json:"matching_bonus_rate" binding:"gte=0,lte=1"`
 	DiscountRate      float64 `json:"discount_rate" binding:"gte=0,lte=1"`
-	RequiredPV        int64   `json:"required_pv" binding:"gte=0"`
-	CV                int64   `json:"cv" binding:"gte=0"`
+	RequiredPV        float64   `json:"required_pv" binding:"gte=0"`
+	CV                float64   `json:"cv" binding:"gte=0"`
 }
 
 // List tüm paketleri döndürür (herkese açık).

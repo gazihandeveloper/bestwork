@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Clock, TriangleAlert, ChevronsLeft, ChevronsRight } from '@/lib/google-icons'
+import { House, Clock, TriangleAlert, ChevronsLeft, ChevronsRight } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawPost } from '@/lib/raw'
@@ -138,10 +138,10 @@ export default function PendingPage() {
                     <span className="font-mono">{u.member_code || ''}</span>
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">
+                    <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[11px] font-bold text-purple-700">
                       {(Number(u.total_pv_accumulated) || 0).toLocaleString('tr-TR')} PV
                     </span>
-                    <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-[11px] font-bold text-violet-700">
+                    <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-bold text-green-700">
                       {(Number(u.total_cv_accumulated) || 0).toLocaleString('tr-TR')} CV
                     </span>
                     <span

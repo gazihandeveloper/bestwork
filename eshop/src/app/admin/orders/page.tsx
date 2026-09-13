@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Eye, ShoppingCart, ShoppingBag, RotateCcw, Bell, Plus, Clock, CheckCircle, AlertCircle } from '@/lib/google-icons'
+import { Search, Eye, ShoppingCart, ShoppingBag, RotateCcw, Bell, Plus, Clock, CheckCircle, AlertCircle } from '@/components/icons'
 import { formatPrice, orderStatusColor, orderStatusText, get } from '@/lib/api'
 import type { Order } from '@/types'
 

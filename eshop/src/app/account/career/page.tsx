@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Trophy, Star, CircleCheck, Lock } from '@/lib/google-icons'
+import { House, Trophy, Star, CircleCheck, Lock } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -146,7 +146,7 @@ export default function CareerPage() {
                 'Tüm rütbeler kazanıldı 🎉'
               )}
             </span>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-500">
+            <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
               Sol {fmt(leftPV)} PV · Sağ {fmt(rightPV)} PV
             </span>
           </div>
@@ -205,7 +205,7 @@ export default function CareerPage() {
                   </div>
 
                   <h3 className="text-lg font-extrabold text-gray-900">{rank.name.toLocaleUpperCase('tr-TR')}</h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm font-semibold text-purple-600">
                     Sol {fmt(rank.required_left_pv)} PV · Sağ {fmt(rank.required_right_pv)} PV
                   </p>
                   {extras.length > 0 && <p className="mt-0.5 text-xs font-semibold text-gray-400">{extras.join(' · ')}</p>}

@@ -2,9 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { getMe, type AdminMe } from "@/lib/api";
 
-
-
-
 const roleLabel: Record<string, string> = {
   super_admin: "Süper Yönetici",
   admin: "Yönetici",

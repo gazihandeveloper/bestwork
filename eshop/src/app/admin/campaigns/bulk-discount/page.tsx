@@ -1,5 +1,5 @@
 'use client'
-import { Layers } from '@/lib/google-icons'
+import { Layers } from '@/components/icons'
 
 export default function BulkDiscountPage() {
   return (

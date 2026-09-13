@@ -1,5 +1,5 @@
 'use client'
-import { MapPin } from '@/lib/google-icons'
+import { MapPin } from '@/components/icons'
 
 export default function DetailedReportsPage() {
   return (

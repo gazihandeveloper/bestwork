@@ -1,5 +1,5 @@
 'use client'
-import { Sliders } from '@/lib/google-icons'
+import { Sliders } from '@/components/icons'
 
 export default function SystemPagesPage() {
   return (

@@ -13,7 +13,7 @@ type SponsorTreeNode struct {
 	PackageName        string             `json:"package_name"`
 	IsActive           bool               `json:"is_active"`
 	IsInPendingPool    bool               `json:"is_in_pending_pool"`
-	TotalPVAccumulated int64              `json:"total_pv_accumulated"`
+	TotalPVAccumulated float64              `json:"total_pv_accumulated"`
 	ChildCount         int64              `json:"child_count"`
 	Children           []*SponsorTreeNode `json:"children"`
 }

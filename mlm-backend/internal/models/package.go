@@ -11,7 +11,7 @@ type Package struct {
 	BinaryBonusRate   float64   `json:"binary_bonus_rate"`
 	MatchingBonusRate float64   `json:"matching_bonus_rate"`
 	DiscountRate      float64   `json:"discount_rate"`
-	RequiredPV        int64     `json:"required_pv"`
-	CV                int64     `json:"cv"`
+	RequiredPV        float64     `json:"required_pv"`
+	CV                float64     `json:"cv"`
 	CreatedAt         time.Time `json:"created_at"`
 }

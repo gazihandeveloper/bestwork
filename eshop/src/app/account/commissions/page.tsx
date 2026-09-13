@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Users, GitFork, Trophy, ChevronLeft, ChevronRight, Receipt } from '@/lib/google-icons'
+import { House, Users, GitFork, Trophy, ChevronLeft, ChevronRight, Receipt } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -219,7 +219,7 @@ export default function CommissionsPage() {
                           {meta.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-right text-gray-500">{cv(c.related_cv)}</td>
+                      <td className="px-4 py-2.5 text-right font-semibold text-green-600">{cv(c.related_cv)}</td>
                       <td className="px-4 py-2.5 text-right text-sm font-extrabold text-green-600">+{tl(c.amount)}</td>
                     </tr>
                   )

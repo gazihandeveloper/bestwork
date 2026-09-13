@@ -4,7 +4,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from '@/lib/google-icons'
+import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from '@/components/icons'
 import { formatPrice, get } from '@/lib/api'
 import type { Wallet as WalletType, WalletTransaction } from '@/types'
 

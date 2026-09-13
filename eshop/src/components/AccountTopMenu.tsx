@@ -20,7 +20,7 @@ import {
   Package,
   Network,
   Megaphone,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 
 const PANEL_BASE = 'https://mahmutgazihanarslan.com.tr/bestwork'
 const APP_BASE = ''

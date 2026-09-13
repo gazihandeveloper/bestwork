@@ -1,5 +1,5 @@
 'use client'
-import { Wifi, Users } from '@/lib/google-icons'
+import { Wifi, Users } from '@/components/icons'
 
 export default function OnlineUsersPage() {
   return (

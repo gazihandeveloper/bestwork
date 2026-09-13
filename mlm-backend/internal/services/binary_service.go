@@ -18,7 +18,7 @@ var matchingRates = []float64{0.20, 0.10, 0.10, 0.10, 0.05}
 // binary_transactions tablosuna hareket kaydı yazar.
 // NOT: Binary eşleşme ve rütbe güncellemesi artık burada YAPILMAZ; bunlar
 // aylık kapanışta (ProcessMonthlyClose) toplu olarak çalıştırılır.
-func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv int64, position, description string, relatedOrderID *int64) error {
+func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv float64, position, description string, relatedOrderID *int64) error {
 	var parentID *int64
 	if err := q.QueryRow(ctx, `SELECT parent_id FROM users WHERE id = $1`, userID).Scan(&parentID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -37,7 +37,7 @@ func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv
 		var (
 			nextParentID                     *int64
 			nextPos                          *string
-			pvLeft, pvRight, cvLeft, cvRight int64
+			pvLeft, pvRight, cvLeft, cvRight float64
 		)
 		err := q.QueryRow(ctx,
 			`SELECT parent_id, position, total_pv_left, total_pv_right, total_cv_left, total_cv_right
@@ -90,7 +90,7 @@ func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 	var (
 		packageID         *int
 		rankID            *int
-		cvLeft, cvRight   int64
+		cvLeft, cvRight   float64
 		monthBinaryEarned float64
 	)
 	err := q.QueryRow(ctx,
@@ -313,7 +313,7 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 
 // ProcessNewOrderForBinary sipariş sonrası binary ağaç güncellemesini tetikler.
 // Kullanıcı ağaca yerleşmemişse hiçbir işlem yapmaz.
-func ProcessNewOrderForBinary(ctx context.Context, q DBTX, userID int64, pv, cv int64, relatedOrderID *int64) error {
+func ProcessNewOrderForBinary(ctx context.Context, q DBTX, userID int64, pv, cv float64, relatedOrderID *int64) error {
 	var parentID *int64
 	var position *string
 	if err := q.QueryRow(ctx, `SELECT parent_id, position FROM users WHERE id = $1`, userID).Scan(&parentID, &position); err != nil {
@@ -327,6 +327,6 @@ func ProcessNewOrderForBinary(ctx context.Context, q DBTX, userID int64, pv, cv 
 }
 
 // ProcessPlacementForBinary yerleştirme sonrası binary ağaç güncellemesini tetikler.
-func ProcessPlacementForBinary(ctx context.Context, q DBTX, userID int64, pv, cv int64, position string) error {
+func ProcessPlacementForBinary(ctx context.Context, q DBTX, userID int64, pv, cv float64, position string) error {
 	return DistributePVAndCVToUpline(ctx, q, userID, pv, cv, position, "Yerleştirme kaynaklı puan ekleme", nil)
 }

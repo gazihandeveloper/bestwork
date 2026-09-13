@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, GitFork, CalendarDays } from '@/lib/google-icons'
+import { House, GitFork, CalendarDays } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { BinaryTreeView, type TreeNode } from '@/components/BinaryTreeView'
 import { rawGet } from '@/lib/raw'

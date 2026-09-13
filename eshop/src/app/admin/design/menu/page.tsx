@@ -1,5 +1,5 @@
 'use client'
-import { Menu } from '@/lib/google-icons'
+import { Menu } from '@/components/icons'
 
 export default function MenuManagementPage() {
   return (

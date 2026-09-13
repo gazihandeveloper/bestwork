@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, UserPlus, ShoppingCart, Coins, Users, GitFork, Trophy, Receipt, CircleCheck, Sparkles } from '@/lib/google-icons'
+import { House, UserPlus, ShoppingCart, Coins, Users, GitFork, Trophy, Receipt, CircleCheck, Sparkles } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 
@@ -123,7 +123,7 @@ export default function OpportunitiesPage() {
                   </span>
                   <div>
                     <p className="text-sm font-extrabold text-gray-900">{r.name.toLocaleUpperCase('tr-TR')}</p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] font-semibold text-purple-600">
                       Sol {fmt(r.required_left_pv)} · Sağ {fmt(r.required_right_pv)} PV
                     </p>
                   </div>

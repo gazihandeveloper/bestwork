@@ -18,7 +18,7 @@ import {
   MapPin,
   LogOut,
   Clock,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
 import { useI18n } from '@/lib/i18n'
@@ -115,8 +115,8 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-extrabold tracking-tight" style={{ color: '#29A56C' }}>
-              BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#29A56C] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
+            <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+              BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
             </span>
           </Link>
 
@@ -137,51 +137,57 @@ export function Header() {
             </div>
           </div>
 
-          {/* Sağ Aksiyonlar: Kullanıcı → Sepet → Çıkış */}
-          <div className="flex items-center gap-1 lg:gap-3">
+          {/* Sağ Aksiyonlar: Kullanıcı → Sepet → Çıkış
+              Tüm öğeler aynı ölçüde: h-10 kutu, 22px ikon, eşit yuvarlak hover.
+              İsim metni de ikonlarla aynı yükseklikte ortalanır (leading-none). */}
+          <div className="flex items-center gap-0.5 lg:gap-1">
             {/* Arama (Mobile) */}
             <button
-              className="lg:hidden p-2 text-gray-600 hover:text-brand-500"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-500 lg:hidden"
               onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Ara"
             >
-              <Search size={20} />
+              <Search size={22} />
             </button>
 
-            {/* Kullanıcı — dropdown yok; doğrudan Hesabım, ad BÜYÜK HARF */}
+            {/* Kullanıcı — masaüstünde ad, mobilde ikon (ad gizli olduğu için) */}
             {isAuthenticated ? (
               <Link
                 href="/account"
                 title="Hesabım"
-                className="flex items-center gap-1.5 p-2 text-gray-700 hover:text-brand-500 transition-colors"
+                aria-label="Hesabım"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50 hover:text-brand-500 lg:w-auto lg:justify-start lg:px-2.5"
               >
-                <User size={22} />
-                <span className="hidden lg:block text-xs font-bold tracking-wide uppercase">
+                <User size={22} className="lg:hidden" />
+                <span className="hidden text-[13px] leading-none font-bold tracking-wide uppercase lg:block">
                   {user?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Hesap'}
                 </span>
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-1 p-2 text-gray-600 hover:text-brand-500 transition-colors"
+                title="Giriş Yap"
+                className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-lg text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-500 lg:w-auto lg:justify-start lg:px-2.5"
               >
                 <User size={22} />
-                <span className="hidden lg:block text-xs">Giriş Yap</span>
+                <span className="hidden text-[13px] leading-none font-semibold lg:block">Giriş Yap</span>
               </Link>
             )}
 
             {/* Sepet */}
             <Link
               href="/cart"
-              className="flex items-center gap-1 p-2 text-gray-600 hover:text-brand-500 transition-colors relative"
+              title="Sepetim"
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-500"
             >
-              <div className="relative">
+              <span className="relative flex items-center justify-center">
                 <ShoppingCart size={22} />
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-brand-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
                     {itemCount > 99 ? '99+' : itemCount}
                   </span>
                 )}
-              </div>
+              </span>
             </Link>
 
             {/* Çıkış — sadece ikon */}
@@ -191,9 +197,9 @@ export function Header() {
                 onClick={logout}
                 title="Çıkış Yap"
                 aria-label="Çıkış Yap"
-                className="p-2 text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-red-50 hover:text-red-500"
               >
-                <LogOut size={20} />
+                <LogOut size={22} />
               </button>
             )}
           </div>
@@ -300,8 +306,8 @@ export function Header() {
           {/* Drawer */}
           <div className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-2xl overflow-y-auto z-[101]">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-xl font-extrabold tracking-tight" style={{ color: '#29A56C' }}>
-                BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#29A56C] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
+              <span className="bw-logo text-xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+                BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
               </span>
               <button
                 onClick={() => setMobileMenuOpen(false)}

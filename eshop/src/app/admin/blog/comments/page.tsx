@@ -1,5 +1,5 @@
 'use client'
-import { MessageSquare } from '@/lib/google-icons'
+import { MessageSquare } from '@/components/icons'
 
 export default function BlogCommentsPage() {
   return (

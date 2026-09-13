@@ -3,7 +3,7 @@
 // ============================================
 'use client'
 
-import { RotateCcw } from '@/lib/google-icons'
+import { RotateCcw } from '@/components/icons'
 
 export default function ReturnsPage() {
   return (

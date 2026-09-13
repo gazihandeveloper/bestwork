@@ -190,6 +190,13 @@ export function formatPrice(cents: number): string {
   })
 }
 
+/** PV/CV değerini biçimlendirir: küsurat varsa gösterir (100 · 25,5 · 12,75). */
+export function formatPV(value?: number | string | null): string {
+  const n = Number(value ?? 0)
+  if (!Number.isFinite(n)) return '0'
+  return n.toLocaleString('tr-TR', { maximumFractionDigits: 2 })
+}
+
 /** İndirim yüzdesi hesapla */
 export function discountPercentage(price: number, comparePrice: number): number {
   if (!comparePrice || comparePrice <= price) return 0

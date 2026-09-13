@@ -25,6 +25,7 @@ import {
   fileUrl,
   getErrorMessage,
   type Category,
+  formatPV,
 } from "@/lib/api";
 
 type ProductRow = {
@@ -302,13 +303,16 @@ export default function UrunlerPage() {
       {error && products !== null && <AdminAlert kind="error">{error}</AdminAlert>}
       {catError && <AdminAlert kind="warning">Kategoriler yüklenemedi: {catError}</AdminAlert>}
 
-      {/* Form paneli */}
-      {formOpen && (
-        <div className="mb-5">
-          <AdminCard
-            title={editingId ? `Ürün Düzenle (#${editingId})` : "Yeni Ürün"}
-            subtitle="Ürün adı zorunludur; diğer alanlar boş bırakılabilir."
-          >
+      {/* Form — modal olarak açılır (satıra tıklayınca veya "Yeni Ürün") */}
+      <AdminModal
+        open={formOpen}
+        size="xl"
+        title={editingId ? `Ürün Düzenle (#${editingId})` : "Yeni Ürün"}
+        onClose={() => setFormOpen(false)}
+      >
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Ürün adı zorunludur; diğer alanlar boş bırakılabilir.
+        </p>
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               <div>
                 <label className={labelCls}>Görsel (WebP'e çevrilir)</label>
@@ -383,6 +387,7 @@ export default function UrunlerPage() {
                     <input
                       type="number"
                       min={0}
+                      step="0.01"
                       className={inputCls}
                       value={form.pv}
                       onChange={(e) => setForm({ ...form, pv: toNum(e.target.value) })}
@@ -393,6 +398,7 @@ export default function UrunlerPage() {
                     <input
                       type="number"
                       min={0}
+                      step="0.01"
                       className={inputCls}
                       value={form.cv}
                       onChange={(e) => setForm({ ...form, cv: toNum(e.target.value) })}
@@ -434,9 +440,7 @@ export default function UrunlerPage() {
                 Vazgeç
               </AdminBtn>
             </div>
-          </AdminCard>
-        </div>
-      )}
+      </AdminModal>
 
       {/* Ürün listesi */}
       <AdminCard
@@ -546,11 +550,13 @@ export default function UrunlerPage() {
                 {filteredProducts.map((p) => (
                   <tr
                     key={p.id}
-                    className={`hover:bg-gray-50 dark:hover:bg-white/[0.02] ${
+                    onClick={() => openEdit(p)}
+                    title="Düzenlemek için ürüne tıklayın"
+                    className={`cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02] ${
                       selected.includes(p.id) ? "bg-brand-500/5" : ""
                     }`}
                   >
-                    <td className={tdCls}>
+                    <td className={tdCls} onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         className="size-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
@@ -586,8 +592,9 @@ export default function UrunlerPage() {
                         <AdminBadge color="green">{p.stock}</AdminBadge>
                       )}
                     </td>
-                    <td className={tdCls}>{p.pv}</td>
-                    <td className={tdCls}>{p.cv}</td>
+                    {/* Renk kuralı: PV mor, CV yeşil */}
+                    <td className={`${tdCls} font-semibold text-purple-600`}>{formatPV(p.pv)}</td>
+                    <td className={`${tdCls} font-semibold text-green-600`}>{formatPV(p.cv)}</td>
                     <td className={`${tdCls} font-medium`}>₺{formatPrice(p.price ?? 0)}</td>
                     <td className={tdCls}>
                       {p.category_name || p.category ? (
@@ -598,7 +605,8 @@ export default function UrunlerPage() {
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
-                    <td className={`${tdCls} text-right`}>
+                    {/* Aksiyon butonları satır tıklamasını tetiklemesin */}
+                    <td className={`${tdCls} text-right`} onClick={(e) => e.stopPropagation()}>
                       <AdminBtn
                         variant="outline"
                         size="xs"

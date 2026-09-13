@@ -125,7 +125,7 @@ func payCareerBonus(ctx context.Context, q DBTX, userID int64, rankID int, rankN
 
 // userQualifiesForRank üyenin verilen kariyer şartını sağlayıp sağlamadığını döndürür.
 func userQualifiesForRank(ctx context.Context, q DBTX, userID int64, rank models.Rank) (bool, error) {
-	var leftPV, rightPV, monthPV int64
+	var leftPV, rightPV, monthPV float64
 	if err := q.QueryRow(ctx,
 		`SELECT total_pv_left, total_pv_right, current_month_personal_pv FROM users WHERE id = $1`,
 		userID).Scan(&leftPV, &rightPV, &monthPV); err != nil {

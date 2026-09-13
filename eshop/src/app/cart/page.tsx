@@ -6,10 +6,10 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft } from '@/lib/google-icons'
+import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft } from '@/components/icons'
 import { MainLayout } from '@/app/main-layout'
 import { Button } from '@/components/ui/Button'
-import { formatPrice } from '@/lib/api'
+import { formatPrice, formatPV } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
 
 function QtyField({ value, stock, onChange }: { value: number; stock?: number; onChange: (n: number) => void }) {
@@ -127,19 +127,21 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cart.items.map((item: any) => (
+              /* Mobilde iki satır: üstte görsel + ürün bilgisi, altta adet/toplam/sil.
+                 Masaüstünde (sm+) tek satır — eski hâli 390px'de taşıyordu. */
               <div
                 key={item.id}
-                className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4 hover:shadow-sm transition-shadow"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 transition-shadow hover:shadow-sm sm:gap-4 sm:p-4"
               >
                 {/* Görsel */}
-                <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
                   {(item.product_image || item.product?.thumbnail) ? (
                     <Image
                       src={item.product_image || item.product?.thumbnail || '/images/shop/product-1-1.jpg'}
                       alt={item.product_name || item.product?.name || 'Ürün'}
                       width={80}
                       height={80}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
                     <ShoppingBag size={30} className="text-gray-300" />
@@ -147,7 +149,7 @@ export default function CartPage() {
                 </div>
 
                 {/* Detay */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <Link
                     href={`/products/${item.product_slug || item.product?.slug || '#'}`}
                     className="text-sm font-semibold text-gray-800 hover:text-brand-500 line-clamp-1"
@@ -162,37 +164,41 @@ export default function CartPage() {
                   </p>
                 </div>
 
-                {/* Miktar — adet + altına PV/CV rozetleri */}
-                <div className="flex flex-col items-center gap-1">
-                  <QtyField
-                    value={item.quantity}
-                    stock={Number(item.stock_quantity ?? item.product?.stock) || 0}
-                    onChange={(n) => updateQuantity(item.id, n)}
-                  />
-                  <div className="flex items-center gap-1">
-                    <span className="bg-green-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
-                      {Number(item.product?.pv || item.pv) || 0} PV
-                    </span>
-                    <span className="bg-purple-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
-                      {Number(item.product?.cv || item.cv) || 0} CV
-                    </span>
+                {/* Kontroller — mobilde alt satıra iner */}
+                <div className="order-last flex w-full items-center justify-between gap-3 border-t border-gray-100 pt-3 sm:order-none sm:w-auto sm:justify-end sm:gap-4 sm:border-t-0 sm:pt-0">
+                  {/* Miktar — adet + altına PV/CV rozetleri */}
+                  <div className="flex flex-col items-center gap-1">
+                    <QtyField
+                      value={item.quantity}
+                      stock={Number(item.stock_quantity ?? item.product?.stock) || 0}
+                      onChange={(n) => updateQuantity(item.id, n)}
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="bg-purple-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                        {formatPV(item.product?.pv ?? item.pv)} PV
+                      </span>
+                      <span className="bg-green-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                        {formatPV(item.product?.cv ?? item.cv)} CV
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Toplam */}
-                <div className="text-right min-w-[80px]">
-                  <p className="text-sm font-bold text-gray-800">
-                    {formatPrice((item.unit_price || item.price || 0) * item.quantity)}
-                  </p>
-                </div>
+                  {/* Toplam */}
+                  <div className="text-right sm:min-w-[80px]">
+                    <p className="text-sm font-bold text-gray-800">
+                      {formatPrice((item.unit_price || item.price || 0) * item.quantity)}
+                    </p>
+                  </div>
 
-                {/* Sil */}
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+                  {/* Sil */}
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    aria-label="Ürünü sepetten çıkar"
+                    className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -224,11 +230,11 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Toplam PV</span>
-                <span className="font-bold text-green-600">{totalPV} PV</span>
+                <span className="font-bold text-purple-600">{formatPV(totalPV)} PV</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Toplam CV</span>
-                <span className="font-bold text-purple-600">{totalCV} CV</span>
+                <span className="font-bold text-green-600">{formatPV(totalCV)} CV</span>
               </div>
               <hr className="border-gray-100" />
               <div className="flex justify-between text-base">

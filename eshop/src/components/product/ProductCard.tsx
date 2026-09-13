@@ -5,9 +5,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingCart, Eye } from '@/lib/google-icons'
+import { ShoppingCart, Eye } from '@/components/icons'
 import { StarRating } from './StarRating'
-import { formatPrice, discountPercentage } from '@/lib/api'
+import { formatPrice, discountPercentage, formatPV } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
 import type { Product } from '@/types'
 
@@ -41,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
             -{discount}%
           </span>
         )}
-        {/* Sağ üst: PV (yeşil) + CV (mor) rozetleri */}
+        {/* Sağ üst: PV (mor) + CV (yeşil) rozetleri */}
         <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
           {product.isFeatured && (
             <span className="bg-orange-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
@@ -49,13 +49,13 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           {(product as any).pv > 0 && (
-            <span className="bg-green-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
-              {(product as any).pv} PV
+            <span className="bg-purple-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
+              {formatPV((product as any).pv)} PV
             </span>
           )}
           {(product as any).cv > 0 && (
-            <span className="bg-purple-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
-              {(product as any).cv} CV
+            <span className="bg-green-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
+              {formatPV((product as any).cv)} CV
             </span>
           )}
         </div>

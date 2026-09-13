@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Trophy, TrendingUp, CircleAlert } from '@/lib/google-icons'
+import { ArrowLeft, Trophy, TrendingUp, CircleAlert } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -157,8 +157,8 @@ function PVCVChart({ data }: { data: { m: string; pv: number; cv: number }[] }) 
         const gx = pl + i * band + (band - groupW) / 2
         return (
           <g key={d.m}>
-            <rect x={gx} y={yPos(d.pv)} width={barW} height={Math.max(0, H - pb - yPos(d.pv))} rx={4} fill="#1565C0" />
-            <rect x={gx + barW + 4} y={yPos(d.cv)} width={barW} height={Math.max(0, H - pb - yPos(d.cv))} rx={4} fill="#8A2BE2" />
+            <rect x={gx} y={yPos(d.pv)} width={barW} height={Math.max(0, H - pb - yPos(d.pv))} rx={4} fill="#9333EA" />
+            <rect x={gx + barW + 4} y={yPos(d.cv)} width={barW} height={Math.max(0, H - pb - yPos(d.cv))} rx={4} fill="#16A34A" />
             <text x={pl + i * band + band / 2} y={H - pb + 17} textAnchor="middle" fontSize={10.5} fill="#6B7280">
               {monthLabel(d.m)}
             </text>
@@ -176,12 +176,15 @@ function CompareCard({
   now,
   prev,
   unit,
+  valueClass,
 }: {
   title: string
   icon: React.ReactNode
   now: number
   prev: number
   unit?: string
+  /** Değer rengi — PV mor, CV yeşil kuralı (varsayılan: koyu gri) */
+  valueClass?: string
 }) {
   const delta = prev > 0 ? ((now - prev) / prev) * 100 : now > 0 ? 100 : 0
   const up = delta >= 0
@@ -197,7 +200,7 @@ function CompareCard({
         </span>
         <p className="text-[11px] font-extrabold tracking-wider text-gray-400 uppercase">{title}</p>
       </div>
-      <p className="text-2xl font-extrabold text-gray-900">
+      <p className={`text-2xl font-extrabold ${valueClass ?? 'text-gray-900'}`}>
         {fmt(now)}
         {unit && <span className="ml-1 text-xs font-semibold text-gray-400">{unit}</span>}
       </p>
@@ -407,8 +410,8 @@ export default function SuccessReportPage() {
           {/* Kıyaslama kartları */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <CompareCard title="AYLIK KAZANÇ" icon={<TrendingUp size={18} />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
-            <CompareCard title="TOPLAM PV" icon={<TrendingUp size={18} />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" />
-            <CompareCard title="TOPLAM CV" icon={<TrendingUp size={18} />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" />
+            <CompareCard title="TOPLAM PV" icon={<TrendingUp size={18} />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" valueClass="text-purple-600" />
+            <CompareCard title="TOPLAM CV" icon={<TrendingUp size={18} />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" valueClass="text-green-600" />
           </div>
 
           {/* Grafikler */}
@@ -428,10 +431,10 @@ export default function SuccessReportPage() {
               <h2 className="font-bold text-gray-900">📊 CV & PV Grafiği</h2>
               <div className="mb-1 flex items-center gap-4">
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600">
-                  <span className="h-3.5 w-3.5 rounded bg-[#1565C0]" /> PV
+                  <span className="h-3.5 w-3.5 rounded bg-[#9333EA]" /> PV
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600">
-                  <span className="h-3.5 w-3.5 rounded bg-[#8A2BE2]" /> CV
+                  <span className="h-3.5 w-3.5 rounded bg-[#16A34A]" /> CV
                 </span>
               </div>
               <PVCVChart data={pvcvSeries} />

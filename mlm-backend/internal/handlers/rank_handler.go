@@ -36,12 +36,12 @@ func (h *RankHandler) List(c *gin.Context) {
 // RankRequest seviye oluşturma/güncelleme JSON gövdesidir.
 type RankRequest struct {
 	Name                   string  `json:"name" binding:"required"`
-	RequiredLeftPV         int64   `json:"required_left_pv" binding:"gte=0"`
-	RequiredRightPV        int64   `json:"required_right_pv" binding:"gte=0"`
+	RequiredLeftPV         float64   `json:"required_left_pv" binding:"gte=0"`
+	RequiredRightPV        float64   `json:"required_right_pv" binding:"gte=0"`
 	MonthlyBinaryLimit     float64 `json:"monthly_binary_limit" binding:"gte=0"`
 	RequiredDownlineRankID *int    `json:"required_downline_rank_id"`
 	RequiredDownlineCount  int     `json:"required_downline_count" binding:"gte=0"`
-	PersonalActivityPV     int64   `json:"personal_activity_pv" binding:"gte=0"`
+	PersonalActivityPV     float64   `json:"personal_activity_pv" binding:"gte=0"`
 	CareerBonusAmount      float64 `json:"career_bonus_amount"`
 }
 

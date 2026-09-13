@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, UserPlus, Users } from '@/lib/google-icons'
+import { House, UserPlus, Users } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 
@@ -100,7 +100,7 @@ export default function SponsoredPage() {
                   >
                     {pending ? 'Bekliyor' : 'Ağaçta'}
                   </span>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-500">
+                  <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-bold text-purple-700">
                     {fmt(u.total_pv_accumulated)} PV
                   </span>
                 </div>

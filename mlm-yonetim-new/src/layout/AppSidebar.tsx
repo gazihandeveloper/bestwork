@@ -3,14 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
-import {
-  BoxCubeIcon,
-  BoxIconLine,
-  ChevronDownIcon,
-  DollarLineIcon,
-  HomeIcon,
-  UserCircleIcon,
-} from "../icons/index";
+import { BoxIcon, ChevronDownIcon, CircleUserIcon, CubeIcon, DollarSignIcon, HouseIcon } from "@/components/icons";
 
 type NavItem = {
   name: string;
@@ -21,12 +14,12 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <HomeIcon />,
+    icon: <HouseIcon />,
     name: "Anasayfa",
     path: "/",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <CubeIcon />,
     name: "E-ticaret İşlemleri",
     subItems: [
       { name: "Kategoriler", path: "/kategoriler", pro: false },
@@ -38,7 +31,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <CircleUserIcon />,
     name: "Müşteri Hizmetleri",
     subItems: [
       { name: "Üyeler", path: "/uyeler", pro: false },
@@ -48,7 +41,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <DollarLineIcon />,
+    icon: <DollarSignIcon />,
     name: "Muhasebe",
     subItems: [
       { name: "Çekim Talepleri", path: "/cekimler", pro: false },
@@ -57,7 +50,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <BoxIconLine />,
+    icon: <BoxIcon />,
     name: "Depo",
     subItems: [
       { name: "Stok", path: "/stok", pro: false },
@@ -275,9 +268,16 @@ const AppSidebar: React.FC = () => {
         <Link href="/" className="flex w-full justify-center">
           {isExpanded || isHovered || isMobileOpen ? (
             <span className="flex flex-col items-center text-center leading-none">
-              <span className="text-[26px] font-black tracking-tight text-gray-900 dark:text-white">
-                BestWork
-                <span className="align-top text-[18px] font-black text-black dark:text-white">
+              {/* Marka logosu — sitedeki LOGO ile aynı font (Quicksand), ® Georgia serif, koyu ton */}
+              <span
+                className="text-[26px] font-extrabold tracking-tight text-black dark:text-white"
+                style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
+              >
+                BEST<span className="ml-0.5">WORK</span>
+                <span
+                  className="ml-0.5 align-super text-[0.6em] font-bold text-black dark:text-white"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
                   ®
                 </span>
               </span>

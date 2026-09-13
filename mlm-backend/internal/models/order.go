@@ -7,8 +7,8 @@ type Order struct {
 	ID            int64       `json:"id"`
 	UserID        int64       `json:"user_id"`
 	TotalAmount   float64     `json:"total_amount"`
-	TotalPV       int64       `json:"total_pv"`
-	TotalCV       int64       `json:"total_cv"`
+	TotalPV       float64       `json:"total_pv"`
+	TotalCV       float64       `json:"total_cv"`
 	ShippingFee   float64     `json:"shipping_fee"`
 	Status        string      `json:"status"`
 	PaymentMethod string      `json:"payment_method"`

@@ -5,6 +5,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { BenefitStrip } from './BenefitStrip'
+import { MapPin, Phone, Mail, Clock, FacebookIcon, TwitterIcon, InstagramIcon } from '@/components/icons'
 
 export function Footer() {
   return (
@@ -49,51 +50,27 @@ export function Footer() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {/* About */}
             <div className="col-span-2 lg:col-span-1">
-                <span className="text-2xl font-extrabold tracking-tight" style={{ color: '#29A56C' }}>
-                  BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#1f8a4c] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
+                <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+                  BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
                 </span>
               <p className="text-sm text-gray-500 mb-4">
                 Harika bir market alışveriş deneyimi için BestWork.
               </p>
               <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-start gap-2">
-                  <Image
-                    src="/images/theme/icons/icon-location.svg"
-                    alt="Adres"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 mt-0.5"
-                  />
+                  <MapPin size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Adres" />
                   <span>İstanbul, Türkiye</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Image
-                    src="/images/theme/icons/icon-contact.svg"
-                    alt="Telefon"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 mt-0.5"
-                  />
+                  <Phone size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Telefon" />
                   <span>+90 850 555 0 888</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Image
-                    src="/images/theme/icons/icon-email-2.svg"
-                    alt="Email"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 mt-0.5"
-                  />
+                  <Mail size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Email" />
                   <span>info@mahmutgazihanarslan.com.tr</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Image
-                    src="/images/theme/icons/icon-clock.svg"
-                    alt="Saat"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 mt-0.5"
-                  />
+                  <Clock size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Saat" />
                   <span>10:00 - 18:00, Hafta içi</span>
                 </li>
               </ul>
@@ -218,31 +195,13 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-400">Bizi Takip Edin:</span>
               <Link href="#" className="hover:opacity-80">
-                <Image
-                  src="/images/theme/icons/icon-facebook-white.svg"
-                  alt="Facebook"
-                  width={16}
-                  height={16}
-                  className="w-4 h-4 opacity-50 hover:opacity-100"
-                />
+                <FacebookIcon size={16} className="w-4 h-4 opacity-50 hover:opacity-100" aria-label="Facebook" />
               </Link>
               <Link href="#" className="hover:opacity-80">
-                <Image
-                  src="/images/theme/icons/icon-twitter-white.svg"
-                  alt="Twitter"
-                  width={16}
-                  height={16}
-                  className="w-4 h-4 opacity-50 hover:opacity-100"
-                />
+                <TwitterIcon size={16} className="w-4 h-4 opacity-50 hover:opacity-100" aria-label="Twitter" />
               </Link>
               <Link href="#" className="hover:opacity-80">
-                <Image
-                  src="/images/theme/icons/icon-instagram-white.svg"
-                  alt="Instagram"
-                  width={16}
-                  height={16}
-                  className="w-4 h-4 opacity-50 hover:opacity-100"
-                />
+                <InstagramIcon size={16} className="w-4 h-4 opacity-50 hover:opacity-100" aria-label="Instagram" />
               </Link>
             </div>
           </div>

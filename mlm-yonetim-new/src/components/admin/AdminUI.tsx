@@ -1,4 +1,5 @@
 import React from "react";
+import { XmarkIcon } from "@/components/icons";
 
 // bestmanager2 yönetim sayfaları için ortak Tailwind UI parçaları.
 
@@ -179,21 +180,29 @@ export function AdminModal({
   onClose,
   children,
   tone = "default",
+  size = "md",
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   tone?: "default" | "danger";
+  /** md: onay kutuları · lg: orta formlar · xl: geniş formlar (ürün düzenleme) */
+  size?: "md" | "lg" | "xl";
 }) {
   if (!open) return null;
+  const genislik = { md: "max-w-md", lg: "max-w-2xl", xl: "max-w-4xl" }[size];
   return (
-    <div className="fixed inset-0 z-[1150] flex items-center justify-center overflow-y-auto p-4">
+    /* m-auto + overflow-y-auto: içerik ekrandan uzun olduğunda üst kısım
+       kırpılmaz, modal kaydırılabilir. */
+    <div className="fixed inset-0 z-[1150] flex overflow-y-auto p-4">
       <div
         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-[#1E293B]">
+      <div
+        className={`relative m-auto w-full ${genislik} rounded-2xl bg-white p-6 shadow-xl dark:bg-[#1E293B]`}
+      >
         <div className="mb-4 flex items-start justify-between gap-4">
           <h3
             className={`text-lg font-semibold ${
@@ -207,14 +216,7 @@ export function AdminModal({
             aria-label="Kapat"
             className="flex size-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M6.04289 16.5413C5.65237 16.9318 5.65237 17.565 6.04289 17.9555C6.43342 18.346 7.06658 18.346 7.45711 17.9555L11.9987 13.4139L16.5408 17.956C16.9313 18.3466 17.5645 18.3466 17.955 17.956C18.3455 17.5655 18.3455 16.9323 17.955 16.5418L13.4129 11.9997L17.955 7.4576C18.3455 7.06707 18.3455 6.43391 17.955 6.04338C17.5645 5.65286 16.9313 5.65286 16.5408 6.04338L11.9987 10.5855L7.45711 6.0439C7.06658 5.65338 6.43342 5.65338 6.04289 6.0439C5.65237 6.43442 5.65237 7.06759 6.04289 7.45811L10.5845 11.9997L6.04289 16.5413Z"
-                fill="currentColor"
-              />
-            </svg>
+            <XmarkIcon size={14} />
           </button>
         </div>
         <div>{children}</div>

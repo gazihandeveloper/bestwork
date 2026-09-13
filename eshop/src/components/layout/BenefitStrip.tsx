@@ -4,7 +4,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Truck, ShieldCheck, Boxes, Headset, Star } from '@/lib/google-icons'
+import { Truck, ShieldCheck, Boxes, Headset, Star } from '@/components/icons'
 import { rawGet } from '@/lib/raw'
 
 interface Benefit {

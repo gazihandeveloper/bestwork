@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Copy, Check, Crown, Package as PackageIcon, Wallet, LogOut, Trophy, Mail, Phone } from '@/lib/google-icons'
+import { House, Copy, Check, Crown, Package as PackageIcon, Wallet, LogOut, Trophy, Mail, Phone } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { useAuth } from '@/contexts/AuthContext'
 import { get } from '@/lib/api'

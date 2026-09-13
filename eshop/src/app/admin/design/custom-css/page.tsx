@@ -1,5 +1,5 @@
 'use client'
-import { Code } from '@/lib/google-icons'
+import { Code } from '@/components/icons'
 
 export default function CustomCssPage() {
   return (

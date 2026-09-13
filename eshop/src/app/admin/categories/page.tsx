@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Edit2, Trash2, Search, X, Square, CheckSquare, ImageIcon } from '@/lib/google-icons'
+import { Plus, Edit2, Trash2, Search, X, Square, CheckSquare, ImageIcon } from '@/components/icons'
 import { get, post, put, del } from '@/lib/api'
 import toast from 'react-hot-toast'
 

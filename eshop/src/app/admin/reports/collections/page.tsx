@@ -1,5 +1,5 @@
 'use client'
-import { DollarSign } from '@/lib/google-icons'
+import { DollarSign } from '@/components/icons'
 
 export default function CollectionsReportPage() {
   return (

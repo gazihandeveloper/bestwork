@@ -26,8 +26,8 @@ type ProductRequest struct {
 	Name        string  `json:"name" binding:"required"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price" binding:"required,gt=0"`
-	PV          int64   `json:"pv" binding:"min=0"`
-	CV          int64   `json:"cv" binding:"min=0"`
+	PV          float64   `json:"pv" binding:"min=0"`
+	CV          float64   `json:"cv" binding:"min=0"`
 	Stock       int     `json:"stock" binding:"min=0"`
 	ImagePath   string  `json:"image_path"`
 	Category    string  `json:"category"`

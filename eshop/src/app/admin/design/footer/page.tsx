@@ -1,5 +1,5 @@
 'use client'
-import { PanelBottom } from '@/lib/google-icons'
+import { PanelBottom } from '@/components/icons'
 
 export default function FooterPage() {
   return (

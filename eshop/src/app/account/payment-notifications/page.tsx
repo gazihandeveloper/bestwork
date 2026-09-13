@@ -7,7 +7,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import {
   House, Landmark, Upload, FileText, Clock, CircleCheck, XCircle, ArrowUpRight,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get, tokenStorage, formatPrice } from '@/lib/api'
 import { rawGet, rawPost } from '@/lib/raw'

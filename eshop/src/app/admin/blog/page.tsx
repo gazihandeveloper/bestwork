@@ -1,5 +1,5 @@
 'use client'
-import { PenLine, Plus } from '@/lib/google-icons'
+import { PenLine, Plus } from '@/components/icons'
 import { Button } from '@/components/ui/Button'
 
 export default function BlogPostsPage() {

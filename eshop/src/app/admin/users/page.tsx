@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Eye, MoreHorizontal } from '@/lib/google-icons'
+import { Search, Eye, MoreHorizontal } from '@/components/icons'
 import { get } from '@/lib/api'
 import type { User } from '@/types'
 

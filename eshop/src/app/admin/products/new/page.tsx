@@ -5,7 +5,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, X, ImageIcon } from '@/lib/google-icons'
+import { Upload, X, ImageIcon } from '@/components/icons'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { post } from '@/lib/api'

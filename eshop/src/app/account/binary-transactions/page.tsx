@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, TrendingUp, TrendingDown, RefreshCw, ChevronLeft, ChevronRight, GitFork } from '@/lib/google-icons'
+import { House, TrendingUp, TrendingDown, RefreshCw, ChevronLeft, ChevronRight, GitFork } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { rawGet } from '@/lib/raw'
 
@@ -208,14 +208,14 @@ export default function BinaryTransactionsPage() {
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         {t.pv > 0 ? (
-                          <span className="font-extrabold text-green-600">+{Number(t.pv).toLocaleString('tr-TR')} PV</span>
+                          <span className="font-extrabold text-purple-600">+{Number(t.pv).toLocaleString('tr-TR')} PV</span>
                         ) : (
                           '—'
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         {t.cv > 0 ? (
-                          <span className="font-extrabold text-brand-600">+{Number(t.cv).toLocaleString('tr-TR')} CV</span>
+                          <span className="font-extrabold text-green-600">+{Number(t.cv).toLocaleString('tr-TR')} CV</span>
                         ) : (
                           '—'
                         )}

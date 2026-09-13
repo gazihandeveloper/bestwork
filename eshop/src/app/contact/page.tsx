@@ -4,7 +4,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { Mail, Phone, MapPin, Clock, Send } from '@/lib/google-icons'
+import { Mail, Phone, MapPin, Clock, Send } from '@/components/icons'
 import { MainLayout } from '@/app/main-layout'
 import { rawPost } from '@/lib/raw'
 import toast from 'react-hot-toast'

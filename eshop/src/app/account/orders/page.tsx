@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Package, ChevronRight } from '@/lib/google-icons'
+import { Package, ChevronRight } from '@/components/icons'
 import { formatPrice, orderStatusColor, orderStatusText, get } from '@/lib/api'
 import type { Order } from '@/types'
 

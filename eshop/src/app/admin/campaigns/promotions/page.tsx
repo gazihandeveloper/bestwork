@@ -1,5 +1,5 @@
 'use client'
-import { Percent } from '@/lib/google-icons'
+import { Percent } from '@/components/icons'
 
 export default function PromotionsPage() {
   return (

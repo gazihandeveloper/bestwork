@@ -48,7 +48,7 @@ func GetAllPackages(ctx context.Context, q DBTX) ([]models.Package, error) {
 
 // UpdatePackageLevel kullanıcının toplam PV birikimine göre ulaştığı en yüksek
 // paketi belirler; mevcut paketten farklıysa günceller.
-func UpdatePackageLevel(ctx context.Context, q DBTX, userID int64, totalPV int64) error {
+func UpdatePackageLevel(ctx context.Context, q DBTX, userID int64, totalPV float64) error {
 	packages, err := GetAllPackages(ctx, q)
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func NewPackageService(db *pgxpool.Pool) *PackageService {
 const packageColumns = `id, name, price, referral_bonus_rate, binary_bonus_rate, matching_bonus_rate, discount_rate, required_pv, cv, created_at`
 
 // CreatePackage yeni paket ekler.
-func (s *PackageService) CreatePackage(ctx context.Context, name string, price, refRate, binRate, matchRate, discRate float64, requiredPV, cv int64) (*models.Package, error) {
+func (s *PackageService) CreatePackage(ctx context.Context, name string, price, refRate, binRate, matchRate, discRate, requiredPV, cv float64) (*models.Package, error) {
 	if name == "" || price < 0 || requiredPV < 0 || cv < 0 || !validRate(refRate) || !validRate(binRate) || !validRate(matchRate) || !validRate(discRate) {
 		return nil, errors.New("geçersiz paket bilgileri")
 	}

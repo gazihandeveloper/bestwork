@@ -30,7 +30,7 @@ import {
   Copy,
   Check,
   LogIn,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
 import { get, put, tokenStorage, formatPrice } from '@/lib/api'
@@ -136,12 +136,14 @@ interface StatBlockProps {
   info?: string
   steps?: { filled: number; total: number }
   kalanBoxes?: { leftLabel?: string; rightLabel?: string; left: string; right: string }
+  /** Değer rengi — PV mor, CV yeşil kuralı için (varsayılan: koyu gri) */
+  valueClass?: string
   flipped?: boolean
   onFlip?: () => void
   onClick?: () => void
 }
 
-function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, flipped, onFlip, onClick }: StatBlockProps) {
+function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, valueClass, flipped, onFlip, onClick }: StatBlockProps) {
   return (
     <div
       onClick={onClick}
@@ -176,7 +178,7 @@ function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, flipped, 
             </div>
             <p className="text-xs font-bold tracking-wider text-gray-400 uppercase">{label.toLocaleUpperCase('tr-TR')}</p>
             <p
-              className="mt-0.5 leading-tight font-extrabold text-gray-900 break-words"
+              className={`mt-0.5 leading-tight font-extrabold break-words ${valueClass ?? 'text-gray-900'}`}
               style={{ fontSize: big ? '2.2rem' : '1.55rem' }}
             >
               {value}
@@ -661,6 +663,7 @@ export default function AccountDashboardPage() {
             <StatBlock
               label="Anlık Eşleşme"
               value={`${trn(d?.monthly_matched_cv)} CV`}
+              valueClass="text-green-600"
               kalanBoxes={{ left: trn(leftCv), right: trn(rightCv) }}
               icon={<Scale size={20} />}
               info="Kısa kol ile eşleşen puanınız."
@@ -894,7 +897,9 @@ export default function AccountDashboardPage() {
                           <p className="truncate text-xs font-bold text-gray-800">{p.name}</p>
                           <p className="text-[13px] font-extrabold text-brand-600">{formatPrice(p.price)}</p>
                           <p className="text-[10px] text-gray-400">
-                            {pvVal} PV · {Number(p.cv) || 0} CV
+                            <span className="font-bold text-purple-600">{pvVal} PV</span>
+                            {' · '}
+                            <span className="font-bold text-green-600">{Number(p.cv) || 0} CV</span>
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
@@ -940,7 +945,7 @@ export default function AccountDashboardPage() {
               <div className="mt-3 space-y-1 rounded-xl bg-gray-50 px-3 py-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-500">Toplam PV</span>
-                  <span className="text-sm font-extrabold text-brand-700">{trn(modalPV)} PV</span>
+                  <span className="text-sm font-extrabold text-purple-600">{trn(modalPV)} PV</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-500">Toplam Tutar</span>

@@ -1,5 +1,5 @@
 'use client'
-import { FileText, Plus } from '@/lib/google-icons'
+import { FileText, Plus } from '@/components/icons'
 import { Button } from '@/components/ui/Button'
 
 export default function CorporatePagesPage() {

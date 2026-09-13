@@ -23,7 +23,7 @@ import {
   ChevronDown,
   LogOut,
   PackagePlus,
-} from '@/lib/google-icons'
+} from '@/components/icons'
 
 interface SidebarLink {
   label: string
@@ -159,8 +159,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
           <Link href="/admin" className="flex items-center gap-2">
-              <span className="text-xl font-extrabold tracking-tight" style={{ color: '#29A56C' }}>
-                BEST<span className="text-emerald-400 ml-0.5">WORK</span><span className="text-[0.6em] text-emerald-400 font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
+              {/* Koyu sidebar zemini: logo beyaz (koyu ton burada görünmez) */}
+              <span className="bw-logo text-xl font-extrabold tracking-tight text-white" style={{ fontFamily: 'var(--font-quicksand), sans-serif' }}>
+                BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
               </span>
             <span className="text-xs text-gray-400 font-bold">Admin</span>
           </Link>
