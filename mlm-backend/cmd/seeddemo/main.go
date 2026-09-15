@@ -33,6 +33,7 @@ func main() {
 	siparis := flag.Int("siparis", 8, "oluşturulup ödenecek demo sipariş sayısı")
 	sifre := flag.String("sifre", "Demo1234", "örnek üyelerin giriş şifresi")
 	idTabani := flag.Int64("idbase", 91000, "örnek üyelerin kimlik tabanı (mevcut kimliklerle çakışmamalı)")
+	adminID := flag.Int64("admin", 1, "demo siparişleri ödeyen yönetici kimliği (denetim kaydı için)")
 	flag.Parse()
 
 	cfg := config.LoadConfig()
@@ -151,7 +152,7 @@ func main() {
 			continue
 		}
 		// Gerçek ödeme akışı: PV/CV dağıtımı ve puan hareketleri burada oluşur
-		if err := siparisSvc.UpdateOrderStatus(ctx, 1, "Demo", oid, "paid", "", ""); err != nil {
+		if err := siparisSvc.UpdateOrderStatus(ctx, *adminID, "Demo", oid, "paid", "", ""); err != nil {
 			fmt.Println("sipariş ödenemedi:", err)
 			continue
 		}

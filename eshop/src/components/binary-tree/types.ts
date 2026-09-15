@@ -60,7 +60,7 @@ export interface SearchResult {
 }
 
 /** Kart ölçüleri — d3 yerleşimi ve foreignObject bu değerleri kullanır. */
-export const CARD_W = 178
+export const CARD_W = 188
 export const CARD_H = 84
 export const FO_PAD = 10
 export const FO_W = CARD_W + FO_PAD * 2

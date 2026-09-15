@@ -87,11 +87,11 @@ export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onColla
 
         <div className="mt-1.5 flex items-center justify-between gap-1.5">
           <span className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-1.5 py-0.5 text-[9px] fw-700 tracking-wide text-sky-700">
-            SOL
+            SOL CV
             <span className="font-mono text-[10px] tabular-nums text-sky-900">{fmt(rec.total_cv_left)}</span>
           </span>
           <span className="inline-flex items-center gap-1 rounded-md bg-violet-100 px-1.5 py-0.5 text-[9px] fw-700 tracking-wide text-violet-700">
-            SAĞ
+            SAĞ CV
             <span className="font-mono text-[10px] tabular-nums text-violet-900">{fmt(rec.total_cv_right)}</span>
           </span>
         </div>

@@ -340,10 +340,10 @@ export function BinaryTreeCanvas({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <div className="flex items-center gap-3 text-[11px] font-medium text-gray-400">
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-sky-400" /> Sol
+              <span className="h-2.5 w-2.5 rounded-full bg-sky-400" /> SOL CV
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-violet-400" /> Sağ
+              <span className="h-2.5 w-2.5 rounded-full bg-violet-400" /> SAĞ CV
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
