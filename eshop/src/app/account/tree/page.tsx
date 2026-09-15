@@ -272,6 +272,7 @@ function TreeExplorer({
           pinnedIds={pinnedIds}
           onSelect={setSelectedId}
           onToggle={tree.toggle}
+          onTogglePin={(id) => void togglePin(id)}
         />
       )}
 

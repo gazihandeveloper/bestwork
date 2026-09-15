@@ -21,6 +21,7 @@ interface NodeCardProps {
   busy: boolean
   onSelect: (id: number) => void
   onToggle: (id: number) => void
+  onTogglePin: (id: number) => void
 }
 
 export function NodeCard({
@@ -33,6 +34,7 @@ export function NodeCard({
   busy,
   onSelect,
   onToggle,
+  onTogglePin,
 }: NodeCardProps) {
   const down = useRef<{ x: number; y: number } | null>(null)
   const [imgFailed, setImgFailed] = useState(false)
@@ -119,14 +121,22 @@ export function NodeCard({
           </span>
         )}
 
-        {pinned && (
-          <span
-            title="Sabitlenmiş"
-            className="absolute -top-1.5 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-white shadow-sm"
-          >
-            <Pin size={9} />
-          </span>
-        )}
+        <button
+          type="button"
+          title={pinned ? 'Sabitlemeyi kaldır' : 'Bu üyeyi sabitle'}
+          aria-label={pinned ? 'Sabitlemeyi kaldır' : 'Bu üyeyi sabitle'}
+          onClick={(e) => {
+            e.stopPropagation()
+            onTogglePin(rec.user_id)
+          }}
+          className={`absolute -top-1.5 right-2 z-[2] flex h-4 w-4 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors ${
+            pinned
+              ? 'bg-amber-400 text-white'
+              : 'bg-white text-gray-300 ring-1 ring-gray-200 hover:text-amber-500'
+          }`}
+        >
+          <Pin size={9} />
+        </button>
       </div>
 
       {hasChildren && (

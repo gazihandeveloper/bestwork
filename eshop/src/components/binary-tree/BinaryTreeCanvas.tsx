@@ -37,6 +37,7 @@ interface BinaryTreeCanvasProps {
   pinnedIds: Record<number, boolean>
   onSelect: (id: number) => void
   onToggle: (id: number) => void
+  onTogglePin: (id: number) => void
 }
 
 function buildLayout(
@@ -125,6 +126,7 @@ export function BinaryTreeCanvas({
   pinnedIds,
   onSelect,
   onToggle,
+  onTogglePin,
 }: BinaryTreeCanvasProps) {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const gRef = useRef<SVGGElement | null>(null)
@@ -427,6 +429,7 @@ export function BinaryTreeCanvas({
                         busy={!!busy[item.id]}
                         onSelect={onSelect}
                         onToggle={onToggle}
+                        onTogglePin={onTogglePin}
                       />
                     </div>
                   </foreignObject>
