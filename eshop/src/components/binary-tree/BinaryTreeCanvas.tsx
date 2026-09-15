@@ -1,34 +1,24 @@
 // ============================================
 // BestWork - Binary ağaç tuvali (d3 yerleşim + zoom/pan)
 //
-// Yalnızca GENİŞLETİLMİŞ düğümlerin çocukları yerleşime girer. Verisi henüz
-// getirilmemiş ama var olduğu bilinen dallar "ghost" yer tutucu olarak çizilir;
-// tıklanınca /tree/level ile o dal getirilir. Böylece ağaç, üye sayısından
-// bağımsız olarak yalnızca ekranda görünen kadarıyla büyür.
+// Yalnızca AÇIK düğümlerin çocukları yerleşime girer; gizli dallar için yan
+// yer tutucu çizilmez. Her kartın ALTINDA bir + / − düğmesi bulunur: + ile
+// dal (/tree/level) getirilir ve açılır, − ile gizlenir.
 // ============================================
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { Maximize, Minus, Network, Plus, RotateCcw } from '@/components/icons'
-import { GhostNode, NodeCard } from './NodeCard'
-import {
-  CARD_H,
-  FO_H,
-  FO_PAD,
-  FO_W,
-  GHOST_H,
-  GHOST_W,
-  NODE_DX,
-  NODE_DY,
-  type NodeRec,
-} from './types'
+import { NodeCard } from './NodeCard'
+import { CARD_H, FO_H, FO_PAD, FO_W, NODE_DX, NODE_DY, type NodeRec } from './types'
 
-type LayoutItem =
-  | { kind: 'node'; id: number; children: LayoutItem[] }
-  | { kind: 'ghost'; parentId: number; side: 'L' | 'R'; children: LayoutItem[] }
+interface LayoutNode {
+  id: number
+  children: LayoutNode[]
+}
 
-type HPoint = d3.HierarchyPointNode<LayoutItem>
+type HPoint = d3.HierarchyPointNode<LayoutNode>
 
 interface BinaryTreeCanvasProps {
   nodes: Record<number, NodeRec>
@@ -52,13 +42,11 @@ function buildLayout(
   nodes: Record<number, NodeRec>,
   loaded: Record<number, boolean>,
   expanded: Record<number, boolean>
-): LayoutItem | null {
+): LayoutNode | null {
   const rec = nodes[id]
   if (!rec) return null
-  const isLoaded = !!loaded[id]
-  const children: LayoutItem[] = []
-
-  if (isLoaded && expanded[id]) {
+  const children: LayoutNode[] = []
+  if (loaded[id] && expanded[id]) {
     if (rec.leftId) {
       const c = buildLayout(rec.leftId, nodes, loaded, expanded)
       if (c) children.push(c)
@@ -67,20 +55,13 @@ function buildLayout(
       const c = buildLayout(rec.rightId, nodes, loaded, expanded)
       if (c) children.push(c)
     }
-  } else {
-    const hasL = isLoaded ? rec.leftId != null : rec.has_left
-    const hasR = isLoaded ? rec.rightId != null : rec.has_right
-    if (hasL) children.push({ kind: 'ghost', parentId: id, side: 'L', children: [] })
-    if (hasR) children.push({ kind: 'ghost', parentId: id, side: 'R', children: [] })
   }
-
-  return { kind: 'node', id, children }
+  return { id, children }
 }
 
 function linkD(s: HPoint, t: HPoint) {
   const sy = s.y + CARD_H / 2
-  const targetHalf = t.data.kind === 'ghost' ? GHOST_H / 2 : CARD_H / 2
-  const ty = t.y - targetHalf - 4
+  const ty = t.y - CARD_H / 2 - 4
   const my = (sy + ty) / 2
   return `M${s.x},${sy} C${s.x},${my} ${t.x},${my} ${t.x},${ty}`
 }
@@ -161,8 +142,8 @@ export function BinaryTreeCanvas({
     if (rootId == null) return null
     const root = buildLayout(rootId, nodes, loaded, expanded)
     if (!root) return null
-    const hier = d3.hierarchy<LayoutItem>(root, (d) => (d.children.length ? d.children : undefined))
-    const rt = d3.tree<LayoutItem>().nodeSize([NODE_DX, NODE_DY])(hier)
+    const hier = d3.hierarchy<LayoutNode>(root, (d) => (d.children.length ? d.children : undefined))
+    const rt = d3.tree<LayoutNode>().nodeSize([NODE_DX, NODE_DY])(hier)
     let x0 = Infinity
     let x1 = -Infinity
     let y0 = Infinity
@@ -256,7 +237,7 @@ export function BinaryTreeCanvas({
   useEffect(() => {
     const id = pendingFocusRef.current
     if (!layout || id == null || size.w <= 0) return
-    const pt = layout.rt.descendants().find((n) => n.data.kind === 'node' && n.data.id === id)
+    const pt = layout.rt.descendants().find((n) => n.data.id === id)
     if (!pt) return
     pendingFocusRef.current = null
     interactedRef.current = true
@@ -372,11 +353,8 @@ export function BinaryTreeCanvas({
         <svg ref={svgRef} className="block h-full w-full cursor-grab touch-none active:cursor-grabbing">
           <g ref={gRef}>
             {links.map((l, i) => {
-              const target = l.target
-              const side =
-                target.data.kind === 'ghost'
-                  ? target.data.side
-                  : nodes[target.data.id]?.position ?? (target.x < l.source.x ? 'L' : 'R')
+              const rec = nodes[l.target.data.id]
+              const side = rec?.position ?? (l.target.x < l.source.x ? 'L' : 'R')
               const color = side === 'L' ? '#38bdf8' : '#a78bfa'
               return (
                 <path
@@ -392,32 +370,13 @@ export function BinaryTreeCanvas({
 
             {points.map((n) => {
               const item = n.data
-              if (item.kind === 'ghost') {
-                return (
-                  <g
-                    key={`ghost-${item.parentId}-${item.side}`}
-                    transform={`translate(${n.x},${n.y})`}
-                  >
-                    <foreignObject
-                      x={-GHOST_W / 2}
-                      y={-GHOST_H / 2}
-                      width={GHOST_W}
-                      height={GHOST_H}
-                    >
-                      <GhostNode
-                        side={item.side}
-                        busy={!!busy[item.parentId]}
-                        onLoad={() => onToggle(item.parentId)}
-                      />
-                    </foreignObject>
-                  </g>
-                )
-              }
-
               const rec = nodes[item.id]
               if (!rec) return null
-              const canCollapse =
-                !!loaded[item.id] && !!expanded[item.id] && (rec.leftId != null || rec.rightId != null)
+              const isLoaded = !!loaded[item.id]
+              const isOpen = isLoaded && !!expanded[item.id]
+              const hasChildren = isLoaded
+                ? rec.leftId != null || rec.rightId != null
+                : rec.has_left || rec.has_right
               return (
                 <g key={`node-${item.id}`} transform={`translate(${n.x},${n.y})`}>
                   <foreignObject x={-FO_W / 2} y={-FO_H / 2} width={FO_W} height={FO_H}>
@@ -426,9 +385,11 @@ export function BinaryTreeCanvas({
                         rec={rec}
                         isRoot={item.id === rootId}
                         selected={selectedId === item.id}
-                        canCollapse={canCollapse}
+                        hasChildren={hasChildren}
+                        isOpen={isOpen}
+                        busy={!!busy[item.id]}
                         onSelect={onSelect}
-                        onCollapse={onToggle}
+                        onToggle={onToggle}
                       />
                     </div>
                   </foreignObject>

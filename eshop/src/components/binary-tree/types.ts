@@ -62,15 +62,13 @@ export interface SearchResult {
 /** Kart ölçüleri — d3 yerleşimi ve foreignObject bu değerleri kullanır. */
 export const CARD_W = 188
 export const CARD_H = 84
-export const FO_PAD = 10
+export const FO_PAD = 14
 export const FO_W = CARD_W + FO_PAD * 2
 export const FO_H = CARD_H + FO_PAD * 2
 export const H_GAP = 32
 export const V_GAP = 62
 export const NODE_DX = CARD_W + H_GAP
 export const NODE_DY = CARD_H + V_GAP
-export const GHOST_W = 92
-export const GHOST_H = 54
 
 /** Yüklenen görsel yolunu tam adrese çevirir (uploads/... → https://…/uploads/...). */
 const UPLOAD_BASE = 'https://mahmutgazihanarslan.com.tr'

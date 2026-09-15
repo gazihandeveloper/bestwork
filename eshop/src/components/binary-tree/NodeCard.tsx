@@ -1,9 +1,9 @@
 // ============================================
-// BestWork - Binary ağaç düğüm kartı + yer tutucu (ghost)
+// BestWork - Binary ağaç düğüm kartı
 //
-// Kart minimalisttir: isim, TR üye kodu ve sol/sağ CV. Üye aktifse kutu YEŞİL,
-// pasifse KIRMIZI çizilir. Kart, foreignObject içinde HTML/Tailwind olarak
-// çizilir; zoom/pan d3 ile yapılır.
+// Minimalist: isim, TR üye kodu, SOL CV / SAĞ CV. Üye aktifse kutu YEŞİL,
+// pasifse KIRMIZI. Kart, foreignObject içinde HTML/Tailwind olarak çizilir.
+// Kartın ALTINDA tek bir + / − düğmesi vardır: + dalı getirip açar, − gizler.
 // ============================================
 'use client'
 
@@ -15,12 +15,23 @@ interface NodeCardProps {
   rec: NodeRec
   isRoot: boolean
   selected: boolean
-  canCollapse: boolean
+  hasChildren: boolean
+  isOpen: boolean
+  busy: boolean
   onSelect: (id: number) => void
-  onCollapse: (id: number) => void
+  onToggle: (id: number) => void
 }
 
-export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onCollapse }: NodeCardProps) {
+export function NodeCard({
+  rec,
+  isRoot,
+  selected,
+  hasChildren,
+  isOpen,
+  busy,
+  onSelect,
+  onToggle,
+}: NodeCardProps) {
   const down = useRef<{ x: number; y: number } | null>(null)
   const [imgFailed, setImgFailed] = useState(false)
   const active = rec.is_active !== false
@@ -34,7 +45,7 @@ export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onColla
 
   return (
     <div
-      className="bw-tree-card"
+      className="bw-tree-card relative"
       onPointerDown={(e) => {
         down.current = { x: e.clientX, y: e.clientY }
       }}
@@ -53,7 +64,7 @@ export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onColla
       title={`${rec.name} · ${rec.member_code} · ${active ? 'Aktif' : 'Pasif'}`}
     >
       <div
-        className={`relative flex h-full w-full cursor-pointer flex-col justify-center rounded-xl border-2 px-2.5 py-2 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${
+        className={`relative flex h-full w-full cursor-pointer flex-col justify-center gap-1.5 rounded-xl border-2 px-2 py-2 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${
           active
             ? 'border-emerald-400 bg-emerald-50 hover:shadow-emerald-500/20'
             : 'border-red-400 bg-red-50 hover:shadow-red-500/20'
@@ -85,14 +96,18 @@ export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onColla
           </div>
         </div>
 
-        <div className="mt-1.5 flex items-center justify-between gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-1.5 py-0.5 text-[9px] fw-700 tracking-wide text-sky-700">
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md bg-sky-100 px-1 py-0.5 text-[8px] fw-700 tracking-wide text-sky-700">
             SOL CV
-            <span className="font-mono text-[10px] tabular-nums text-sky-900">{fmt(rec.total_cv_left)}</span>
+            <span className="truncate font-mono text-[10px] tabular-nums text-sky-900">
+              {fmt(rec.total_cv_left)}
+            </span>
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md bg-violet-100 px-1.5 py-0.5 text-[9px] fw-700 tracking-wide text-violet-700">
+          <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md bg-violet-100 px-1 py-0.5 text-[8px] fw-700 tracking-wide text-violet-700">
             SAĞ CV
-            <span className="font-mono text-[10px] tabular-nums text-violet-900">{fmt(rec.total_cv_right)}</span>
+            <span className="truncate font-mono text-[10px] tabular-nums text-violet-900">
+              {fmt(rec.total_cv_right)}
+            </span>
           </span>
         </div>
 
@@ -101,55 +116,27 @@ export function NodeCard({ rec, isRoot, selected, canCollapse, onSelect, onColla
             KÖK
           </span>
         )}
-
-        {canCollapse && (
-          <button
-            type="button"
-            title="Dalları gizle"
-            onClick={(e) => {
-              e.stopPropagation()
-              onCollapse(rec.user_id)
-            }}
-            className="absolute -bottom-2 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-brand-400 hover:text-brand-700"
-          >
-            <Minus size={11} />
-          </button>
-        )}
       </div>
-    </div>
-  )
-}
 
-/** Henüz getirilmemiş ama var olduğu bilinen alt dal için yer tutucu. */
-export function GhostNode({
-  side,
-  busy,
-  onLoad,
-}: {
-  side: 'L' | 'R'
-  busy: boolean
-  onLoad: () => void
-}) {
-  const cls = side === 'L' ? 'border-sky-300 text-sky-600' : 'border-violet-300 text-violet-600'
-  return (
-    <div className="bw-tree-card flex h-full w-full items-center justify-center">
-      <button
-        type="button"
-        disabled={busy}
-        onClick={(e) => {
-          e.stopPropagation()
-          onLoad()
-        }}
-        title={side === 'L' ? 'Sol dalı getir' : 'Sağ dalı getir'}
-        className={`flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed bg-white/70 ${cls} transition-colors hover:bg-white disabled:opacity-60`}
-      >
-        {busy ? (
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <Plus size={16} />
-        )}
-        <span className="text-[8px] fw-700 tracking-wide uppercase">{side === 'L' ? 'Sol' : 'Sağ'}</span>
-      </button>
+      {hasChildren && (
+        <button
+          type="button"
+          title={isOpen ? 'Dalları gizle' : 'Dalları göster'}
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggle(rec.user_id)
+          }}
+          className="absolute -bottom-3 left-1/2 z-[2] flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-sm transition-colors hover:border-brand-500 hover:text-brand-700"
+        >
+          {busy ? (
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+          ) : isOpen ? (
+            <Minus size={12} />
+          ) : (
+            <Plus size={12} />
+          )}
+        </button>
+      )}
     </div>
   )
 }
