@@ -238,6 +238,11 @@ export function BinaryTreeCanvas({
     const svg = svgRef.current
     const zb = zoomRef.current
     if (!svg || !zb || !t) return
+    // duration 0: doğrudan uygula (Safari'de 0 süreli transition güvenilir değil)
+    if (duration <= 0) {
+      d3.select(svg).call(zb.transform, t)
+      return
+    }
     d3.select(svg).transition().duration(duration).call(zb.transform, t)
   }
 
@@ -352,9 +357,9 @@ export function BinaryTreeCanvas({
   const toplam = teamTotal == null ? null : teamTotal + 1
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-gray-100 px-3 py-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+    <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-gray-100 px-3 py-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
           <div className="flex items-center gap-3 text-[11px] font-medium text-gray-400">
             <span className="inline-flex items-center gap-1">
               <span className="h-2.5 w-2.5 rounded-full bg-sky-400" /> SOL HAT
@@ -363,7 +368,7 @@ export function BinaryTreeCanvas({
               <span className="h-2.5 w-2.5 rounded-full bg-violet-400" /> SAĞ HAT
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
             <CountBadge
               tone="green"
               value={aktif}
@@ -386,7 +391,7 @@ export function BinaryTreeCanvas({
 
       <div
         ref={wrapRef}
-        className="relative h-[calc(100vh-260px)] min-h-[360px] w-full overflow-hidden bg-[radial-gradient(#e9eef5_1px,transparent_1px)] [background-size:22px_22px] sm:min-h-[440px] lg:min-h-[600px]"
+        className="relative h-[calc(100vh-260px)] min-h-[360px] w-full max-w-full overflow-hidden bg-[radial-gradient(#e9eef5_1px,transparent_1px)] [background-size:22px_22px] sm:min-h-[440px] lg:min-h-[600px]"
       >
         <svg ref={svgRef} className="block h-full w-full cursor-grab touch-none active:cursor-grabbing">
           <g ref={gRef}>

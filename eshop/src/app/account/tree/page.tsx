@@ -32,7 +32,7 @@ export default function TreePage() {
   const [period, setPeriod] = useState(currentMonth())
   const [rootNode, setRootNode] = useState<{ id: number; name: string } | null>(null)
   return (
-    <div className="bw-tree-ui space-y-4">
+    <div className="bw-tree-ui space-y-4 overflow-x-hidden">
       <AccountTopMenu />
       <TreeExplorer
         key={`${period}:${rootNode?.id ?? 'self'}`}
@@ -252,20 +252,20 @@ function TreeExplorer({
       )}
 
       {pins.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2">
           <span className="inline-flex items-center gap-1 text-[11px] fw-700 text-amber-700">
             <Pin size={13} /> Sabitlenenler
           </span>
           {pins.map((p) => (
             <span
               key={p.user_id}
-              className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white py-0.5 pr-1 pl-2.5 text-[12px]"
+              className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border border-amber-200 bg-white py-0.5 pr-1 pl-2.5 text-[12px]"
             >
               <button
                 type="button"
                 onClick={() => void gotoPin(p)}
                 title={`${p.name} · ${p.member_code} — ağaçta git`}
-                className="max-w-[160px] cursor-pointer truncate fw-700 text-gray-700 hover:text-amber-700"
+                className="min-w-0 max-w-[160px] cursor-pointer truncate fw-700 text-gray-700 hover:text-amber-700"
               >
                 {p.name}
               </button>
