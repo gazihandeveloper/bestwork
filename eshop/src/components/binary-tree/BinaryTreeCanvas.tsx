@@ -255,7 +255,14 @@ export function BinaryTreeCanvas({
       fitKeyRef.current = fitKey
       interactedRef.current = false
     }
-    applyTransform(computeTransform(false), changed ? 0 : 220)
+    applyTransform(computeTransform(false), 0)
+    if (changed) {
+      // Mobil/Safari: ilk karede ölçüm/yerleşim gecikirse bir kare sonra tekrar uygula.
+      const raf = requestAnimationFrame(() => {
+        if (!interactedRef.current) applyTransform(computeTransform(false), 0)
+      })
+      return () => cancelAnimationFrame(raf)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout, size, fitKey])
 
