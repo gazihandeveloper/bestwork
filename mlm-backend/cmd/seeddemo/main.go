@@ -52,7 +52,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// ── 1) Örnek üyeler: tam ikili ağaç (i. düğümün ebeveyni i/2) ──
+	// ── 1) Örnek üyeler: tam ikili ağaç ──
+	// Kökün İKİ bacağı olur: 1. üye SOL'a, 2. üye SAĞ'a yerleşir. Sonraki her
+	// üyenin ebeveyni (i-1)/2 ile bulunur; tek sıra (i) SOL, çift sıra (i) SAĞ.
 	res, err := db.Exec(ctx, `
 		INSERT INTO users (id, name, email, member_code, password_hash, sponsor_id, parent_id, position,
 		                   is_active, is_in_pending_pool, total_pv_accumulated, total_cv_accumulated)
@@ -61,9 +63,9 @@ func main() {
 		       'ornek' || i || '@bestwork.local',
 		       'TR90' || lpad((910000 + i)::text, 6, '0'),
 		       $3,
-		       CASE WHEN i = 1 THEN $1 ELSE $4 + (i/2) END,
-		       CASE WHEN i = 1 THEN $1 ELSE $4 + (i/2) END,
-		       CASE WHEN i % 2 = 0 THEN 'L' ELSE 'R' END,
+		       CASE WHEN i <= 2 THEN $1 ELSE $4 + ((i - 1) / 2) END,
+		       CASE WHEN i <= 2 THEN $1 ELSE $4 + ((i - 1) / 2) END,
+		       CASE WHEN i % 2 = 1 THEN 'L' ELSE 'R' END,
 		       TRUE, FALSE,
 		       (i * 7) % 500,
 		       (i * 13) % 900
