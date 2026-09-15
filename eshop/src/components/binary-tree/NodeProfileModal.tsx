@@ -1,25 +1,23 @@
 // ============================================
 // BestWork - Kişi Profil Ekranı (modal, sekmeli)
 //
-// Karta tıklanınca açılır. Sekme 0: zengin üye kartı (bacak oranları, CV/PV/EK,
-// kişisel bakiye, alt ekip, kariyer, sponsor). Diğer sekmeler: kişinin alt
-// hattı, seviyelere (nesillere) göre gruplanmış liste.
+// Sekme 0 "Kart": zengin üye kartı (bacak oranları, CV/PV/EK, bakiye, alt ekip,
+// kariyer, sponsor). Sekme 1 "Puan Dağılımı": seçilen aya ait sipariş bazlı
+// Sol/Sağ CV-PV tablosu + isme göre arama + toplamlar.
 // ============================================
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { Award, X } from '@/components/icons'
+import { useEffect, useState } from 'react'
+import { Award, Search, X } from '@/components/icons'
 import { rawGet } from '@/lib/raw'
 import { fmt, initials, toAbs, type NodeRec } from './types'
 
 interface UserCardApi {
-  user_id?: number
   name?: string
   member_code?: string
   rank?: string | null
   package?: string | null
   is_active?: boolean
-  position?: string | null
   sponsor_name?: string | null
   wallet_balance?: number
   chip_balance?: number
@@ -32,19 +30,22 @@ interface UserCardApi {
   total_team_count?: number
 }
 
-interface DownlineRowApi {
-  user_id: number
+interface PointRowApi {
   name: string
-  member_code: string
-  position: string | null
-  rank: string | null
-  package: string | null
-  is_active: boolean
-  seviye: number
-  ilk_bacak: string | null
+  date: string
+  order_no: string
+  left_cv: number
+  right_cv: number
+  left_pv: number
+  right_pv: number
 }
 
-const listCache = new Map<number, UserCardApi>()
+const cardCache = new Map<number, UserCardApi>()
+
+const currentMonth = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
 
 function StatCell({ label, value, cls }: { label: string; value: string; cls: string }) {
   return (
@@ -64,49 +65,59 @@ export function NodeProfileModal({
   rec: NodeRec | null
   onClose: () => void
 }) {
-  const [card, setCard] = useState<UserCardApi | null>(() => listCache.get(nodeId) ?? null)
-  const [cardLoading, setCardLoading] = useState(!listCache.has(nodeId))
-  const [rows, setRows] = useState<DownlineRowApi[]>([])
-  const [listLoading, setListLoading] = useState(true)
+  const [card, setCard] = useState<UserCardApi | null>(() => cardCache.get(nodeId) ?? null)
+  const [cardLoading, setCardLoading] = useState(!cardCache.has(nodeId))
   const [tab, setTab] = useState(0)
   const [imgFailed, setImgFailed] = useState(false)
 
+  // Puan dağılımı
+  const [month, setMonth] = useState(currentMonth())
+  const [pointsRows, setPointsRows] = useState<PointRowApi[]>([])
+  const [pointsTotals, setPointsTotals] = useState<Record<string, number>>({})
+  const [pointsLoading, setPointsLoading] = useState(false)
+  const [pointsLoaded, setPointsLoaded] = useState(false)
+  const [query, setQuery] = useState('')
+
+  /* Kart verisi (modal her açılışta yeniden mount edilir; hata payı için cache). */
   useEffect(() => {
+    if (cardCache.has(nodeId) || card !== null) return
     let cancelled = false
-    if (!listCache.has(nodeId)) {
-      rawGet<{ card: UserCardApi }>(`/user/card?id=${nodeId}`)
-        .then((r) => {
-          if (cancelled || !r.card) return
-          listCache.set(nodeId, r.card)
-          setCard(r.card)
-        })
-        .catch(() => undefined)
-        .finally(() => {
-          if (!cancelled) setCardLoading(false)
-        })
-    }
-    rawGet<{ users: DownlineRowApi[] }>(`/tree/downline?kok=${nodeId}&sirala=seviye&limit=200`)
+    rawGet<{ card: UserCardApi }>(`/user/card?id=${nodeId}`)
       .then((r) => {
-        if (!cancelled) setRows(Array.isArray(r.users) ? r.users : [])
+        if (cancelled || !r.card) return
+        cardCache.set(nodeId, r.card)
+        setCard(r.card)
       })
       .catch(() => undefined)
       .finally(() => {
-        if (!cancelled) setListLoading(false)
+        if (!cancelled) setCardLoading(false)
       })
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId])
 
-  const seviyeler = useMemo(() => {
-    const m = new Map<number, DownlineRowApi[]>()
-    for (const u of rows) {
-      const arr = m.get(u.seviye)
-      if (arr) arr.push(u)
-      else m.set(u.seviye, [u])
+  const loadPoints = async (m: string) => {
+    setPointsLoading(true)
+    try {
+      const r = await rawGet<{ rows: PointRowApi[]; totals: Record<string, number> }>(
+        `/tree/points?id=${nodeId}&month=${m}`
+      )
+      setPointsRows(Array.isArray(r.rows) ? r.rows : [])
+      setPointsTotals(r.totals || {})
+      setPointsLoaded(true)
+    } catch {
+      setPointsRows([])
+    } finally {
+      setPointsLoading(false)
     }
-    return [...m.entries()].sort((a, b) => a[0] - b[0])
-  }, [rows])
+  }
+
+  const selectTab = (i: number) => {
+    setTab(i)
+    if (i === 1 && !pointsLoaded) void loadPoints(month)
+  }
 
   const imgSrc = toAbs(rec?.image_path)
   const showImg = !!imgSrc && !imgFailed
@@ -129,7 +140,12 @@ export function NodeProfileModal({
   const sagPct = 100 - solPct
   const zayif = tot <= 0 ? '—' : base[0] === base[1] ? 'EŞİT' : base[0] < base[1] ? 'SOL' : 'SAĞ'
 
-  const tabs = ['Kart', ...seviyeler.map(([s]) => `${s}. Seviye`)]
+  const q = query.trim().toLocaleLowerCase('tr-TR')
+  const filtered = q
+    ? pointsRows.filter((p) => (p.name || '').toLocaleLowerCase('tr-TR').includes(q))
+    : pointsRows
+
+  const tabs = ['Kart', 'Puan Dağılımı']
 
   return (
     <div
@@ -140,7 +156,7 @@ export function NodeProfileModal({
       aria-label="Üye profili"
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Başlık */}
@@ -157,16 +173,14 @@ export function NodeProfileModal({
         </div>
 
         {/* Sekmeler */}
-        <div className="flex gap-1 overflow-x-auto border-b border-gray-100 px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-1 border-b border-gray-100 px-3">
           {tabs.map((t, i) => (
             <button
               key={t}
               type="button"
-              onClick={() => setTab(i)}
-              className={`shrink-0 cursor-pointer border-b-2 px-3 py-2 text-xs fw-700 whitespace-nowrap transition-colors ${
-                tab === i
-                  ? 'border-brand-500 text-brand-700'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              onClick={() => selectTab(i)}
+              className={`cursor-pointer border-b-2 px-3 py-2 text-xs fw-700 transition-colors ${
+                tab === i ? 'border-brand-500 text-brand-700' : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
               {t}
@@ -272,62 +286,90 @@ export function NodeProfileModal({
               </div>
             </div>
           ) : (
-            <LevelList loading={listLoading} rows={seviyeler[tab - 1]?.[1] ?? []} />
+            <div>
+              {/* Ay + arama */}
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="month"
+                  value={month}
+                  onChange={(e) => {
+                    const m = e.target.value
+                    if (!m) return
+                    setMonth(m)
+                    void loadPoints(m)
+                  }}
+                  className="cursor-pointer rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+                />
+                <div className="relative min-w-[160px] flex-1">
+                  <Search size={15} className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="İsme göre ara..."
+                    className="w-full rounded-lg border border-gray-300 py-1.5 pr-3 pl-9 text-sm placeholder-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+                  />
+                </div>
+              </div>
+
+              {pointsLoading ? (
+                <div className="py-10 text-center">
+                  <span className="mx-auto block h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+                </div>
+              ) : filtered.length === 0 ? (
+                <p className="py-6 text-center text-xs text-gray-400">Bu dönemde kayıt yok.</p>
+              ) : (
+                <div className="mt-3 overflow-x-auto rounded-xl border border-gray-100">
+                  <table className="w-full min-w-[560px] text-[11px]">
+                    <thead className="bg-gray-50 text-gray-500">
+                      <tr className="[&>th]:px-2.5 [&>th]:py-2 [&>th]:fw-700 [&>th]:whitespace-nowrap">
+                        <th className="text-left">Ad Soyad</th>
+                        <th className="text-left">Tarih</th>
+                        <th className="text-left">Sipariş No</th>
+                        <th className="text-right">Sol CV</th>
+                        <th className="text-right">Sağ CV</th>
+                        <th className="text-right">Sol PV</th>
+                        <th className="text-right">Sağ PV</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filtered.map((p, i) => (
+                        <tr key={`${p.order_no}-${i}`} className="hover:bg-gray-50/60">
+                          <td className="px-2.5 py-1.5 text-gray-700">{p.name || ''}</td>
+                          <td className="px-2.5 py-1.5 whitespace-nowrap text-gray-500">{p.date}</td>
+                          <td className="px-2.5 py-1.5 font-mono text-gray-500">{p.order_no || ''}</td>
+                          <td className="px-2.5 py-1.5 text-right font-mono tabular-nums text-sky-600">
+                            {fmt(p.left_cv)}
+                          </td>
+                          <td className="px-2.5 py-1.5 text-right font-mono tabular-nums text-sky-600">
+                            {fmt(p.right_cv)}
+                          </td>
+                          <td className="px-2.5 py-1.5 text-right font-mono tabular-nums text-violet-600">
+                            {fmt(p.left_pv)}
+                          </td>
+                          <td className="px-2.5 py-1.5 text-right font-mono tabular-nums text-violet-600">
+                            {fmt(p.right_pv)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50 fw-700 text-gray-700">
+                      <tr className="[&>td]:px-2.5 [&>td]:py-2">
+                        <td colSpan={3} className="text-left">
+                          TOPLAM
+                        </td>
+                        <td className="text-right font-mono tabular-nums">{fmt(pointsTotals.left_cv)}</td>
+                        <td className="text-right font-mono tabular-nums">{fmt(pointsTotals.right_cv)}</td>
+                        <td className="text-right font-mono tabular-nums">{fmt(pointsTotals.left_pv)}</td>
+                        <td className="text-right font-mono tabular-nums">{fmt(pointsTotals.right_pv)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
     </div>
-  )
-}
-
-function LevelList({ loading, rows }: { loading: boolean; rows: DownlineRowApi[] }) {
-  if (loading) {
-    return (
-      <div className="py-10 text-center">
-        <span className="mx-auto block h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-      </div>
-    )
-  }
-  if (rows.length === 0) {
-    return <p className="py-6 text-center text-xs text-gray-400">Bu seviyede üye yok.</p>
-  }
-  return (
-    <ul className="divide-y divide-gray-50 rounded-xl border border-gray-100">
-      {rows.map((u) => (
-        <li key={u.user_id} className="flex items-center justify-between gap-2 px-3 py-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] fw-800 text-white ${
-                u.is_active ? 'bg-emerald-500' : 'bg-red-400'
-              }`}
-            >
-              {initials(u.name)}
-            </span>
-            <div className="min-w-0">
-              <div className="truncate text-[12px] fw-700 text-gray-800">{u.name}</div>
-              <div className="font-mono text-[10px] text-gray-400">{u.member_code}</div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            {u.ilk_bacak && (
-              <span
-                className={`rounded px-1.5 py-0.5 text-[9px] fw-700 ${
-                  u.ilk_bacak === 'L' ? 'bg-sky-50 text-sky-600' : 'bg-violet-50 text-violet-600'
-                }`}
-              >
-                {u.ilk_bacak === 'L' ? 'SOL' : 'SAĞ'}
-              </span>
-            )}
-            <span
-              className={`rounded px-1.5 py-0.5 text-[9px] fw-700 ${
-                u.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
-              }`}
-            >
-              {u.is_active ? 'Aktif' : 'Pasif'}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
   )
 }
