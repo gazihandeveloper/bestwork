@@ -235,7 +235,7 @@ function CareerTimeline({ ranks, career }: { ranks: RankBrief[]; career: CareerI
     { id: 'g0', name: 'GİRİŞİMCİ', achieved: true, active: activeId == null, next: false, date: null },
     ...ranks.map((r, i) => ({
       id: String(r.id),
-      name: r.name.toLocaleUpperCase('tr-TR'),
+      name: r.name.toUpperCase(),
       achieved: achieved.has(r.id),
       active: r.id === activeId,
       next: !achieved.has(r.id) && (i === 0 || achieved.has(ranks[i - 1].id)),

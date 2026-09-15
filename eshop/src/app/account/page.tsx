@@ -440,7 +440,7 @@ export default function AccountDashboardPage() {
 
   const currentRankId = me?.current_rank_id ?? d?.current_rank?.id ?? null
   const rankIndex = currentRankId != null ? ranks.findIndex((r) => r.id === currentRankId) : -1
-  const currentRankName = (d?.user?.rank || me?.current_rank_name || 'GİRİŞİMCİ').toLocaleUpperCase('tr-TR')
+  const currentRankName = (d?.user?.rank || me?.current_rank_name || 'GİRİŞİMCİ').toUpperCase()
 
   // Seviye (PV bazlı, yalnızca onaylı PV)
   const pv = Number(me?.total_pv_accumulated) || 0

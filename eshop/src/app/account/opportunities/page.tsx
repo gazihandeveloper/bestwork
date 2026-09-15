@@ -122,7 +122,7 @@ export default function OpportunitiesPage() {
                     <CircleCheck size={18} />
                   </span>
                   <div>
-                    <p className="text-sm font-extrabold text-gray-900">{r.name.toLocaleUpperCase('tr-TR')}</p>
+                    <p className="text-sm font-extrabold text-gray-900">{r.name.toUpperCase()}</p>
                     <p className="text-[11px] font-semibold text-purple-600">
                       Sol {fmt(r.required_left_pv)} · Sağ {fmt(r.required_right_pv)} PV
                     </p>

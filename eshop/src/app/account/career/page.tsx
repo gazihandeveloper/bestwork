@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Trophy, Star, CircleCheck, Lock, Crown, Gem } from '@/components/icons'
+import { House, Trophy, Star, CircleCheck, Lock, Crown, Gem, Diamond, Leaf, Heart, Sparkles, Shield, Medal } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -56,6 +56,20 @@ function rankStyle(name: string): { color: string; gold: boolean } {
 }
 
 const downlineName = (ranks: RankInfo[], id?: number | null) => ranks.find((r) => r.id === id)?.name ?? ''
+
+// Rütbeye göre ikon (İngilizce adlara göre; eski Türkçe adlar da destekli).
+function rankIcon(name: string) {
+  const n = name.toLocaleLowerCase('tr-TR')
+  if (n.includes('ambassador')) return Trophy
+  if (n.includes('president')) return Crown
+  if (n.includes('black diamond')) return Shield
+  if (n.includes('diamond')) return Diamond
+  if (n.includes('ruby') || n.includes('yakut')) return Heart
+  if (n.includes('pearl') || n.includes('inci')) return Sparkles
+  if (n.includes('jade') || n.includes('yeşim')) return Leaf
+  if (n.includes('sapphire') || n.includes('safir') || n.includes('emerald') || n.includes('zümrüt')) return Gem
+  return Medal
+}
 
 export default function CareerPage() {
   const [ranks, setRanks] = useState<RankInfo[]>([])
@@ -136,17 +150,18 @@ export default function CareerPage() {
         <>
           {/* Kariyer Seviyeleri şeridi */}
           <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2 text-xs fw-800 tracking-wide text-gray-700">
+            <div className="mb-3 flex items-center justify-center gap-2 text-xs fw-800 tracking-wide text-gray-700 sm:justify-start">
               <Crown size={16} className="text-amber-500" /> KARİYER SEVİYELERİ
             </div>
-            <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:thin]">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12">
               {steps.map(({ rank, isAchieved, isActive, isNext }) => {
                 const meta = rankStyle(rank.name)
+                const Icon = rankIcon(rank.name)
                 return (
                   <div
                     key={rank.id}
                     title={rank.name}
-                    className={`flex w-[92px] shrink-0 flex-col items-center gap-2 rounded-xl border-2 px-2 py-3 transition-colors ${
+                    className={`flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors ${
                       isActive
                         ? 'border-brand-600 bg-brand-600 shadow-md'
                         : isAchieved
@@ -157,13 +172,13 @@ export default function CareerPage() {
                     }`}
                   >
                     <span
-                      className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-white/60"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-white/60"
                       style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : meta.color }}
                     >
-                      <Gem size={18} className="text-white" />
+                      <Icon size={18} className="text-white" />
                     </span>
                     <span
-                      className={`text-center text-[10px] fw-800 uppercase leading-tight ${
+                      className={`w-full text-center text-[9px] fw-800 uppercase leading-tight break-words ${
                         isActive
                           ? 'text-white'
                           : isAchieved
@@ -188,7 +203,7 @@ export default function CareerPage() {
               <Trophy size={18} className="text-amber-500" />
               {nextStep ? (
                 <>
-                  Sıradaki hedef: <span className="text-brand-700">{nextStep.rank.name.toLocaleUpperCase('tr-TR')}</span>
+                  Sıradaki hedef: <span className="text-brand-700">{nextStep.rank.name.toUpperCase()}</span>
                 </>
               ) : (
                 'Tüm rütbeler kazanıldı 🎉'
@@ -252,7 +267,7 @@ export default function CareerPage() {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-extrabold text-gray-900">{rank.name.toLocaleUpperCase('tr-TR')}</h3>
+                  <h3 className="text-lg font-extrabold text-gray-900">{rank.name.toUpperCase()}</h3>
                   <p className="text-sm font-semibold text-purple-600">
                     Sol {fmt(rank.required_left_pv)} PV · Sağ {fmt(rank.required_right_pv)} PV
                   </p>
