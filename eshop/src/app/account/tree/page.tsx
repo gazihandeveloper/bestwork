@@ -57,25 +57,29 @@ function TreeExplorer({
   const { search } = tree
 
   const loadPins = () => {
-    rawGet<{ pins: TreeNode[] }>('/tree/pins')
+    // Önbelleği atlayıp her zaman taze çek: sabitlenenler kullanıcı silene
+    // kadar kalıcıdır, istemci önbelleği yüzünden eksik/boş görünmesin.
+    rawCacheGecersiz('/tree/pins')
+    return rawGet<{ pins: TreeNode[] }>('/tree/pins')
       .then((r) => setPins(Array.isArray(r.pins) ? r.pins : []))
       .catch(() => undefined)
   }
 
   useEffect(() => {
-    loadPins()
+    void loadPins()
   }, [])
 
   const togglePin = async (id: number) => {
     const mevcut = pins.some((p) => p.user_id === id)
+    // Anında geri bildirim: kaldırılıyorsa listeden hemen çıkar.
+    if (mevcut) setPins((prev) => prev.filter((p) => p.user_id !== id))
     try {
       if (mevcut) await rawDel(`/tree/pins/${id}`)
       else await rawPost('/tree/pins', { user_id: id })
-      rawCacheGecersiz('/tree/pins')
-      loadPins()
     } catch {
-      /* sessiz */
+      /* ağ hatasında aşağıda sunucu durumuna göre düzeltiriz */
     }
+    await loadPins()
   }
 
   const gotoPin = async (p: TreeNode) => {
