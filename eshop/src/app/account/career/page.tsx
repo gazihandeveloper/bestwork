@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Trophy, Star, CircleCheck, Lock } from '@/components/icons'
+import { House, Trophy, Star, CircleCheck, Lock, Crown, Gem } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
@@ -134,6 +134,54 @@ export default function CareerPage() {
         </div>
       ) : (
         <>
+          {/* Kariyer Seviyeleri şeridi */}
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-2 text-xs fw-800 tracking-wide text-gray-700">
+              <Crown size={16} className="text-amber-500" /> KARİYER SEVİYELERİ
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:thin]">
+              {steps.map(({ rank, isAchieved, isActive, isNext }) => {
+                const meta = rankStyle(rank.name)
+                return (
+                  <div
+                    key={rank.id}
+                    title={rank.name}
+                    className={`flex w-[92px] shrink-0 flex-col items-center gap-2 rounded-xl border-2 px-2 py-3 transition-colors ${
+                      isActive
+                        ? 'border-brand-600 bg-brand-600 shadow-md'
+                        : isAchieved
+                          ? 'border-amber-300 bg-amber-50'
+                          : isNext
+                            ? 'border-brand-300 bg-brand-50/50'
+                            : 'border-gray-100 bg-white'
+                    }`}
+                  >
+                    <span
+                      className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-white/60"
+                      style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : meta.color }}
+                    >
+                      <Gem size={18} className="text-white" />
+                    </span>
+                    <span
+                      className={`text-center text-[10px] fw-800 uppercase leading-tight ${
+                        isActive
+                          ? 'text-white'
+                          : isAchieved
+                            ? 'text-amber-800'
+                            : isNext
+                              ? 'text-brand-800'
+                              : 'text-gray-500'
+                      }`}
+                    >
+                      {rank.name}
+                    </span>
+                    {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Durum şeridi */}
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
             <span className="inline-flex items-center gap-2 text-sm font-bold text-gray-700">

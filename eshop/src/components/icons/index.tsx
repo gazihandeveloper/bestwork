@@ -57,6 +57,7 @@ export { default as FileText } from "lucide-react/dist/esm/icons/file-text.mjs";
 export { default as Filter } from "lucide-react/dist/esm/icons/filter.mjs";
 export { default as FlaskConical } from "lucide-react/dist/esm/icons/flask-conical.mjs";
 export { default as FolderTree } from "lucide-react/dist/esm/icons/folder-tree.mjs";
+export { default as Gem } from "lucide-react/dist/esm/icons/gem.mjs";
 export { default as Gift } from "lucide-react/dist/esm/icons/gift.mjs";
 export { default as GitBranch } from "lucide-react/dist/esm/icons/git-branch.mjs";
 export { default as GitFork } from "lucide-react/dist/esm/icons/git-fork.mjs";
