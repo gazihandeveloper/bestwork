@@ -130,7 +130,7 @@ export function NodeCard({
             onTogglePin(rec.user_id)
           }}
           className={`absolute -top-2 right-2 z-[2] flex h-5 w-5 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors ${
-            pinned ? 'bg-red-600 text-white ring-2 ring-red-200' : 'bg-red-500 text-white hover:bg-red-600'
+            pinned ? 'bg-red-500 text-white ring-2 ring-red-200' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
           }`}
         >
           <Pin size={12} className="-rotate-[20deg]" />
