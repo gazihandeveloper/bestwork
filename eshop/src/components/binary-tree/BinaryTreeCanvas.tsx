@@ -401,13 +401,14 @@ export function BinaryTreeCanvas({
         </svg>
       </div>
 
-      <TreeReportModal
-        open={showReport}
-        onClose={() => setShowReport(false)}
-        aktif={aktif}
-        pasif={pasif}
-        toplam={toplam}
-      />
+      {showReport && (
+        <TreeReportModal
+          onClose={() => setShowReport(false)}
+          aktif={aktif}
+          pasif={pasif}
+          toplam={toplam}
+        />
+      )}
     </div>
   )
 }
