@@ -60,6 +60,8 @@ export interface UseBinaryTree extends BinaryTreeState {
   /** Arama sonucunun kökten hedefe yolunu açar. Hedef kimliğini döndürür. */
   revealPath: (path: number[]) => Promise<number | null>
   search: (q: string) => Promise<SearchResult[]>
+  /** Alt ağacın tamamını düğüm düğüm yükleyip açar (küçük ağaçlar için). */
+  expandAll: () => Promise<void>
 }
 
 export function useBinaryTree(period: string): UseBinaryTree {
@@ -73,23 +75,24 @@ export function useBinaryTree(period: string): UseBinaryTree {
   const [error, setError] = useState('')
   const [stats, setStats] = useState<{ toplam: number; aktif: number } | null>(null)
 
-  // Yükleme durumunu ref'te de tut: sıralı revealPath döngüsü state gecikmesinden etkilenmesin.
+  // Yükleme durumunu ref'te de tut: sıralı revealPath/expandAll döngüleri state
+  // gecikmesinden etkilenmesin. nodesRef, merge ile senkron güncel tutulur.
   const loadedRef = useRef<Record<number, boolean>>({})
+  const nodesRef = useRef<Record<number, NodeRec>>({})
 
   const querySuffix = period ? `&month=${period}` : ''
 
   /** Gelen düğüm ağını (kendisi + çocukları) düz depoya işler. */
   const merge = useCallback((incoming: TreeNode) => {
-    setNodes((prev) => {
-      const next = { ...prev }
-      const walk = (n: TreeNode) => {
-        next[n.user_id] = toRec(n, next[n.user_id])
-        if (n.left_child) walk(n.left_child)
-        if (n.right_child) walk(n.right_child)
-      }
-      walk(incoming)
-      return next
-    })
+    const next = { ...nodesRef.current }
+    const walk = (n: TreeNode) => {
+      next[n.user_id] = toRec(n, next[n.user_id])
+      if (n.left_child) walk(n.left_child)
+      if (n.right_child) walk(n.right_child)
+    }
+    walk(incoming)
+    nodesRef.current = next
+    setNodes(next)
   }, [])
 
   const markLoaded = useCallback((id: number) => {
@@ -97,14 +100,15 @@ export function useBinaryTree(period: string): UseBinaryTree {
     setLoaded((prev) => (prev[id] ? prev : { ...prev, [id]: true }))
   }, [])
 
-  /** Belirli bir düğümün iki çocuğunu getirir ve açar. */
+  /** Belirli bir düğümün iki çocuğunu getirir ve açar. Yüklenen düğümü döndürür. */
   const loadNode = useCallback(
-    async (id: number) => {
+    async (id: number): Promise<NodeRec | null> => {
       if (loadedRef.current[id]) {
         setExpanded((prev) => ({ ...prev, [id]: true }))
-        return
+        return nodesRef.current[id] ?? null
       }
       setBusy((prev) => ({ ...prev, [id]: true }))
+      let yuklenen: NodeRec | null = null
       try {
         const r = await rawGet<{ node: TreeNode }>(`/tree/level?id=${id}${querySuffix}`)
         if (r.node) {
@@ -112,6 +116,7 @@ export function useBinaryTree(period: string): UseBinaryTree {
           markLoaded(r.node.user_id)
           setExpanded((prev) => ({ ...prev, [r.node.user_id]: true }))
           if (r.node.user_id !== id) markLoaded(id)
+          yuklenen = nodesRef.current[r.node.user_id] ?? null
         }
         setError('')
       } catch (e) {
@@ -123,6 +128,7 @@ export function useBinaryTree(period: string): UseBinaryTree {
           return n
         })
       }
+      return yuklenen
     },
     [merge, markLoaded, querySuffix]
   )
@@ -216,6 +222,45 @@ export function useBinaryTree(period: string): UseBinaryTree {
     [loadNode]
   )
 
+  /**
+   * Alt ağacın tamamını genişlik-öncelikli olarak düğüm düğüm yükler ve açar.
+   * Yalnızca "Tümünü Aç" veya küçük ağaçlarda otomatik açılış için kullanılır;
+   * çok büyük ağaçlarda yavaş olacağından varsayılan değildir.
+   */
+  const expandAll = useCallback(async () => {
+    if (rootId == null) return
+    const gorulen = new Set<number>([rootId])
+    let seviye: number[] = [rootId]
+    while (seviye.length > 0) {
+      const sonraki: number[] = []
+      // Aynı seviyedeki düğümler paralel çekilir (her düğüm 2 çocuk döndürür).
+      await Promise.all(
+        seviye.map(async (id) => {
+          if (!loadedRef.current[id]) {
+            await loadNode(id)
+          } else {
+            setExpanded((prev) => (prev[id] ? prev : { ...prev, [id]: true }))
+          }
+          const rec = nodesRef.current[id]
+          if (!rec) return
+          for (const cid of [rec.leftId, rec.rightId]) {
+            if (cid != null && !gorulen.has(cid)) {
+              gorulen.add(cid)
+              sonraki.push(cid)
+            }
+          }
+        })
+      )
+      seviye = sonraki
+    }
+  }, [rootId, loadNode])
+
+  /** Küçük ağaçlar (<= 150 kişi) açılışta tamamen açılır; büyükler tembel kalır. */
+  useEffect(() => {
+    if (rootId == null || stats == null) return
+    if (stats.toplam <= 150) void expandAll()
+  }, [rootId, stats, expandAll])
+
   return {
     nodes,
     loaded,
@@ -230,5 +275,6 @@ export function useBinaryTree(period: string): UseBinaryTree {
     loadNode: (id: number) => void loadNode(id),
     revealPath,
     search,
+    expandAll,
   }
 }

@@ -10,7 +10,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { Maximize, Minus, Plus, RotateCcw } from '@/components/icons'
+import { Maximize, Minus, Network, Plus, RotateCcw } from '@/components/icons'
 import { GhostNode, NodeCard } from './NodeCard'
 import {
   CARD_H,
@@ -44,6 +44,7 @@ interface BinaryTreeCanvasProps {
   selectedId: number | null
   onSelect: (id: number) => void
   onToggle: (id: number) => void
+  onExpandAll: () => void
 }
 
 function buildLayout(
@@ -126,6 +127,7 @@ export function BinaryTreeCanvas({
   selectedId,
   onSelect,
   onToggle,
+  onExpandAll,
 }: BinaryTreeCanvasProps) {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const gRef = useRef<SVGGElement | null>(null)
@@ -308,6 +310,14 @@ export function BinaryTreeCanvas({
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
       >
         <RotateCcw size={14} />
+      </button>
+      <button
+        type="button"
+        title="Tüm alt ağacı yükle ve aç"
+        onClick={onExpandAll}
+        className="flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs fw-700 text-gray-600 transition-colors hover:bg-gray-50"
+      >
+        <Network size={13} /> Tümünü Aç
       </button>
       <button
         type="button"
