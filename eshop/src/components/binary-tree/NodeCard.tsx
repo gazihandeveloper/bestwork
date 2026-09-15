@@ -129,11 +129,11 @@ export function NodeCard({
             e.stopPropagation()
             onTogglePin(rec.user_id)
           }}
-          className={`absolute -top-1.5 right-2 z-[2] flex h-4 w-4 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors ${
-            pinned ? 'bg-amber-400 text-white' : 'bg-gray-400/75 text-white hover:bg-gray-500'
+          className={`absolute -top-2 right-2 z-[2] flex h-5 w-5 cursor-pointer items-center justify-center rounded-full shadow-sm transition-colors ${
+            pinned ? 'bg-red-600 text-white ring-2 ring-red-200' : 'bg-red-500 text-white hover:bg-red-600'
           }`}
         >
-          <Pin size={9} className="-rotate-[20deg]" />
+          <Pin size={12} className="-rotate-[20deg]" />
         </button>
       </div>
 
