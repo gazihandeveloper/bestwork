@@ -9,8 +9,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { FolderTree, Maximize, Minus, Plus, RotateCcw } from '@/components/icons'
+import { Maximize, Minus, Plus, RotateCcw, TreePine } from '@/components/icons'
 import { NodeCard } from './NodeCard'
+import { TreeReportModal } from './TreeReportModal'
 import { CARD_H, FO_H, FO_PAD, FO_W, NODE_DX, NODE_DY, type NodeRec } from './types'
 
 interface LayoutNode {
@@ -34,7 +35,6 @@ interface BinaryTreeCanvasProps {
   selectedId: number | null
   onSelect: (id: number) => void
   onToggle: (id: number) => void
-  onExpandAll: () => void
 }
 
 function buildLayout(
@@ -108,7 +108,6 @@ export function BinaryTreeCanvas({
   selectedId,
   onSelect,
   onToggle,
-  onExpandAll,
 }: BinaryTreeCanvasProps) {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const gRef = useRef<SVGGElement | null>(null)
@@ -120,6 +119,7 @@ export function BinaryTreeCanvas({
 
   const [size, setSize] = useState({ w: 0, h: 0 })
   const [zoomLevel, setZoomLevel] = useState(1)
+  const [showReport, setShowReport] = useState(false)
 
   /* ── Responsive ölçüm ── */
   useEffect(() => {
@@ -304,12 +304,12 @@ export function BinaryTreeCanvas({
       </button>
       <button
         type="button"
-        title="Tüm alt ağacı yükle ve aç"
-        aria-label="Ağacı aç"
-        onClick={onExpandAll}
+        title="Ağaç durumu raporu"
+        aria-label="Ağaç durumu"
+        onClick={() => setShowReport(true)}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
       >
-        <FolderTree size={15} />
+        <TreePine size={15} />
       </button>
       <span className="w-10 text-center text-xs fw-700 text-gray-400">%{Math.round(zoomLevel * 100)}</span>
     </div>
@@ -400,6 +400,14 @@ export function BinaryTreeCanvas({
           </g>
         </svg>
       </div>
+
+      <TreeReportModal
+        open={showReport}
+        onClose={() => setShowReport(false)}
+        aktif={aktif}
+        pasif={pasif}
+        toplam={toplam}
+      />
     </div>
   )
 }

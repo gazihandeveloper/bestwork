@@ -202,7 +202,6 @@ function TreeExplorer({
           selectedId={selectedId}
           onSelect={setSelectedId}
           onToggle={tree.toggle}
-          onExpandAll={() => void tree.expandAll()}
         />
       )}
 

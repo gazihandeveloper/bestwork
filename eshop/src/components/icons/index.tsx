@@ -119,6 +119,8 @@ export { default as SwatchBook } from "lucide-react/dist/esm/icons/swatch-book.m
 export { default as Tag } from "lucide-react/dist/esm/icons/tag.mjs";
 export { default as Ticket } from "lucide-react/dist/esm/icons/ticket.mjs";
 export { default as Trash2 } from "lucide-react/dist/esm/icons/trash-2.mjs";
+export { default as TreePine } from "lucide-react/dist/esm/icons/tree-pine.mjs";
+export { default as Trees } from "lucide-react/dist/esm/icons/trees.mjs";
 export { default as TrendingDown } from "lucide-react/dist/esm/icons/trending-down.mjs";
 export { default as TrendingUp } from "lucide-react/dist/esm/icons/trending-up.mjs";
 export { default as TriangleAlert } from "lucide-react/dist/esm/icons/triangle-alert.mjs";

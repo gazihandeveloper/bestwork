@@ -60,8 +60,6 @@ export interface UseBinaryTree extends BinaryTreeState {
   /** Arama sonucunun kökten hedefe yolunu açar. Hedef kimliğini döndürür. */
   revealPath: (path: number[]) => Promise<number | null>
   search: (q: string) => Promise<SearchResult[]>
-  /** Alt ağacın tamamını düğüm düğüm yükleyip açar (küçük ağaçlar için). */
-  expandAll: () => Promise<void>
 }
 
 export function useBinaryTree(period: string): UseBinaryTree {
@@ -222,39 +220,6 @@ export function useBinaryTree(period: string): UseBinaryTree {
     [loadNode]
   )
 
-  /**
-   * Alt ağacın tamamını genişlik-öncelikli olarak düğüm düğüm yükler ve açar.
-   * Yalnızca "Tümünü Aç" veya küçük ağaçlarda otomatik açılış için kullanılır;
-   * çok büyük ağaçlarda yavaş olacağından varsayılan değildir.
-   */
-  const expandAll = useCallback(async () => {
-    if (rootId == null) return
-    const gorulen = new Set<number>([rootId])
-    let seviye: number[] = [rootId]
-    while (seviye.length > 0) {
-      const sonraki: number[] = []
-      // Aynı seviyedeki düğümler paralel çekilir (her düğüm 2 çocuk döndürür).
-      await Promise.all(
-        seviye.map(async (id) => {
-          if (!loadedRef.current[id]) {
-            await loadNode(id)
-          } else {
-            setExpanded((prev) => (prev[id] ? prev : { ...prev, [id]: true }))
-          }
-          const rec = nodesRef.current[id]
-          if (!rec) return
-          for (const cid of [rec.leftId, rec.rightId]) {
-            if (cid != null && !gorulen.has(cid)) {
-              gorulen.add(cid)
-              sonraki.push(cid)
-            }
-          }
-        })
-      )
-      seviye = sonraki
-    }
-  }, [rootId, loadNode])
-
   return {
     nodes,
     loaded,
@@ -269,6 +234,5 @@ export function useBinaryTree(period: string): UseBinaryTree {
     loadNode: (id: number) => void loadNode(id),
     revealPath,
     search,
-    expandAll,
   }
 }
