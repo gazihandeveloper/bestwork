@@ -329,6 +329,16 @@ func main() {
 
 		api.GET("/commissions", middleware.AuthRequired(userService), commissionHandler.List)
 		api.GET("/tree", middleware.AuthRequired(userService), treeHandler.Get)
+		// Lazy load: tek düğüm + iki çocuğu (tüm alt ağacı çekmez)
+		api.GET("/tree/level", middleware.AuthRequired(userService), treeHandler.Level)
+		// Data Grid: alt hattı düz, filtrelenebilir, sayfalanmış liste hâlinde verir.
+		api.GET("/tree/downline", middleware.AuthRequired(userService), treeHandler.Downline)
+		api.GET("/tree/search", middleware.AuthRequired(userService), treeHandler.Search)
+		// Pinleme (sabitleme): sık bakılan üyeler
+		api.GET("/tree/points", middleware.AuthRequired(userService), treeHandler.Points)
+		api.GET("/tree/pins", middleware.AuthRequired(userService), treeHandler.Pins)
+		api.POST("/tree/pins", middleware.AuthRequired(userService), treeHandler.PinAdd)
+		api.DELETE("/tree/pins/:id", middleware.AuthRequired(userService), treeHandler.PinRemove)
 		api.GET("/user/card", middleware.AuthRequired(userService), dashboardHandler.UserCard)
 		api.GET("/sponsor-tree", middleware.AuthRequired(userService), sponsorTreeHandler.Get)
 		api.GET("/retail-earnings", middleware.AuthRequired(userService), retailHandler.Earnings)

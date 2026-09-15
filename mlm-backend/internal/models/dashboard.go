@@ -148,6 +148,32 @@ type TreeNode struct {
 	TotalCVRight       float64    `json:"total_cv_right"`
 	IsActive           bool     `json:"is_active"`
 	Role               string   `json:"role"`
+	/* Lazy load: düğümün altında çocuk var mı? Ağaç yalnızca görünen düğümlerin
+	   çocuklarını yükler; bu bayraklar yer tutucu (placeholder) çizmek için. */
+	HasLeft            bool      `json:"has_left"`
+	HasRight           bool      `json:"has_right"`
 	LeftChild          *TreeNode `json:"left_child"`
 	RightChild         *TreeNode `json:"right_child"`
+}
+
+// DownlineRow — Data Grid (alt hat listesi) için tek satır.
+//
+// Ağaç düğümünden (TreeNode) farkı: ağaç yapısı taşımaz; seviye ve ilk bacak
+// bilgisiyle düz listedir. Böylece yüz binlerce satır filtrelenip sayfalanabilir.
+type DownlineRow struct {
+	UserID             int64   `json:"user_id"`
+	Name               string  `json:"name"`
+	MemberCode         string  `json:"member_code"`
+	Position           *string `json:"position"`
+	Package            *string `json:"package"`
+	Rank               *string `json:"rank"`
+	ImagePath          *string `json:"image_path"`
+	TotalPVAccumulated float64 `json:"total_pv_accumulated"`
+	TotalCVAccumulated float64 `json:"total_cv_accumulated"`
+	IsActive           bool    `json:"is_active"`
+	CreatedAt          string  `json:"created_at"`
+	/** Kökten uzaklık (1 = kökün doğrudan altı) */
+	Seviye int `json:"seviye"`
+	/** Kökün hangi birinci seviye kolu: L | R | null (kökün kendisi) */
+	IlkBacak *string `json:"ilk_bacak"`
 }

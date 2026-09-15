@@ -24,6 +24,7 @@ var (
 	ErrEmailExists     = errors.New("bu e-posta adresi zaten kayıtlı")
 	ErrPhoneExists     = errors.New("bu telefon numarası zaten kayıtlı")
 	ErrUserNotFound    = errors.New("kullanıcı bulunamadı")
+	ErrForbidden       = errors.New("bu işlem için yetkiniz yok")
 	ErrSponsorNotFound = errors.New("sponsor bulunamadı")
 	ErrWrongPassword   = errors.New("mevcut şifre hatalı")
 )

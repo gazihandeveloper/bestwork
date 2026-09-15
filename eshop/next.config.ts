@@ -40,6 +40,13 @@ const nextConfig: NextConfig = {
       { source: '/api/commissions', destination: 'http://localhost:8090/api/commissions' },
       { source: '/api/binary-transactions', destination: 'http://localhost:8090/api/binary-transactions' },
       { source: '/api/auth/change-password', destination: 'http://localhost:8090/api/auth/change-password' },
+      // Düğüm bazlı lazy load (üretimde API aynı kökenden çağrılır)
+      // Ağaç (lazy load + arama + pinleme) → BestWork
+      { source: '/api/tree/level', destination: 'http://localhost:8090/api/tree/level' },
+      { source: '/api/tree/search', destination: 'http://localhost:8090/api/tree/search' },
+      { source: '/api/tree/points', destination: 'http://localhost:8090/api/tree/points' },
+      { source: '/api/tree/pins/:id', destination: 'http://localhost:8090/api/tree/pins/:id' },
+      { source: '/api/tree/pins', destination: 'http://localhost:8090/api/tree/pins' },
       { source: '/api/tree', destination: 'http://localhost:8090/api/tree' },
       { source: '/api/pending-pool/place', destination: 'http://localhost:8090/api/pending-pool/place' },
       { source: '/api/payment-notifications', destination: 'http://localhost:8090/api/payment-notifications' },

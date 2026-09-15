@@ -54,6 +54,17 @@ export function rawGet<T>(endpoint: string): Promise<T> {
   return promise
 }
 
+/**
+ * Yazma işlemlerinden (POST/PUT/DELETE) SONRA ilgili GET önbelleğini geçersiz
+ * kılar. Aksi hâlde aynı uç nokta 120 sn boyunca eski yanıtı döndürür ve arayüz
+ * güncellenmiş görünmez (pin ekleme/silme bu yüzden yansımıyordu).
+ */
+export function rawCacheGecersiz(prefix: string) {
+  for (const k of Array.from(rawCache.keys())) {
+    if (k.startsWith(prefix)) rawCache.delete(k)
+  }
+}
+
 export function rawPost<T>(endpoint: string, body?: unknown): Promise<T> {
   return rawFetch<T>(endpoint, {
     method: 'POST',

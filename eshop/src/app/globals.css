@@ -191,3 +191,13 @@ body .bw-logo,
 body .bw-logo span {
   font-weight: 800 !important;
 }
+
+/* ============================================
+   Binary Ağaç kartları — gövde 400 kuralını geçersiz kılan vurgular.
+   Kartlarda isim ve sayıların ağırlığı kaybolmasın diye kapsam dar tutulur
+   (.bw-tree-ui içindeki .fw-* yardımcı sınıfları).
+   ============================================ */
+.bw-tree-ui .fw-500 { font-weight: 500 !important; }
+.bw-tree-ui .fw-600 { font-weight: 600 !important; }
+.bw-tree-ui .fw-700 { font-weight: 700 !important; }
+.bw-tree-ui .fw-800 { font-weight: 800 !important; }

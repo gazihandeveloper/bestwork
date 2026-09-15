@@ -8,7 +8,7 @@
 // Set     : Lucide (lucide.dev)
 // Yöntem  : Derin ESM import — yalnızca kullanılan ikonlar paketlenir
 //           ("barrel import" YOK, tüm set asla pakete girmez).
-// İkon sayısı: 115 (+3 marka işareti)
+// İkon sayısı: 123 (+3 marka işareti)
 // ============================================================
 
 export { default as AlertCircle } from "lucide-react/dist/esm/icons/alert-circle.mjs";
@@ -16,6 +16,7 @@ export { default as Apple } from "lucide-react/dist/esm/icons/apple.mjs";
 export { default as ArrowDownLeft } from "lucide-react/dist/esm/icons/arrow-down-left.mjs";
 export { default as ArrowLeft } from "lucide-react/dist/esm/icons/arrow-left.mjs";
 export { default as ArrowRight } from "lucide-react/dist/esm/icons/arrow-right.mjs";
+export { default as ArrowUp } from "lucide-react/dist/esm/icons/arrow-up.mjs";
 export { default as ArrowUpRight } from "lucide-react/dist/esm/icons/arrow-up-right.mjs";
 export { default as Award } from "lucide-react/dist/esm/icons/award.mjs";
 export { default as BadgeCheck } from "lucide-react/dist/esm/icons/badge-check.mjs";
@@ -27,6 +28,7 @@ export { default as Building2 } from "lucide-react/dist/esm/icons/building-2.mjs
 export { default as Calendar } from "lucide-react/dist/esm/icons/calendar.mjs";
 export { default as CalendarDays } from "lucide-react/dist/esm/icons/calendar-days.mjs";
 export { default as Camera } from "lucide-react/dist/esm/icons/camera.mjs";
+export { default as ChartBar } from "lucide-react/dist/esm/icons/chart-bar.mjs";
 export { default as Check } from "lucide-react/dist/esm/icons/check.mjs";
 export { default as CheckCircle } from "lucide-react/dist/esm/icons/circle-check.mjs";
 export { default as CheckSquare } from "lucide-react/dist/esm/icons/square-check.mjs";
@@ -67,17 +69,21 @@ export { default as Info } from "lucide-react/dist/esm/icons/info.mjs";
 export { default as Landmark } from "lucide-react/dist/esm/icons/landmark.mjs";
 export { default as Layers } from "lucide-react/dist/esm/icons/layers.mjs";
 export { default as LayoutDashboard } from "lucide-react/dist/esm/icons/layout-dashboard.mjs";
+export { default as LayoutList } from "lucide-react/dist/esm/icons/layout-list.mjs";
 export { default as Leaf } from "lucide-react/dist/esm/icons/leaf.mjs";
 export { default as Link } from "lucide-react/dist/esm/icons/link.mjs";
+export { default as List } from "lucide-react/dist/esm/icons/list.mjs";
 export { default as ListChecks } from "lucide-react/dist/esm/icons/list-checks.mjs";
 export { default as Lock } from "lucide-react/dist/esm/icons/lock.mjs";
 export { default as LogIn } from "lucide-react/dist/esm/icons/log-in.mjs";
 export { default as LogOut } from "lucide-react/dist/esm/icons/power.mjs";
 export { default as Mail } from "lucide-react/dist/esm/icons/mail.mjs";
 export { default as MapPin } from "lucide-react/dist/esm/icons/map-pin.mjs";
+export { default as Maximize } from "lucide-react/dist/esm/icons/maximize.mjs";
 export { default as Megaphone } from "lucide-react/dist/esm/icons/megaphone.mjs";
 export { default as Menu } from "lucide-react/dist/esm/icons/menu.mjs";
 export { default as MessageSquare } from "lucide-react/dist/esm/icons/message-square.mjs";
+export { default as Minimize } from "lucide-react/dist/esm/icons/minimize.mjs";
 export { default as Minus } from "lucide-react/dist/esm/icons/minus.mjs";
 export { default as MoreHorizontal } from "lucide-react/dist/esm/icons/more-horizontal.mjs";
 export { default as Network } from "lucide-react/dist/esm/icons/network.mjs";
@@ -90,7 +96,9 @@ export { default as Pencil } from "lucide-react/dist/esm/icons/pencil.mjs";
 export { default as PenLine } from "lucide-react/dist/esm/icons/pen-line.mjs";
 export { default as Percent } from "lucide-react/dist/esm/icons/percent.mjs";
 export { default as Phone } from "lucide-react/dist/esm/icons/phone.mjs";
+export { default as PieChart } from "lucide-react/dist/esm/icons/pie-chart.mjs";
 export { default as Pill } from "lucide-react/dist/esm/icons/pill.mjs";
+export { default as Pin } from "lucide-react/dist/esm/icons/pin.mjs";
 export { default as Plus } from "lucide-react/dist/esm/icons/plus.mjs";
 export { default as Receipt } from "lucide-react/dist/esm/icons/receipt.mjs";
 export { default as RefreshCw } from "lucide-react/dist/esm/icons/refresh-cw.mjs";
