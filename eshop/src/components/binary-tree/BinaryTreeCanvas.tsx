@@ -77,21 +77,35 @@ function CountBadge({
   value,
   label,
   title,
+  onClick,
 }: {
   tone: keyof typeof BADGE_TONES
   value: number | null
   label: string
   title: string
+  onClick?: () => void
 }) {
   const t = BADGE_TONES[tone]
-  return (
-    <span
-      title={title}
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] fw-700 ring-1 ${t.box}`}
-    >
+  const cls = `inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] fw-700 ring-1 ${t.box} ${
+    onClick ? 'cursor-pointer transition-transform hover:scale-105 active:scale-95' : ''
+  }`
+  const inner = (
+    <>
       <span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />
       <span className="font-mono tabular-nums">{value == null ? '—' : value}</span>
       <span className="text-[10px] fw-500 opacity-80">{label}</span>
+    </>
+  )
+  if (onClick) {
+    return (
+      <button type="button" title={title} onClick={onClick} className={cls}>
+        {inner}
+      </button>
+    )
+  }
+  return (
+    <span title={title} className={cls}>
+      {inner}
     </span>
   )
 }
@@ -120,6 +134,12 @@ export function BinaryTreeCanvas({
   const [size, setSize] = useState({ w: 0, h: 0 })
   const [zoomLevel, setZoomLevel] = useState(1)
   const [showReport, setShowReport] = useState(false)
+  const [reportTab, setReportTab] = useState<'aktif' | 'pasif' | null>(null)
+
+  const openReport = (tab: 'aktif' | 'pasif' | null) => {
+    setReportTab(tab)
+    setShowReport(true)
+  }
 
   /* ── Responsive ölçüm ── */
   useEffect(() => {
@@ -306,7 +326,7 @@ export function BinaryTreeCanvas({
         type="button"
         title="Ağaç durumu raporu"
         aria-label="Ağaç durumu"
-        onClick={() => setShowReport(true)}
+        onClick={() => openReport(null)}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
       >
         <TreePine size={15} />
@@ -339,8 +359,20 @@ export function BinaryTreeCanvas({
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <CountBadge tone="green" value={aktif} label="Aktif" title="Ağaçtaki aktif üye sayısı" />
-            <CountBadge tone="red" value={pasif} label="Pasif" title="Ağaçtaki pasif üye sayısı" />
+            <CountBadge
+              tone="green"
+              value={aktif}
+              label="Aktif"
+              title="Aktif üyeleri görüntüle"
+              onClick={() => openReport('aktif')}
+            />
+            <CountBadge
+              tone="red"
+              value={pasif}
+              label="Pasif"
+              title="Pasif üyeleri görüntüle"
+              onClick={() => openReport('pasif')}
+            />
             <CountBadge tone="gray" value={toplam} label="Toplam" title="Ağaçtaki toplam kişi sayısı" />
           </div>
         </div>
@@ -407,6 +439,7 @@ export function BinaryTreeCanvas({
           aktif={aktif}
           pasif={pasif}
           toplam={toplam}
+          initialTab={reportTab}
         />
       )}
     </div>

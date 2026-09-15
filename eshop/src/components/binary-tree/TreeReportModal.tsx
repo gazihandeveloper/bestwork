@@ -7,7 +7,7 @@
 // ============================================
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, X } from '@/components/icons'
 import { rawGet } from '@/lib/raw'
 import { initials } from './types'
@@ -75,11 +75,13 @@ export function TreeReportModal({
   aktif,
   pasif,
   toplam,
+  initialTab = null,
 }: {
   onClose: () => void
   aktif: number | null
   pasif: number | null
   toplam: number | null
+  initialTab?: Sekme | null
 }) {
   const [sekme, setSekme] = useState<Sekme | null>(null)
   const [rows, setRows] = useState<DownlineRowApi[]>([])
@@ -115,6 +117,15 @@ export function TreeReportModal({
       setListLoading(false)
     }
   }
+
+  /* Rozetten açıldıysa ilgili listeyi otomatik yükle (modal her açılışta yeniden mount edilir).
+     setState'i effect gövdesinde senkron çağırmamak için yükleme 0ms'lik bir makro-göreve ertelenir. */
+  useEffect(() => {
+    if (!initialTab) return
+    const id = window.setTimeout(() => void listele(initialTab), 0)
+    return () => window.clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div
