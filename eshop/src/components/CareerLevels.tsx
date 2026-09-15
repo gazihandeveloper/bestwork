@@ -99,9 +99,9 @@ export function CareerLevels({ className = '' }: { className?: string }) {
     return (
       <div className={`rounded-2xl border border-gray-100 bg-white p-4 shadow-sm ${className}`}>
         <div className="mb-3 h-3 w-40 animate-pulse rounded bg-gray-100" />
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12">
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-6 sm:overflow-visible md:grid-cols-8 lg:grid-cols-12">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="h-[86px] animate-pulse rounded-xl bg-gray-50" />
+            <div key={i} className="h-[86px] w-[92px] shrink-0 animate-pulse rounded-xl bg-gray-50 sm:w-auto sm:shrink" />
           ))}
         </div>
       </div>
@@ -124,7 +124,7 @@ export function CareerLevels({ className = '' }: { className?: string }) {
       <div className="mb-3 flex items-center justify-center gap-2 text-xs fw-800 tracking-wide text-gray-700 sm:justify-start">
         <Crown size={16} className="text-amber-500" /> KARİYER SEVİYELERİ
       </div>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:grid sm:grid-cols-6 sm:overflow-visible md:grid-cols-8 lg:grid-cols-12">
         {steps.map(({ rank, isAchieved, isActive, isNext }) => {
           const meta = rankStyle(rank.name)
           const Icon = rankIcon(rank.name)
@@ -132,7 +132,7 @@ export function CareerLevels({ className = '' }: { className?: string }) {
             <div
               key={rank.id}
               title={rank.name}
-              className={`flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors ${
+              className={`flex min-h-[86px] w-[92px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors sm:w-auto sm:shrink ${
                 isActive
                   ? 'border-brand-600 bg-brand-600 shadow-md'
                   : isAchieved
