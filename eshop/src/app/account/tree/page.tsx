@@ -15,7 +15,7 @@ import Link from 'next/link'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import {
   BinaryTreeCanvas,
-  NodeDetailPanel,
+  NodeProfileModal,
   useBinaryTree,
   type SearchResult,
 } from '@/components/binary-tree'
@@ -205,7 +205,14 @@ function TreeExplorer({
         />
       )}
 
-      <NodeDetailPanel nodeId={selectedId} rec={selectedRec} onClose={() => setSelectedId(null)} />
+      {selectedId != null && (
+        <NodeProfileModal
+          key={selectedId}
+          nodeId={selectedId}
+          rec={selectedRec}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </>
   )
 }
