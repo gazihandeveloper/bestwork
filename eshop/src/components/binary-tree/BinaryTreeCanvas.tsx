@@ -152,8 +152,12 @@ export function BinaryTreeCanvas({
     if (!el) return
     const update = () => {
       const r = el.getBoundingClientRect()
-      const w = Math.max(320, Math.round(r.width))
-      const h = Math.max(360, Math.round(r.height))
+      // Mobil/taşma durumunda ölçülen genişlik ekrandan büyük çıkabilir; ağacın
+      // ortalama/ölçek hesabı görünür alana göre yapılsın diye ekranla sınırla.
+      const vw = typeof window !== 'undefined' ? window.innerWidth : r.width
+      const vh = typeof window !== 'undefined' ? window.innerHeight : r.height
+      const w = Math.max(320, Math.min(Math.round(r.width), vw))
+      const h = Math.max(360, Math.min(Math.round(r.height), Math.max(360, vh)))
       setSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }))
     }
     update()
@@ -234,6 +238,29 @@ export function BinaryTreeCanvas({
     return d3.zoomIdentity.translate(tx, ty).scale(scale)
   }
 
+  /**
+   * İlk görünüm: KÖKÜ her zaman yatayda EKRANIN ORTASINA, dikeyde üste hizalar.
+   * (Sınırlayıcı kutu ortalaması, dengesiz ağaçlarda kökü yana kaydırıyordu.)
+   */
+  const computeRootTransform = (): d3.ZoomTransform | null => {
+    if (!layout || size.w <= 0) return null
+    const { rt, x0, x1, y0, y1 } = layout
+    const padX = size.w < 640 ? 12 : 48
+    const padY = size.w < 640 ? 20 : 40
+    const minX = x0 - FO_W / 2
+    const maxX = x1 + FO_W / 2
+    const minY = y0 - FO_H / 2
+    const maxY = y1 + FO_H / 2
+    const contentW = maxX - minX
+    const contentH = maxY - minY
+    const fit = Math.min((size.w - padX * 2) / contentW, (size.h - padY * 2) / contentH)
+    const floor = size.w < 1024 ? 0.55 : 0.4
+    const scale = Math.min(1, Math.max(fit, floor))
+    const tx = size.w / 2 - rt.x * scale
+    const ty = padY - minY * scale
+    return d3.zoomIdentity.translate(tx, ty).scale(scale)
+  }
+
   const applyTransform = (t: d3.ZoomTransform | null, duration: number) => {
     const svg = svgRef.current
     const zb = zoomRef.current
@@ -255,11 +282,11 @@ export function BinaryTreeCanvas({
       fitKeyRef.current = fitKey
       interactedRef.current = false
     }
-    applyTransform(computeTransform(false), 0)
+    applyTransform(computeRootTransform(), 0)
     if (changed) {
       // Mobil/Safari: ilk karede ölçüm/yerleşim gecikirse bir kare sonra tekrar uygula.
       const raf = requestAnimationFrame(() => {
-        if (!interactedRef.current) applyTransform(computeTransform(false), 0)
+        if (!interactedRef.current) applyTransform(computeRootTransform(), 0)
       })
       return () => cancelAnimationFrame(raf)
     }
