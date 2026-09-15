@@ -255,12 +255,6 @@ export function useBinaryTree(period: string): UseBinaryTree {
     }
   }, [rootId, loadNode])
 
-  /** Küçük ağaçlar (<= 150 kişi) açılışta tamamen açılır; büyükler tembel kalır. */
-  useEffect(() => {
-    if (rootId == null || stats == null) return
-    if (stats.toplam <= 150) void expandAll()
-  }, [rootId, stats, expandAll])
-
   return {
     nodes,
     loaded,
