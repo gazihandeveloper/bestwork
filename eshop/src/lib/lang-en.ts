@@ -109,6 +109,21 @@ export const en: Record<string, string> = {
   'SOL HAT': 'LEFT LEG',
   'SAĞ HAT': 'RIGHT LEG',
 
+  // ----- Kariyer -----
+  'KARİYER SEVİYELERİ': 'CAREER LEVELS',
+  'GÜNCEL': 'CURRENT',
+  'GÜNCEL RÜTBENİZ': 'YOUR CURRENT RANK',
+  'SONRAKİ HEDEF': 'NEXT GOAL',
+  'Sıradaki hedef:': 'Next goal:',
+  'Tüm rütbeler kazanıldı 🎉': 'All ranks achieved 🎉',
+  'Kazanıldı:': 'Achieved:',
+  'Yaklaşıyorsunuz...': 'Getting closer...',
+  'GEÇİLDİ': 'PASSED',
+  'Kilitli': 'Locked',
+  'Rütbeler hat PV toplamlarına göre kazanılır ve kalıcıdır — adım adım ilerleyin.': 'Ranks are earned by leg PV totals and are permanent — progress step by step.',
+  'Kilitli rütbeler için önceki rütbenin şartlarını tamamlamanız gerekir.': 'Complete the previous rank requirements to unlock locked ranks.',
+  'Rütbe tanımları bulunamadı.': 'No rank definitions found.',
+
   // ----- Anasayfa / mağaza -----
   'Öne Çıkan Kategoriler': 'Featured Categories',
   'Kategori bulunamadı': 'No categories found',
