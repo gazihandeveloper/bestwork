@@ -174,11 +174,11 @@ export default function CartPage() {
                       onChange={(n) => updateQuantity(item.id, n)}
                     />
                     <div className="flex items-center gap-1">
-                      <span className="bg-purple-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
-                        {formatPV(item.product?.pv ?? item.pv)} PV
-                      </span>
                       <span className="bg-green-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
                         {formatPV(item.product?.cv ?? item.cv)} CV
+                      </span>
+                      <span className="bg-purple-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                        {formatPV(item.product?.pv ?? item.pv)} PV
                       </span>
                     </div>
                   </div>
@@ -229,12 +229,12 @@ export default function CartPage() {
                 <span className="font-bold text-green-600">Ücretsiz</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Toplam PV</span>
-                <span className="font-bold text-purple-600">{formatPV(totalPV)} PV</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-gray-500">Toplam CV</span>
                 <span className="font-bold text-green-600">{formatPV(totalCV)} CV</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Toplam PV</span>
+                <span className="font-bold text-purple-600">{formatPV(totalPV)} PV</span>
               </div>
               <hr className="border-gray-100" />
               <div className="flex justify-between text-base">

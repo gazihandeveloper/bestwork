@@ -9,6 +9,7 @@ import { ShoppingCart, Eye } from '@/components/icons'
 import { StarRating } from './StarRating'
 import { formatPrice, discountPercentage, formatPV } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Product } from '@/types'
 
 interface ProductCardProps {
@@ -17,6 +18,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
+  const { isAuthenticated } = useAuth()
   const discount = discountPercentage(product.price, product.comparePrice || 0)
 
   return (
@@ -48,12 +50,12 @@ export function ProductCard({ product }: ProductCardProps) {
               Öne Çıkan
             </span>
           )}
-          {(product as any).pv > 0 && (
+          {(product as any).pv > 0 && isAuthenticated && (
             <span className="bg-purple-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
               {formatPV((product as any).pv)} PV
             </span>
           )}
-          {(product as any).cv > 0 && (
+          {(product as any).cv > 0 && isAuthenticated && (
             <span className="bg-green-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
               {formatPV((product as any).cv)} CV
             </span>

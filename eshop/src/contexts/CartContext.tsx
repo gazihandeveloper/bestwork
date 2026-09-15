@@ -83,7 +83,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const next = { ...cur, ...computeTotals(items) } as Cart
     persistCart(next)
     setCart(next)
-    toast.success(`${product.name} sepete eklendi`)
+    toast.success(`${product.name} sepete eklendi`, { id: 'cart-add', duration: 1500 })
   }
 
   const updateQuantity = async (itemId: number, quantity: number) => {
