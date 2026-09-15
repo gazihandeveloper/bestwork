@@ -5,8 +5,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { House, Trophy, Star, CircleCheck, Lock, Crown, Gem, Diamond, Leaf, Heart, Sparkles, Shield, Medal } from '@/components/icons'
+import { House, Trophy, Star, CircleCheck, Lock } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
+import { CareerLevels, rankStyle } from '@/components/CareerLevels'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
 
@@ -33,43 +34,7 @@ interface MePV {
 
 const fmt = (v: number) => (Number(v) || 0).toLocaleString('tr-TR')
 
-// Rütbe başına renk + yıldız
-function rankStyle(name: string): { color: string; gold: boolean } {
-  const n = name.toLocaleLowerCase('tr-TR')
-  const colors: Record<string, string> = {
-    jade: '#2e7d32',
-    pearl: '#90a4ae',
-    safir: '#1565c0',
-    ruby: '#c62828',
-    zümrüt: '#43a047',
-    emerald: '#43a047',
-    sapphire: '#1e88e5',
-    diamond: '#4fc3f7',
-    'blue diamond': '#1e88e5',
-    'green diamond': '#43a047',
-    'red diamond': '#e53935',
-    'black diamond': '#263238',
-    president: '#f9a825',
-    ambassador: '#ffb300',
-  }
-  return { color: colors[n] ?? '#90caf9', gold: n === 'president' || n === 'ambassador' }
-}
-
 const downlineName = (ranks: RankInfo[], id?: number | null) => ranks.find((r) => r.id === id)?.name ?? ''
-
-// Rütbeye göre ikon (İngilizce adlara göre; eski Türkçe adlar da destekli).
-function rankIcon(name: string) {
-  const n = name.toLocaleLowerCase('tr-TR')
-  if (n.includes('ambassador')) return Trophy
-  if (n.includes('president')) return Crown
-  if (n.includes('black diamond')) return Shield
-  if (n.includes('diamond')) return Diamond
-  if (n.includes('ruby') || n.includes('yakut')) return Heart
-  if (n.includes('pearl') || n.includes('inci')) return Sparkles
-  if (n.includes('jade') || n.includes('yeşim')) return Leaf
-  if (n.includes('sapphire') || n.includes('safir') || n.includes('emerald') || n.includes('zümrüt')) return Gem
-  return Medal
-}
 
 export default function CareerPage() {
   const [ranks, setRanks] = useState<RankInfo[]>([])
@@ -149,53 +114,7 @@ export default function CareerPage() {
       ) : (
         <>
           {/* Kariyer Seviyeleri şeridi */}
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="mb-3 flex items-center justify-center gap-2 text-xs fw-800 tracking-wide text-gray-700 sm:justify-start">
-              <Crown size={16} className="text-amber-500" /> KARİYER SEVİYELERİ
-            </div>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12">
-              {steps.map(({ rank, isAchieved, isActive, isNext }) => {
-                const meta = rankStyle(rank.name)
-                const Icon = rankIcon(rank.name)
-                return (
-                  <div
-                    key={rank.id}
-                    title={rank.name}
-                    className={`flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors ${
-                      isActive
-                        ? 'border-brand-600 bg-brand-600 shadow-md'
-                        : isAchieved
-                          ? 'border-amber-300 bg-amber-50'
-                          : isNext
-                            ? 'border-brand-300 bg-brand-50/50'
-                            : 'border-gray-100 bg-white'
-                    }`}
-                  >
-                    <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-white/60"
-                      style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : meta.color }}
-                    >
-                      <Icon size={18} className="text-white" />
-                    </span>
-                    <span
-                      className={`w-full text-center text-[9px] fw-800 uppercase leading-tight break-words ${
-                        isActive
-                          ? 'text-white'
-                          : isAchieved
-                            ? 'text-amber-800'
-                            : isNext
-                              ? 'text-brand-800'
-                              : 'text-gray-500'
-                      }`}
-                    >
-                      {rank.name}
-                    </span>
-                    {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          <CareerLevels />
 
           {/* Durum şeridi */}
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">

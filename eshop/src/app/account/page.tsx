@@ -36,6 +36,7 @@ import { useCart } from '@/contexts/CartContext'
 import { get, put, tokenStorage, formatPrice } from '@/lib/api'
 import toast from 'react-hot-toast'
 import AccountTopMenu from '@/components/AccountTopMenu'
+import { CareerLevels } from '@/components/CareerLevels'
 
 const UPLOAD_BASE = 'https://mahmutgazihanarslan.com.tr'
 const BW_BASE = 'https://mahmutgazihanarslan.com.tr'
@@ -502,6 +503,9 @@ export default function AccountDashboardPage() {
     <div className="space-y-5">
       {/* Üst menü — bestwork backoffice menüsü */}
       <AccountTopMenu />
+
+      {/* Kariyer seviyeleri — ana ızgaranın hemen üstünde */}
+      <CareerLevels />
 
       {/* ── Ana ızgara: sol profil kartı + sağ istatistikler ── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
