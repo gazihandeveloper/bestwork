@@ -9,7 +9,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { Maximize, Minus, Network, Plus, RotateCcw } from '@/components/icons'
+import { FolderTree, Maximize, Minus, Plus, RotateCcw } from '@/components/icons'
 import { NodeCard } from './NodeCard'
 import { CARD_H, FO_H, FO_PAD, FO_W, NODE_DX, NODE_DY, type NodeRec } from './types'
 
@@ -294,14 +294,6 @@ export function BinaryTreeCanvas({
       </button>
       <button
         type="button"
-        title="Tüm alt ağacı yükle ve aç"
-        onClick={onExpandAll}
-        className="flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs fw-700 text-gray-600 transition-colors hover:bg-gray-50"
-      >
-        <Network size={13} /> Tümünü Aç
-      </button>
-      <button
-        type="button"
         onClick={() => {
           interactedRef.current = true
           applyTransform(computeTransform(true), 260)
@@ -309,6 +301,15 @@ export function BinaryTreeCanvas({
         className="flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs fw-700 text-gray-600 transition-colors hover:bg-gray-50"
       >
         <Maximize size={13} /> Sığdır
+      </button>
+      <button
+        type="button"
+        title="Tüm alt ağacı yükle ve aç"
+        aria-label="Ağacı aç"
+        onClick={onExpandAll}
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
+      >
+        <FolderTree size={15} />
       </button>
       <span className="w-10 text-center text-xs fw-700 text-gray-400">%{Math.round(zoomLevel * 100)}</span>
     </div>
