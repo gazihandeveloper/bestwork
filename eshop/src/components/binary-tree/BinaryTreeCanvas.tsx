@@ -447,6 +447,7 @@ export function BinaryTreeCanvas({
           pasif={pasif}
           toplam={toplam}
           initialTab={reportTab}
+          kokId={rootId ?? 0}
         />
       )}
     </div>

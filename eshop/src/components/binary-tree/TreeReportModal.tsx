@@ -76,12 +76,15 @@ export function TreeReportModal({
   pasif,
   toplam,
   initialTab = null,
+  kokId = 0,
 }: {
   onClose: () => void
   aktif: number | null
   pasif: number | null
   toplam: number | null
   initialTab?: Sekme | null
+  /** Görüntülenen kök; liste sorgusu bu düğümün alt hattına göre yapılır. */
+  kokId?: number
 }) {
   const [sekme, setSekme] = useState<Sekme | null>(null)
   const [rows, setRows] = useState<DownlineRowApi[]>([])
@@ -107,7 +110,7 @@ export function TreeReportModal({
     setRows([])
     try {
       const r = await rawGet<{ users: DownlineRowApi[]; total: number }>(
-        `/tree/downline?durum=${t}&limit=200`
+        `/tree/downline?durum=${t}&limit=200${kokId > 0 ? `&kok=${kokId}` : ''}`
       )
       setRows(Array.isArray(r.users) ? r.users : [])
       setListTotal(Number(r.total) || 0)

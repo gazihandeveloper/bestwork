@@ -30,10 +30,19 @@ const currentMonth = () => {
 
 export default function TreePage() {
   const [period, setPeriod] = useState(currentMonth())
+  const [rootNode, setRootNode] = useState<{ id: number; name: string } | null>(null)
   return (
     <div className="bw-tree-ui space-y-4">
       <AccountTopMenu />
-      <TreeExplorer key={period} period={period} onPeriodChange={setPeriod} />
+      <TreeExplorer
+        key={`${period}:${rootNode?.id ?? 'self'}`}
+        period={period}
+        onPeriodChange={setPeriod}
+        rootId={rootNode?.id ?? null}
+        rootName={rootNode?.name ?? null}
+        onOpenRoot={(id, name) => setRootNode({ id, name })}
+        onBackToSelf={() => setRootNode(null)}
+      />
     </div>
   )
 }
@@ -41,9 +50,17 @@ export default function TreePage() {
 function TreeExplorer({
   period,
   onPeriodChange,
+  rootId,
+  rootName,
+  onOpenRoot,
+  onBackToSelf,
 }: {
   period: string
   onPeriodChange: (month: string) => void
+  rootId: number | null
+  rootName: string | null
+  onOpenRoot: (id: number, name: string) => void
+  onBackToSelf: () => void
 }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -53,7 +70,7 @@ function TreeExplorer({
   const [pins, setPins] = useState<TreeNode[]>([])
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const tree = useBinaryTree(period)
+  const tree = useBinaryTree(period, rootId)
   const { search } = tree
 
   const loadPins = () => {
@@ -82,12 +99,9 @@ function TreeExplorer({
     await loadPins()
   }
 
-  const gotoPin = async (p: TreeNode) => {
-    const res = await search(p.member_code).catch(() => [])
-    const hit = res.find((r) => r.node.user_id === p.user_id) ?? res[0]
-    if (!hit) return
-    const id = await tree.revealPath(hit.path)
-    if (id != null) setFocusId(id)
+  const gotoPin = (p: TreeNode) => {
+    // Pin'e tıklayınca ağacın kökü o kişi olur: kendisi + alt ekibi.
+    onOpenRoot(p.user_id, p.name)
   }
 
   const pinnedIds = pins.reduce<Record<number, boolean>>((acc, p) => {
@@ -149,6 +163,21 @@ function TreeExplorer({
           <House size={16} /> Anasayfa
         </Link>
       </div>
+
+      {rootName && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-brand-100 bg-brand-50/60 px-3 py-2">
+          <span className="text-xs fw-700 text-brand-700">
+            Görüntülenen kök: <span className="text-gray-800">{rootName}</span> ve alt ekibi
+          </span>
+          <button
+            type="button"
+            onClick={onBackToSelf}
+            className="cursor-pointer rounded-lg border border-brand-200 bg-white px-2.5 py-1 text-xs fw-700 text-brand-700 transition-colors hover:bg-brand-50"
+          >
+            Kendi ağacıma dön
+          </button>
+        </div>
+      )}
 
       {/* Dönem + arama */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">

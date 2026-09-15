@@ -62,7 +62,13 @@ export interface UseBinaryTree extends BinaryTreeState {
   search: (q: string) => Promise<SearchResult[]>
 }
 
-export function useBinaryTree(period: string): UseBinaryTree {
+/**
+ * @param period  "YYYY-MM" dönem filtresi
+ * @param kokId   Görüntülenen kök. Verilirse ağaç kendi üyeniz yerine bu
+ *                düğümden yüklenir (kendisi + alt ekibi). Verilmezse oturum
+ *                kullanıcısı kök olur.
+ */
+export function useBinaryTree(period: string, kokId?: number | null): UseBinaryTree {
   const [nodes, setNodes] = useState<Record<number, NodeRec>>({})
   const [loaded, setLoaded] = useState<Record<number, boolean>>({})
   const [expanded, setExpanded] = useState<Record<number, boolean>>({})
@@ -150,9 +156,10 @@ export function useBinaryTree(period: string): UseBinaryTree {
    */
   useEffect(() => {
     let cancelled = false
-    rawGet<{ node: TreeNode; min_month: string }>(
-      `/tree/level${querySuffix ? `?${querySuffix.slice(1)}` : ''}`
-    )
+    const params = [kokId != null ? `id=${kokId}` : '', querySuffix.replace(/^&/, '')]
+      .filter(Boolean)
+      .join('&')
+    rawGet<{ node: TreeNode; min_month: string }>(`/tree/level${params ? `?${params}` : ''}`)
       .then((r) => {
         if (cancelled || !r.node) return
         merge(r.node)
@@ -171,19 +178,21 @@ export function useBinaryTree(period: string): UseBinaryTree {
     return () => {
       cancelled = true
     }
-  }, [querySuffix, merge, markLoaded])
+  }, [querySuffix, kokId, merge, markLoaded])
 
   /**
    * Alt hat sayaçları: toplam üye ve aktif üye. `/tree/downline` filtresiz ve
    * `durum=aktif` sorgularının döndürdüğü `total` değerleri kullanılır (COUNT).
-   * Pasif, toplam - aktif olarak hesaplanır.
+   * Pasif, toplam - aktif olarak hesaplanır. `kokId` verilirse sayaçlar o
+   * düğümün alt hattına göre alınır.
    */
   useEffect(() => {
     if (rootId == null) return
+    const kokQS = kokId != null ? `&kok=${kokId}` : ''
     let cancelled = false
     Promise.all([
-      rawGet<{ total: number }>('/tree/downline?limit=1'),
-      rawGet<{ total: number }>('/tree/downline?durum=aktif&limit=1'),
+      rawGet<{ total: number }>(`/tree/downline?limit=1${kokQS}`),
+      rawGet<{ total: number }>(`/tree/downline?durum=aktif&limit=1${kokQS}`),
     ])
       .then(([hepsi, aktif]) => {
         if (cancelled) return
@@ -193,7 +202,7 @@ export function useBinaryTree(period: string): UseBinaryTree {
     return () => {
       cancelled = true
     }
-  }, [rootId])
+  }, [rootId, kokId])
 
   const search = useCallback(async (q: string) => {
     const query = q.trim()
