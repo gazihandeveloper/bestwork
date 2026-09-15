@@ -8,13 +8,14 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Minus, Plus } from '@/components/icons'
+import { Minus, Pin, Plus } from '@/components/icons'
 import { CARD_H, CARD_W, fmt, initials, toAbs, type NodeRec } from './types'
 
 interface NodeCardProps {
   rec: NodeRec
   isRoot: boolean
   selected: boolean
+  pinned: boolean
   hasChildren: boolean
   isOpen: boolean
   busy: boolean
@@ -26,6 +27,7 @@ export function NodeCard({
   rec,
   isRoot,
   selected,
+  pinned,
   hasChildren,
   isOpen,
   busy,
@@ -114,6 +116,15 @@ export function NodeCard({
         {isRoot && (
           <span className="absolute -top-1.5 left-2 rounded bg-brand-600 px-1 py-px text-[8px] fw-700 tracking-wide text-white">
             KÖK
+          </span>
+        )}
+
+        {pinned && (
+          <span
+            title="Sabitlenmiş"
+            className="absolute -top-1.5 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-white shadow-sm"
+          >
+            <Pin size={9} />
           </span>
         )}
       </div>

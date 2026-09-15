@@ -18,8 +18,10 @@ import {
   NodeProfileModal,
   useBinaryTree,
   type SearchResult,
+  type TreeNode,
 } from '@/components/binary-tree'
-import { CalendarDays, GitFork, House, Search, X } from '@/components/icons'
+import { CalendarDays, GitFork, House, Pin, Search, X } from '@/components/icons'
+import { rawCacheGecersiz, rawDel, rawGet, rawPost } from '@/lib/raw'
 
 const currentMonth = () => {
   const d = new Date()
@@ -48,10 +50,46 @@ function TreeExplorer({
   const [searching, setSearching] = useState(false)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [focusId, setFocusId] = useState<number | null>(null)
+  const [pins, setPins] = useState<TreeNode[]>([])
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const tree = useBinaryTree(period)
   const { search } = tree
+
+  const loadPins = () => {
+    rawGet<{ pins: TreeNode[] }>('/tree/pins')
+      .then((r) => setPins(Array.isArray(r.pins) ? r.pins : []))
+      .catch(() => undefined)
+  }
+
+  useEffect(() => {
+    loadPins()
+  }, [])
+
+  const togglePin = async (id: number) => {
+    const mevcut = pins.some((p) => p.user_id === id)
+    try {
+      if (mevcut) await rawDel(`/tree/pins/${id}`)
+      else await rawPost('/tree/pins', { user_id: id })
+      rawCacheGecersiz('/tree/pins')
+      loadPins()
+    } catch {
+      /* sessiz */
+    }
+  }
+
+  const gotoPin = async (p: TreeNode) => {
+    const res = await search(p.member_code).catch(() => [])
+    const hit = res.find((r) => r.node.user_id === p.user_id) ?? res[0]
+    if (!hit) return
+    const id = await tree.revealPath(hit.path)
+    if (id != null) setFocusId(id)
+  }
+
+  const pinnedIds = pins.reduce<Record<number, boolean>>((acc, p) => {
+    acc[p.user_id] = true
+    return acc
+  }, {})
 
   useEffect(
     () => () => {
@@ -180,6 +218,37 @@ function TreeExplorer({
         </div>
       )}
 
+      {pins.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2">
+          <span className="inline-flex items-center gap-1 text-[11px] fw-700 text-amber-700">
+            <Pin size={13} /> Sabitlenenler
+          </span>
+          {pins.map((p) => (
+            <span
+              key={p.user_id}
+              className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white py-0.5 pr-1 pl-2.5 text-[12px]"
+            >
+              <button
+                type="button"
+                onClick={() => void gotoPin(p)}
+                title={`${p.name} · ${p.member_code} — ağaçta git`}
+                className="max-w-[160px] cursor-pointer truncate fw-700 text-gray-700 hover:text-amber-700"
+              >
+                {p.name}
+              </button>
+              <button
+                type="button"
+                aria-label="Sabitlemeyi kaldır"
+                onClick={() => void togglePin(p.user_id)}
+                className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-full text-gray-400 hover:bg-amber-100 hover:text-amber-700"
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       {tree.loading ? (
         <div className="py-16 text-center">
           <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
@@ -200,6 +269,7 @@ function TreeExplorer({
           fitKey={period}
           focusId={focusId}
           selectedId={selectedId}
+          pinnedIds={pinnedIds}
           onSelect={setSelectedId}
           onToggle={tree.toggle}
         />
@@ -210,6 +280,8 @@ function TreeExplorer({
           key={selectedId}
           nodeId={selectedId}
           rec={selectedRec}
+          pinned={pinnedIds[selectedId] === true}
+          onTogglePin={() => void togglePin(selectedId)}
           onClose={() => setSelectedId(null)}
         />
       )}

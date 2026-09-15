@@ -8,7 +8,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Award, Search, X } from '@/components/icons'
+import { Award, Pin, Search, X } from '@/components/icons'
 import { rawGet } from '@/lib/raw'
 import { fmt, initials, toAbs, type NodeRec } from './types'
 
@@ -59,10 +59,14 @@ function StatCell({ label, value, cls }: { label: string; value: string; cls: st
 export function NodeProfileModal({
   nodeId,
   rec,
+  pinned,
+  onTogglePin,
   onClose,
 }: {
   nodeId: number
   rec: NodeRec | null
+  pinned: boolean
+  onTogglePin: () => void
   onClose: () => void
 }) {
   const [card, setCard] = useState<UserCardApi | null>(() => cardCache.get(nodeId) ?? null)
@@ -162,14 +166,27 @@ export function NodeProfileModal({
         {/* Başlık */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
           <h3 className="text-sm font-extrabold text-gray-900">Üye Profili</h3>
-          <button
-            type="button"
-            aria-label="Kapat"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title={pinned ? 'Sabitlemeyi kaldır' : 'Bu üyeyi sabitle'}
+              aria-label={pinned ? 'Sabitlemeyi kaldır' : 'Bu üyeyi sabitle'}
+              onClick={onTogglePin}
+              className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors ${
+                pinned ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'
+              }`}
+            >
+              <Pin size={17} />
+            </button>
+            <button
+              type="button"
+              aria-label="Kapat"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Sekmeler */}

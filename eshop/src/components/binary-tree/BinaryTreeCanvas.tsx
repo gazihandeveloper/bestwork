@@ -33,6 +33,8 @@ interface BinaryTreeCanvasProps {
   fitKey: string
   focusId: number | null
   selectedId: number | null
+  /** Sabitlenmiş (pinlenmiş) üye kimlikleri — kartlarda iğne rozeti için. */
+  pinnedIds: Record<number, boolean>
   onSelect: (id: number) => void
   onToggle: (id: number) => void
 }
@@ -120,6 +122,7 @@ export function BinaryTreeCanvas({
   fitKey,
   focusId,
   selectedId,
+  pinnedIds,
   onSelect,
   onToggle,
 }: BinaryTreeCanvasProps) {
@@ -418,6 +421,7 @@ export function BinaryTreeCanvas({
                         rec={rec}
                         isRoot={item.id === rootId}
                         selected={selectedId === item.id}
+                        pinned={!!pinnedIds[item.id]}
                         hasChildren={hasChildren}
                         isOpen={isOpen}
                         busy={!!busy[item.id]}
