@@ -8,7 +8,7 @@
 //
 // Çalıştırma:  cd whatsapp-bridge && node worker.mjs
 // ============================================
-import { spawn } from 'node:child_process'
+import { spawn, execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -41,6 +41,57 @@ function saveSession(id) {
 fs.mkdirSync(LOG_DIR, { recursive: true })
 
 const isPanda = (t) => /^\s*panda\b/i.test(t)
+
+// Doğrulama: iş gerçekten commit + sunucuya gitti mi?
+const SERVER = process.env.WA_SERVER || 'root@212.154.77.35'
+const ASKPASS =
+  process.env.WA_ASKPASS || '/Users/mahmutgazihanarslan/Desktop/Bestwork/.ssh/askpass.sh'
+const SSH_OPTS = [
+  '-o',
+  'StrictHostKeyChecking=no',
+  '-o',
+  'UserKnownHostsFile=/dev/null',
+  '-o',
+  'ConnectTimeout=20',
+  '-o',
+  'PreferredAuthentications=password',
+  '-o',
+  'PubkeyAuthentication=no',
+]
+function git(rev) {
+  try {
+    return execFileSync('git', ['-C', REPO, 'rev-parse', rev], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+function dirty() {
+  try {
+    return execFileSync('git', ['-C', REPO, 'status', '--porcelain'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+function serverHead() {
+  try {
+    return execFileSync(
+      'ssh',
+      [...SSH_OPTS, SERVER, 'cd /opt/bestwork-src && git rev-parse origin/main'],
+      {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          SSH_ASKPASS: ASKPASS,
+          SSH_ASKPASS_REQUIRE: 'force',
+          DISPLAY: ':0',
+        },
+      }
+    ).trim()
+  } catch {
+    return ''
+  }
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function pending() {
   const r = await fetch(BRIDGE + '/pending')
@@ -196,17 +247,43 @@ async function loop() {
         )
         await setStatus(m.id, 'processing')
         const t0 = Date.now()
-        const { ok, out } = await runOpencode(request)
+        const headBefore = git('HEAD')
+        const dirtyBefore = dirty().split('\n').filter(Boolean)
+        const { ok } = await runOpencode(request)
         const secs = ((Date.now() - t0) / 1000).toFixed(0)
+        // Gerçek doğrulama: kod değiştiyse commit edilmiş + sunucuya gitmiş olmalı.
+        const headAfter = git('HEAD')
+        let verified = ok
+        let note = ''
+        if (ok && headAfter && headAfter !== headBefore) {
+          let sh = ''
+          for (let k = 0; k < 8 && sh !== headAfter; k++) {
+            sh = serverHead()
+            if (sh !== headAfter) await sleep(4000)
+          }
+          verified = sh === headAfter
+          note = verified ? 'sunucuda doğrulandı' : 'commit var ama SUNUCUYA GİTMEDİ'
+        } else if (ok) {
+          const added = dirty()
+            .split('\n')
+            .filter(Boolean)
+            .filter((l) => !dirtyBefore.includes(l))
+          verified = added.length === 0
+          note = verified ? 'kod değişikliği yok' : 'değişiklik commit edilmedi (yayına gitmedi)'
+        }
         fs.appendFileSync(
           LOG,
-          `\n<< [${new Date().toISOString()}] bitti: süre=${secs}s sonuç=${ok ? 'OK' : 'FAIL'} | ${request}\n`
+          `\n<< [${new Date().toISOString()}] bitti: süre=${secs}s sonuç=${
+            verified ? 'OK' : 'FAIL'
+          }${note ? ' (' + note + ')' : ''} | ${request}\n`
         )
         await sendWhatsApp(
           m.jid,
-          ok ? 'İş emriniz tamamlandı 😊' : `⚠️ İş emri tamamlanamadı: ${request}`
+          verified
+            ? 'İş emriniz tamamlandı 😊'
+            : `⚠️ İş emri tamamlanamadı (yayına alınamadı): ${request}`
         )
-        await setStatus(m.id, ok ? 'done' : 'error')
+        await setStatus(m.id, verified ? 'done' : 'error')
       }
     } catch (e) {
       fs.appendFileSync(LOG, `\n[loop hata] ${e}`)
