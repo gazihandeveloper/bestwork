@@ -568,7 +568,7 @@ export default function AccountDashboardPage() {
                     onClick={() => copyText(memberCode, 'member')}
                     className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                   >
-                    Üye No: <span className="font-mono">{memberCode}</span>
+                    Üye No: <span className="font-semibold">{memberCode}</span>
                     {copied === 'member' ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
                   </button>
                 )}
@@ -604,7 +604,7 @@ export default function AccountDashboardPage() {
               </p>
               <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-2 py-1.5">
                 <LinkIcon size={16} className="shrink-0 text-gray-400" />
-                <span className="flex-1 truncate font-mono text-xs text-gray-500">{registerLink || '—'}</span>
+                <span className="flex-1 truncate text-xs text-gray-500">{registerLink || '—'}</span>
                 <button
                   type="button"
                   onClick={() => copyText(registerLink, 'link')}
@@ -682,7 +682,7 @@ export default function AccountDashboardPage() {
             <StatBlock
               label="Anlık Eşleşme"
               value={`${trn(d?.monthly_matched_cv)} CV`}
-              valueClass="text-green-600"
+              valueClass="text-black"
               kalanBoxes={{ left: trn(leftCv), right: trn(rightCv) }}
               icon={<Scale size={20} />}
               info="Kısa kol ile eşleşen puanınız."
@@ -814,7 +814,7 @@ export default function AccountDashboardPage() {
                   <tbody>
                     {pendingUsers.map((u) => (
                       <tr key={u.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50">
-                        <td className="px-3 py-2 font-mono font-bold">{u.member_code || '—'}</td>
+                        <td className="px-3 py-2 font-bold">{u.member_code || '—'}</td>
                         <td className="px-3 py-2 font-semibold">{u.name}</td>
                         <td className="px-3 py-2 text-gray-500">
                           {u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR', TR_DATE) : '—'}
