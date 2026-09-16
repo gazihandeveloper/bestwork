@@ -77,6 +77,14 @@ export function rankIcon(name: string) {
   return Medal
 }
 
+/**
+ * Görünen rütbe adı (büyük harf). İngilizce adlarda düz "I" kullanılır
+ * (Türkçe "İ" değil). Temel seviye "Girişimci" Türkçe kalır.
+ */
+export function rankUpper(name: string): string {
+  return name.toLocaleLowerCase('tr-TR').startsWith('girişimci') ? 'GİRİŞİMCİ' : name.toUpperCase()
+}
+
 export function CareerLevels({
   className = '',
   onSelect,
@@ -161,7 +169,7 @@ export function CareerLevels({
                 <Icon size={18} className="text-white" />
               </span>
               <span
-                className={`w-full text-center text-[9px] fw-800 uppercase leading-tight break-words ${
+                className={`w-full text-center text-[9px] fw-800 leading-tight break-words ${
                   isActive
                     ? 'text-white'
                     : isAchieved
@@ -171,7 +179,7 @@ export function CareerLevels({
                         : 'text-gray-500'
                 }`}
               >
-                {name}
+                {rankUpper(name)}
               </span>
               {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
             </>
@@ -190,7 +198,7 @@ export function CareerLevels({
             )
           }
           return (
-            <Link key={id} href="/account/career" title={`${name} — Kariyer Takibi`} className={cls}>
+            <Link key={id} href={`/account/career?rank=${id}`} title={`${name} — Kariyer Takibi`} className={cls}>
               {content}
             </Link>
           )

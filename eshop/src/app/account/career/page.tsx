@@ -16,7 +16,7 @@ import {
   Sparkles,
 } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
-import { CareerLevels, rankIcon, rankStyle } from '@/components/CareerLevels'
+import { CareerLevels, rankIcon, rankStyle, rankUpper } from '@/components/CareerLevels'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
 
@@ -100,6 +100,14 @@ export default function CareerPage() {
     }
   }, [])
 
+  // Dashboard'dan ?rank=<id> ile gelindiyse o rütbe hedef olarak seçilsin.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('rank')
+    if (p == null) return
+    const t = window.setTimeout(() => setSelectedRankId(Number(p)), 0)
+    return () => window.clearTimeout(t)
+  }, [])
+
   const achievedMap = new Map(career.map((c) => [c.rank_id, c]))
   const activeRank = ranks.find((r) => r.id === (career.find((c) => c.is_active)?.rank_id ?? -1)) ?? null
   const nextRank = ranks.find((r) => !achievedMap.has(r.id)) ?? null
@@ -177,7 +185,7 @@ export default function CareerPage() {
               </div>
               <div className="flex flex-col items-center gap-3 py-2">
                 <GemBadge name={currentName} size={72} />
-                <h3 className="text-xl font-extrabold text-gray-900 uppercase">{currentName}</h3>
+                <h3 className="text-xl font-extrabold text-gray-900">{rankUpper(currentName)}</h3>
               </div>
               <div className="mt-4 space-y-3">
                 <div className="flex items-center justify-between text-sm">
@@ -269,7 +277,7 @@ export default function CareerPage() {
                 <>
                   <div className="flex flex-col items-center gap-3 py-2">
                     <GemBadge name={target!.name} size={72} />
-                    <h3 className="text-xl font-extrabold text-gray-900 uppercase">{target!.name}</h3>
+                    <h3 className="text-xl font-extrabold text-gray-900">{rankUpper(target!.name)}</h3>
                   </div>
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center justify-between text-sm">

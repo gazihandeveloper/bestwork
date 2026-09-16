@@ -129,7 +129,7 @@ export default function GenelBakis() {
     { label: "Net Kâr", value: tl(dash.net_profit), sub: `Payout: %${payout}`, cls: "text-green-600" },
     { label: "Bekleyen Çekim", value: String(pending.length), sub: `Tutar: ${tl(pendingAmount)}`, cls: "text-amber-600" },
     { label: "Aktif Üye", value: n(dash.active_users), sub: `%${activePct} aktif oranı`, cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
-    { label: "Toplam Ağaç", value: n(dash.total_users), sub: "Tüm zamanlar", cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
+    { label: "Toplam Üye", value: n(dash.total_users), sub: "Tüm zamanlar", cls: "text-gray-800 dark:text-white/90 dark:text-white/90" },
   ];
 
   const chartMax = Math.max(1, ...rev.map((p) => p.revenue), ...com.map((p) => p.revenue));
