@@ -18,6 +18,12 @@ otomatik okunur. İstekleri buradaki bağlama ve akışa göre uygula.
   h-tag, `.fw-*` yardımcı sınıfı veya `bw-dash` / `bw-cart` / `bw-tree-ui` kapsamını kullan.
 - Yeni dosya/bağımlılık ekleme; istenen değişikliği **minimal** uygula.
 
+## Sınırlar (ÖNEMLİ)
+- Yalnızca **kod** değişikliği + deploy yap. **Veritabanına ve canlı veriye dokunma.**
+- Kullanıcı/profil/veri güncelleme istekleri (ör. "profil ismimi ... yap", "bakiyeyi ... yap")
+  kod işi değildir: **yapma**, kısaca "veri değişikliği, kod işi değil" diye raporla.
+- Şifre/anahtar/secret okuma-yazma yok; `api.env` gibi dosyalara erişme.
+
 ## Görev akışı (her istek için sırayla)
 1. **Bul:** ilgili dosyayı grep/glob ile çabuk bul. Repoyu baştan tarama.
 2. **Yerel uygula:** istenen değişikliği minimal yap.
