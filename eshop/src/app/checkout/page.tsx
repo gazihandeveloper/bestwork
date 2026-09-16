@@ -189,8 +189,8 @@ export default function CheckoutPage() {
                 </div>
                 <hr className="border-gray-100" />
                 <div className="flex justify-between text-base">
-                  <span className="font-bold text-gray-800">Toplam</span>
-                  <span className="font-bold text-brand-500">
+                  <span className="fw-800 text-gray-800">Toplam</span>
+                  <span className="text-lg fw-800 text-brand-500">
                     {formatPrice(cart.total || subtotal)}
                   </span>
                 </div>
