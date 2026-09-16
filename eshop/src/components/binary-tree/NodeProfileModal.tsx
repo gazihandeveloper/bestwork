@@ -229,7 +229,7 @@ export function NodeProfileModal({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-base font-extrabold text-gray-900">{name}</div>
-                  <div className="text-xs text-gray-400" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>{code}</div>
+                  <div className="text-xs fw-700 text-gray-400" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>{code}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] fw-700 text-amber-700">
                       <Award size={11} /> {rank}
