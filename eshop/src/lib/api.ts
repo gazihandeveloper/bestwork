@@ -97,8 +97,10 @@ export async function apiRequest<T>(
   // Fetch'i dene
   let res = await fetch(url, { ...fetchOptions, headers })
 
-  // 401 ise refresh dene
-  if (res.status === 401) {
+  // Login/register/refresh gibi auth çağrılarında 401 = gerçek kimlik hatası;
+  // token yenilemeye çalışıp mesajı maskeleme.
+  const isAuthCall = /\/auth\/(login|register|refresh)\b/.test(endpoint)
+  if (res.status === 401 && !isAuthCall) {
     if (!refreshPromise) {
       refreshPromise = refreshAccessToken()
     }
