@@ -321,7 +321,7 @@ export function BinaryTreeCanvas({
   }
 
   const controls = (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
       <button
         type="button"
         aria-label="Uzaklaştır"

@@ -252,14 +252,14 @@ function TreeExplorer({
       )}
 
       {pins.length > 0 && (
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2">
-          <span className="inline-flex items-center gap-1 text-[11px] fw-700 text-amber-700">
+        <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2 [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible">
+          <span className="inline-flex shrink-0 items-center gap-1 text-[11px] fw-700 text-amber-700">
             <Pin size={13} /> Sabitlenenler
           </span>
           {pins.map((p) => (
             <span
               key={p.user_id}
-              className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border border-amber-200 bg-white py-0.5 pr-1 pl-2.5 text-[12px]"
+              className="inline-flex min-w-0 max-w-full shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-white py-0.5 pr-1 pl-2.5 text-[12px]"
             >
               <button
                 type="button"
