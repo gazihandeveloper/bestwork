@@ -18,6 +18,7 @@ import {
   Handle,
   Position,
   useReactFlow,
+  useStore,
   type Edge as RFEdge,
   type Node as RFNode,
   type NodeProps,
@@ -175,6 +176,7 @@ function Inner({
   onTogglePin,
 }: BinaryTreeCanvasProps) {
   const rf = useReactFlow()
+  const rfWidth = useStore((s) => s.width)
   const interactedRef = useRef(false)
   const fitKeyRef = useRef('')
   const pendingFocusRef = useRef<number | null>(null)
@@ -260,9 +262,19 @@ function Inner({
       if (!id) return
       const rn = rfNodes.find((n) => n.id === id)
       if (!rn) return
-      rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom: 1, duration })
+      const k = 1
+      // Yatayda ortala, dikeyde kökü ÜSTE yakın yerleştir (üstte boşluk olmasın).
+      const topPad = CARD_H / 2 + 12
+      if (rfWidth > 0) {
+        rf.setViewport(
+          { x: rfWidth / 2 - (rn.position.x + CARD_W / 2) * k, y: topPad - (rn.position.y + NODE_BOX_H / 2) * k, zoom: k },
+          { duration }
+        )
+      } else {
+        rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom: k, duration })
+      }
     },
-    [rf, rfNodes, rootId]
+    [rf, rfNodes, rootId, rfWidth]
   )
 
   /* ── İlk/dönem değişiminde kökü ortala ── */
@@ -285,7 +297,7 @@ function Inner({
     id = window.setTimeout(run, 60)
     return () => window.clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rfReady, layout, rfNodes.length, fitKey])
+  }, [rfReady, layout, rfNodes.length, fitKey, rfWidth])
 
   /* ── Arama ile odaklanan düğüme ortala ── */
   useEffect(() => {
