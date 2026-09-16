@@ -96,20 +96,20 @@ export function NodeCard({
             <div className={`truncate text-[12px] fw-700 ${active ? 'text-emerald-900' : 'text-red-900'}`}>
               {rec.name || '—'}
             </div>
-            <div className="truncate font-mono text-[10px] text-gray-500">{rec.member_code || '—'}</div>
+            <div className="truncate text-[10px] text-gray-500" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>{rec.member_code || '—'}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5">
           <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md bg-sky-100 px-1 py-0.5 text-[8px] fw-700 tracking-wide text-sky-700">
             SOL CV
-            <span className="truncate font-mono text-[10px] tabular-nums text-sky-900">
+            <span className="truncate text-[10px] tabular-nums text-sky-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               {fmt(rec.total_cv_left)}
             </span>
           </span>
           <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md bg-violet-100 px-1 py-0.5 text-[8px] fw-700 tracking-wide text-violet-700">
             SAĞ CV
-            <span className="truncate font-mono text-[10px] tabular-nums text-violet-900">
+            <span className="truncate text-[10px] tabular-nums text-violet-900" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
               {fmt(rec.total_cv_right)}
             </span>
           </span>

@@ -51,7 +51,7 @@ function StatCell({ label, value, cls }: { label: string; value: string; cls: st
   return (
     <div className="rounded-xl border border-gray-100 bg-white px-3 py-2">
       <div className="text-[10px] fw-700 tracking-wider text-gray-400 uppercase">{label}</div>
-      <div className={`font-mono text-[15px] fw-800 tabular-nums ${cls}`}>{value}</div>
+      <div className={`text-[15px] fw-800 tabular-nums ${cls}`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>{value}</div>
     </div>
   )
 }
@@ -229,7 +229,7 @@ export function NodeProfileModal({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-base font-extrabold text-gray-900">{name}</div>
-                  <div className="font-mono text-xs text-gray-400">{code}</div>
+                  <div className="text-xs text-gray-400" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>{code}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] fw-700 text-amber-700">
                       <Award size={11} /> {rank}
