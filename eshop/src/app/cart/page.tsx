@@ -16,8 +16,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Zap,
-  Star,
-  Droplets,
   Tag,
   Lock,
   ShieldCheck,
@@ -99,15 +97,15 @@ const tl = (cents: number) =>
     maximumFractionDigits: 2,
   })} ₺`
 
-/** CV (yeşil) ve PV (mor) rozetleri. */
+/** CV (yeşil) ve PV (mor) rozetleri — ürün sayfasındaki ana badge stili (dolu). */
 function CvPvBadges({ cv, pv }: { cv: number; pv: number }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] fw-700 text-emerald-700 ring-1 ring-emerald-200">
-        <Star size={11} /> CV: {formatPV(cv)}
+      <span className="rounded-full bg-green-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
+        {formatPV(cv)} CV
       </span>
-      <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[11px] fw-700 text-purple-700 ring-1 ring-purple-200">
-        <Droplets size={11} /> PV: {formatPV(pv)}
+      <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
+        {formatPV(pv)} PV
       </span>
     </div>
   )
