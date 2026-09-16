@@ -103,8 +103,20 @@ export default function CareerPage() {
   const achievedMap = new Map(career.map((c) => [c.rank_id, c]))
   const activeRank = ranks.find((r) => r.id === (career.find((c) => c.is_active)?.rank_id ?? -1)) ?? null
   const nextRank = ranks.find((r) => !achievedMap.has(r.id)) ?? null
-  // Hedef: kullanıcı seçtiyse o rütbe, yoksa sıradaki (ilk kazanılmamış) rütbe.
-  const target = (selectedRankId != null ? ranks.find((r) => r.id === selectedRankId) ?? null : null) ?? nextRank
+  // Hedef: kullanıcı seçtiyse o rütbe (0 = Girişimci temel seviyesi), yoksa sıradaki rütbe.
+  const BASE: RankInfo = {
+    id: 0,
+    name: 'Girişimci',
+    required_left_pv: 0,
+    required_right_pv: 0,
+    required_downline_rank_id: null,
+    required_downline_count: 0,
+    personal_activity_pv: 0,
+  }
+  const target =
+    selectedRankId === 0
+      ? BASE
+      : (selectedRankId != null ? ranks.find((r) => r.id === selectedRankId) ?? null : null) ?? nextRank
   const leftPV = Number(me?.total_pv_left) || 0
   const rightPV = Number(me?.total_pv_right) || 0
 

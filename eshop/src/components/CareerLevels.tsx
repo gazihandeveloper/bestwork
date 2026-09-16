@@ -56,6 +56,8 @@ export function rankStyle(name: string): { color: string; gold: boolean } {
     'black diamond': '#263238',
     president: '#f9a825',
     ambassador: '#ffb300',
+    girişimci: '#1e3a8a',
+    girisimci: '#1e3a8a',
   }
   return { color: colors[n] ?? '#90caf9', gold: n === 'president' || n === 'ambassador' }
 }
@@ -70,6 +72,7 @@ export function rankIcon(name: string) {
   if (n.includes('ruby') || n.includes('yakut')) return Heart
   if (n.includes('pearl') || n.includes('inci')) return Sparkles
   if (n.includes('jade') || n.includes('yeşim')) return Leaf
+  if (n.includes('girişimci') || n.includes('girisimci')) return Gem
   if (n.includes('sapphire') || n.includes('safir') || n.includes('emerald') || n.includes('zümrüt')) return Gem
   return Medal
 }
@@ -122,23 +125,24 @@ export function CareerLevels({
 
   const achievedMap = new Map(career.map((c) => [c.rank_id, c]))
   const activeID = career.find((c) => c.is_active)?.rank_id ?? null
-  const steps = ranks.map((rank, i) => ({
-    rank,
-    isAchieved: achievedMap.has(rank.id),
-    isActive: rank.id === activeID,
-    isNext: !achievedMap.has(rank.id) && (i === 0 || achievedMap.has(ranks[i - 1].id)),
-  }))
+  const steps = [
+    { id: 0, name: 'Girişimci', isAchieved: true, isActive: activeID == null, isNext: false },
+    ...ranks.map((rank, i) => ({
+      id: rank.id,
+      name: rank.name,
+      isAchieved: achievedMap.has(rank.id),
+      isActive: rank.id === activeID,
+      isNext: !achievedMap.has(rank.id) && (i === 0 || achievedMap.has(ranks[i - 1].id)),
+    })),
+  ]
 
   return (
     <div className={`rounded-2xl border border-gray-100 bg-white p-4 shadow-sm ${className}`}>
-      <div className="mb-3 flex items-center justify-center gap-2 text-xs fw-800 tracking-wide text-gray-700 sm:justify-start">
-        <Crown size={16} className="text-amber-500" /> KARİYER SEVİYELERİ
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:grid sm:grid-cols-6 sm:overflow-visible md:grid-cols-8 lg:grid-cols-12">
-        {steps.map(({ rank, isAchieved, isActive, isNext }) => {
-          const meta = rankStyle(rank.name)
-          const Icon = rankIcon(rank.name)
-          const selected = selectedId === rank.id
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin] sm:grid sm:grid-cols-6 sm:overflow-visible md:grid-cols-8 lg:grid-cols-[repeat(13,minmax(0,1fr))]">
+        {steps.map(({ id, name, isAchieved, isActive, isNext }) => {
+          const meta = rankStyle(name)
+          const Icon = rankIcon(name)
+          const selected = selectedId === id
           const cls = `flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
             isActive
               ? 'border-brand-600 bg-brand-600 shadow-md'
@@ -167,7 +171,7 @@ export function CareerLevels({
                         : 'text-gray-500'
                 }`}
               >
-                {rank.name}
+                {name}
               </span>
               {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
             </>
@@ -175,10 +179,10 @@ export function CareerLevels({
           if (onSelect) {
             return (
               <button
-                key={rank.id}
+                key={id}
                 type="button"
-                onClick={() => onSelect(rank.id)}
-                title={`${rank.name} — hedef seç`}
+                onClick={() => onSelect(id)}
+                title={`${name} — hedef seç`}
                 className={cls}
               >
                 {content}
@@ -186,7 +190,7 @@ export function CareerLevels({
             )
           }
           return (
-            <Link key={rank.id} href="/account/career" title={`${rank.name} — Kariyer Takibi`} className={cls}>
+            <Link key={id} href="/account/career" title={`${name} — Kariyer Takibi`} className={cls}>
               {content}
             </Link>
           )
