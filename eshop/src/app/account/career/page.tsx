@@ -17,6 +17,7 @@ import {
 } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { CareerLevels, rankIcon, rankStyle, rankUpper } from '@/components/CareerLevels'
+import { CareerDownline } from '@/components/CareerDownline'
 import { get } from '@/lib/api'
 import { rawGet } from '@/lib/raw'
 
@@ -318,6 +319,9 @@ export default function CareerPage() {
           <p className="flex items-center gap-1.5 text-xs text-gray-400">
             <Lock size={13} /> Kilitli rütbeler için önceki rütbenin şartlarını tamamlamanız gerekir.
           </p>
+
+          {/* Alt hattan kariyer alanlar (sol/sağ kol) */}
+          <CareerDownline />
         </>
       )}
     </div>
