@@ -288,7 +288,7 @@ export function Header() {
             {/* Telefon - sağa sabitli */}
             <div className="absolute right-4 top-0 h-full flex items-center gap-2 text-sm">
               <Phone size={14} className="text-brand-400" />
-              <span className="font-bold">1900 - 888</span>
+              <span className="font-bold">0224 224 88 96</span>
               <span className="text-gray-400 text-xs">7/24 Destek</span>
             </div>
           </div>
