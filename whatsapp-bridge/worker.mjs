@@ -202,7 +202,6 @@ async function loop() {
           LOG,
           `\n<< [${new Date().toISOString()}] bitti: süre=${secs}s sonuç=${ok ? 'OK' : 'FAIL'} | ${request}\n`
         )
-        await setResult(m.id, `süre=${secs}s\n${out}`)
         await sendWhatsApp(
           m.jid,
           ok ? 'İş emriniz tamamlandı 😊' : `⚠️ İş emri tamamlanamadı: ${request}`

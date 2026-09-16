@@ -92,6 +92,11 @@ app.get('/log', (req, res) => {
   const n = Math.min(Math.max(parseInt(req.query.lines || '400', 10) || 400, 20), 4000)
   res.json({ ok: true, worker: tailLines(WORKER_LOG, n), bridge: tailLines(BRIDGE_LOG, 200) })
 })
+app.post('/clear', (_req, res) => {
+  messages.length = 0
+  persist()
+  res.json({ ok: true })
+})
 app.post('/status', (req, res) => {
   const { id, status: st } = req.body || {}
   const m = messages.find((x) => x.id === id)
