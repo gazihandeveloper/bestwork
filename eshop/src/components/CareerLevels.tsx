@@ -151,14 +151,14 @@ export function CareerLevels({
           const meta = rankStyle(name)
           const Icon = rankIcon(name)
           const selected = selectedId === id
-          const cls = `flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
+          const cls = `flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
             isActive
               ? 'border-brand-600 bg-brand-600 shadow-md'
               : isAchieved
-                ? 'border-amber-300 bg-amber-50'
+                ? 'border-amber-400 bg-amber-50'
                 : isNext
-                  ? 'border-brand-300 bg-brand-50/50'
-                  : 'border-gray-100 bg-white'
+                  ? 'border-brand-400 bg-brand-50/50'
+                  : 'border-gray-300 bg-white'
           } ${selected ? 'ring-2 ring-brand-500 ring-offset-1' : ''}`
           const content = (
             <>
