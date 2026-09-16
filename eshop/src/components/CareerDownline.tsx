@@ -67,7 +67,11 @@ function Panel({
                   <td className="px-3 py-2 font-mono text-[12px] text-gray-500">{r.member_code}</td>
                   <td className="px-3 py-2 text-gray-800">{r.name}</td>
                   <td className="px-3 py-2">
-                    <span className="rounded bg-amber-50 px-2 py-0.5 text-[11px] fw-700 text-amber-700">
+                    <span
+                      className={`rounded px-2 py-0.5 text-[11px] fw-700 ${
+                        isLeft ? 'bg-sky-50 text-sky-700' : 'bg-violet-50 text-violet-700'
+                      }`}
+                    >
                       {r.rank || 'Girişimci'}
                     </span>
                   </td>
