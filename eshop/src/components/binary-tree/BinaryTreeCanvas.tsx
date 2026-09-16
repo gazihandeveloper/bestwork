@@ -341,14 +341,6 @@ function Inner({
     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
       <button
         type="button"
-        aria-label="Uzaklaştır"
-        onClick={() => zoomBy(1 / 1.2)}
-        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
-      >
-        <Minus size={14} />
-      </button>
-      <button
-        type="button"
         title="Sabitlenen üyeler"
         aria-label="Sabitlenenler"
         onClick={() => setPinsOpen(true)}
@@ -360,6 +352,14 @@ function Inner({
             {pins.length}
           </span>
         )}
+      </button>
+      <button
+        type="button"
+        aria-label="Uzaklaştır"
+        onClick={() => zoomBy(1 / 1.2)}
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
+      >
+        <Minus size={14} />
       </button>
       <button
         type="button"
