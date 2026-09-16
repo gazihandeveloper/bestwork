@@ -225,6 +225,21 @@ function runOpencode(text) {
   })
 }
 
+async function requeueStale() {
+  try {
+    const r = await fetch(BRIDGE + '/messages')
+    const ms = (await r.json()).messages || []
+    const stuck = ms.filter((x) => x.status === 'processing')
+    for (const m of stuck) {
+      await setStatus(m.id, 'pending')
+      fs.appendFileSync(LOG, `\n[requeue] takılı processing -> pending: ${m.text}`)
+    }
+    if (stuck.length) fs.appendFileSync(LOG, `\n[requeue] ${stuck.length} mesaj yeniden kuyruğa alındı`)
+  } catch (e) {
+    fs.appendFileSync(LOG, `\n[requeue hata] ${e}`)
+  }
+}
+
 async function loop() {
   for (;;) {
     try {
@@ -293,4 +308,5 @@ async function loop() {
 }
 
 fs.appendFileSync(LOG, `\n[worker başladı] ${new Date().toISOString()}\n`)
+await requeueStale()
 loop()
