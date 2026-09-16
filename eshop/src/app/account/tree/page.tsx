@@ -20,7 +20,7 @@ import {
   type SearchResult,
   type TreeNode,
 } from '@/components/binary-tree'
-import { CalendarDays, GitFork, House, Pin, Search, X } from '@/components/icons'
+import { CalendarDays, GitFork, House, Search, X } from '@/components/icons'
 import { rawCacheGecersiz, rawDel, rawGet, rawPost } from '@/lib/raw'
 
 const currentMonth = () => {
@@ -251,37 +251,6 @@ function TreeExplorer({
         </div>
       )}
 
-      {pins.length > 0 && (
-        <div className="flex w-full min-w-0 flex-col gap-1.5 rounded-2xl border border-amber-100 bg-amber-50/50 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <span className="inline-flex shrink-0 items-center gap-1 text-[11px] fw-700 text-amber-700">
-            <Pin size={13} /> Sabitlenenler
-          </span>
-          {pins.map((p) => (
-            <span
-              key={p.user_id}
-              className="inline-flex w-full min-w-0 items-center justify-between gap-1 rounded-full border border-amber-200 bg-white py-1 pr-1 pl-2.5 text-[12px] sm:w-auto sm:justify-start sm:py-0.5"
-            >
-              <button
-                type="button"
-                onClick={() => void gotoPin(p)}
-                title={`${p.name} · ${p.member_code} — ağaçta git`}
-                className="min-w-0 flex-1 cursor-pointer truncate text-left fw-700 text-gray-700 hover:text-amber-700 sm:flex-none sm:max-w-[160px]"
-              >
-                {p.name}
-              </button>
-              <button
-                type="button"
-                aria-label="Sabitlemeyi kaldır"
-                onClick={() => void togglePin(p.user_id)}
-                className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full text-gray-400 hover:bg-amber-100 hover:text-amber-700"
-              >
-                <X size={11} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
       {tree.loading ? (
         <div className="py-16 text-center">
           <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
@@ -303,9 +272,11 @@ function TreeExplorer({
           focusId={focusId}
           selectedId={selectedId}
           pinnedIds={pinnedIds}
+          pins={pins}
           onSelect={setSelectedId}
           onToggle={tree.toggle}
           onTogglePin={(id) => void togglePin(id)}
+          onGotoPin={(p) => gotoPin(p)}
         />
       )}
 

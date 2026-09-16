@@ -902,8 +902,6 @@ export default function AccountDashboardPage() {
                           <p className="text-[13px] font-extrabold text-brand-600">{formatPrice(p.price)}</p>
                           <p className="text-[10px] text-gray-400">
                             <span className="font-bold text-purple-600">{pvVal} PV</span>
-                            {' · '}
-                            <span className="font-bold text-green-600">{Number(p.cv) || 0} CV</span>
                           </p>
                         </div>
                         <div className="flex items-center gap-1">

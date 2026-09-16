@@ -23,10 +23,10 @@ import {
   type Node as RFNode,
   type NodeProps,
 } from '@xyflow/react'
-import { Expand, Maximize, Minus, Plus, RotateCcw, Shrink, TreePine } from '@/components/icons'
+import { Expand, Maximize, Minus, Pin, Plus, RotateCcw, Shrink, TreePine, X } from '@/components/icons'
 import { NodeCard } from './NodeCard'
 import { TreeReportModal } from './TreeReportModal'
-import { CARD_H, CARD_W, NODE_DX, NODE_DY, type NodeRec } from './types'
+import { CARD_H, CARD_W, NODE_DX, NODE_DY, type NodeRec, type TreeNode } from './types'
 
 interface LayoutNode {
   id: number
@@ -44,9 +44,11 @@ interface BinaryTreeCanvasProps {
   focusId: number | null
   selectedId: number | null
   pinnedIds: Record<number, boolean>
+  pins: TreeNode[]
   onSelect: (id: number) => void
   onToggle: (id: number) => void
   onTogglePin: (id: number) => void
+  onGotoPin: (p: TreeNode) => void
 }
 
 interface MemberData extends Record<string, unknown> {
@@ -171,9 +173,11 @@ function Inner({
   focusId,
   selectedId,
   pinnedIds,
+  pins,
   onSelect,
   onToggle,
   onTogglePin,
+  onGotoPin,
 }: BinaryTreeCanvasProps) {
   const rf = useReactFlow()
   const rfWidth = useStore((s) => s.width)
@@ -183,6 +187,7 @@ function Inner({
   const [zoomLevel, setZoomLevel] = useState(1)
   const [rfReady, setRfReady] = useState(false)
   const [full, setFull] = useState(false)
+  const [pinsOpen, setPinsOpen] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [reportTab, setReportTab] = useState<'aktif' | 'pasif' | null>(null)
 
@@ -344,6 +349,20 @@ function Inner({
       </button>
       <button
         type="button"
+        title="Sabitlenen üyeler"
+        aria-label="Sabitlenenler"
+        onClick={() => setPinsOpen(true)}
+        className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100"
+      >
+        <Pin size={14} className="-rotate-[20deg]" />
+        {pins.length > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] fw-800 text-white">
+            {pins.length}
+          </span>
+        )}
+      </button>
+      <button
+        type="button"
         aria-label="Yakınlaştır"
         onClick={() => zoomBy(1.2)}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
@@ -460,6 +479,64 @@ function Inner({
           <Background id="major" variant={BackgroundVariant.Lines} gap={100} lineWidth={1.2} color="#c2dcf5" />
         </ReactFlow>
       </div>
+
+      {pinsOpen && (
+        <div
+          className="bw-tree-ui fixed inset-0 z-[70] flex justify-end bg-black/30"
+          onClick={() => setPinsOpen(false)}
+          role="dialog"
+          aria-label="Sabitlenen üyeler"
+        >
+          <div
+            className="flex h-full w-72 max-w-[85vw] flex-col border-l border-gray-100 bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+              <span className="inline-flex items-center gap-2 text-sm fw-800 text-gray-800">
+                <Pin size={15} className="-rotate-[20deg] text-amber-500" /> Sabitlenenler
+              </span>
+              <button
+                type="button"
+                aria-label="Kapat"
+                onClick={() => setPinsOpen(false)}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {pins.length === 0 ? (
+              <p className="p-4 text-xs text-gray-400">Sabitlenmiş üye yok. Bir karttaki 📌 ile ekleyin.</p>
+            ) : (
+              <ul className="min-h-0 flex-1 divide-y divide-gray-50 overflow-y-auto">
+                {pins.map((p) => (
+                  <li key={p.user_id} className="flex items-center justify-between gap-2 px-4 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onGotoPin(p)
+                        setPinsOpen(false)
+                      }}
+                      title={`${p.name} · ${p.member_code} — ağaçta git`}
+                      className="min-w-0 flex-1 cursor-pointer text-left"
+                    >
+                      <div className="truncate text-[13px] fw-700 text-gray-800 hover:text-amber-700">{p.name}</div>
+                      <div className="font-mono text-[10px] text-gray-400">{p.member_code}</div>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Sabitlemeyi kaldır"
+                      onClick={() => onTogglePin(p.user_id)}
+                      className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-amber-100 hover:text-amber-700"
+                    >
+                      <X size={13} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
       {showReport && (
         <TreeReportModal
