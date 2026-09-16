@@ -7,6 +7,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Crown,
   Gem,
@@ -129,10 +130,11 @@ export function CareerLevels({ className = '' }: { className?: string }) {
           const meta = rankStyle(rank.name)
           const Icon = rankIcon(rank.name)
           return (
-            <div
+            <Link
               key={rank.id}
-              title={rank.name}
-              className={`flex min-h-[86px] w-[92px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-colors sm:w-auto sm:shrink ${
+              href="/account/career"
+              title={`${rank.name} — Kariyer Takibi`}
+              className={`flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
                 isActive
                   ? 'border-brand-600 bg-brand-600 shadow-md'
                   : isAchieved
@@ -162,7 +164,7 @@ export function CareerLevels({ className = '' }: { className?: string }) {
                 {rank.name}
               </span>
               {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
-            </div>
+            </Link>
           )
         })}
       </div>
