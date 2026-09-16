@@ -122,10 +122,6 @@ export default function CommissionsPage() {
 
       {/* Özet */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 p-4 text-white shadow-md">
-          <p className="text-[11px] font-bold tracking-wider text-white/80 uppercase">Toplam Prim</p>
-          <p className="mt-1 text-xl font-extrabold">{tl(sum)}</p>
-        </div>
         {[
           { label: 'Referans', value: totals?.total_referral_earnings, icon: <Users size={18} />, cls: 'bg-green-50 text-green-600' },
           { label: 'Binary', value: totals?.total_binary_earnings, icon: <GitFork size={18} />, cls: 'bg-blue-50 text-blue-600' },
@@ -139,6 +135,10 @@ export default function CommissionsPage() {
             <p className="mt-1.5 text-lg font-extrabold text-gray-900">{tl(c.value)}</p>
           </div>
         ))}
+        <div className="rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 p-4 text-white shadow-md">
+          <p className="text-[11px] font-bold tracking-wider text-white/80 uppercase">Toplam Prim</p>
+          <p className="mt-1 text-xl font-extrabold">{tl(sum)}</p>
+        </div>
       </div>
 
       {/* Filtre */}
