@@ -156,7 +156,15 @@ function runOpencode(text) {
     p.on('close', (code) => {
       clearTimeout(to)
       if (buf.trim()) fmt(buf)
-      const summary = readable.trim().slice(-3000)
+      // Panele yalnızca kısa sonuç gider (düşünce/akış log dosyasında kalır).
+      const lines = readable
+        .trim()
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+      const lastText =
+        [...lines].reverse().find((l) => l.startsWith('💬')) || lines[lines.length - 1] || ''
+      const summary = lastText.replace(/^💬\s*/, '').replace(/^🔧\s*/, '').slice(0, 500)
       fs.appendFileSync(
         LOG,
         `\n==== [${new Date().toISOString()}] code=${code} (ham çıktı ${raw.length}b)\n`
