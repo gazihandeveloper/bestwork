@@ -101,8 +101,13 @@ app.post('/status', (req, res) => {
   const { id, status: st } = req.body || {}
   const m = messages.find((x) => x.id === id)
   if (m) {
-    m.status = st
-    m.updatedAt = Date.now()
+    if (st === 'ignored') {
+      const i = messages.indexOf(m)
+      if (i >= 0) messages.splice(i, 1)
+    } else {
+      m.status = st
+      m.updatedAt = Date.now()
+    }
     persist()
   }
   res.json({ ok: !!m })

@@ -80,7 +80,7 @@
     } catch (e) {}
     try {
       const d = await (await fetch('/messages')).json();
-      const ms = (d.messages || []).slice().reverse();
+      const ms = (d.messages || []).filter((m) => m.status !== 'ignored').slice().reverse();
       const c = { pending: 0, processing: 0, done: 0, error: 0 };
       ms.forEach((m) => { if (c[m.status] !== undefined) c[m.status]++; });
       document.getElementById('s-pending').textContent = c.pending;
