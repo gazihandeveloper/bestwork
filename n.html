@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-P3WXFWCW');
+    </script>
+    <!-- Load GTM-W8WD8WN on user interaction -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const events = ["mousemove", "scroll", "keydown", "touchstart"];
+            function loadGTM() {
+                events.forEach(event => document.removeEventListener(event, loadGTM));
+                (function (w, d, s, l, i) {
+                    w[l] = w[l] || []; w[l].push({
+                        'gtm.start':
+                            new Date().getTime(), event: 'gtm.js'
+                    }); var f = d.getElementsByTagName(s)[0],
+                        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+                })(window, document, 'script', 'dataLayer', 'GTM-W8WD8WN');
+            }
+            events.forEach(event => document.addEventListener(event, loadGTM, { once: true }));
+        });
+    </script>
+
+    <meta charset="UTF-8">
+	<link href="https://www.googletagmanager.com" rel="preconnect">
+	<link href="https://cdn.jsdelivr.net" rel="preconnect" crossorigin>
+	<link href="https://cdn.syncfusion.com" rel="preconnect" crossorigin>
+	<link href="https://cdn.syncfusion.com" rel="dns-prefetch">
+    <title>Node in Diagram Control | Syncfusion</title>  <link rel="icon" type="image/png" href="https://helpej2.syncfusion.com/favicon.ico" />  <link rel="icon" type="image/png" href="https://helpej2.syncfusion.com/favicon.ico" />  <link rel="icon" type="image/png" href="https://helpej2.syncfusion.com/favicon.ico" />  <link rel="icon" type="image/png" href="https://helpej2.syncfusion.com/favicon.ico" />  <link rel="icon" type="image/png" href="https://helpej2.syncfusion.com/favicon.ico" />
+    <meta name="description" content="Check out and learn about Diagram control of Syncfusion Essential JS 2 and more." />
+    
+    <meta name="keywords" content="syncfusion, documentation, help, ej, user guide, demo, samples, essential studio" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    
+    <meta property="og:title" content="Node in Diagram Control | Syncfusion" />
+    
+    
+    <meta property="og:description" content="Check out and learn about Diagram control of Syncfusion Essential JS 2 and more." />
+    
+    <meta property="og:image" content="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" />
+    <meta property="og:url" content="https://help.syncfusion.com/" />
+    <meta property="og:site_name" content="Help.Syncfusion.com" />
+    <meta property="og:type" content="website" />
+
+	<meta property="twitter:account_id" content="41152441" />
+	
+    <meta property="twitter:title" content="Node in Diagram Control | Syncfusion" />
+	
+    <meta property="twitter:url" content="https://help.syncfusion.com/" />
+    <meta property="twitter:card" content="summary" />
+	
+    <meta property="twitter:description" content="Check out and learn about Diagram control of Syncfusion Essential JS 2 and more." />
+	
+    <meta property="twitter:image" content="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_logos.png" />
+	
+	
+	
+     
+	<link rel="alternate" hreflang="en-US" href="https://ej2.syncfusion.com/javascript/documentation/api/diagram/node" />
+	<!-- Google Structured Data -->
+	<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			  "@type": "Organization",
+			  "name": "Syncfusion",
+			  "url": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node",
+			  "logo": "https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_logos.png",
+			  "sameAs": [
+				"https://www.facebook.com/Syncfusion",
+				"https://twitter.com/Syncfusion",
+				"https://www.linkedin.com/company/syncfusion?trk=top_nav_home",
+				"mailto:support@syncfusion.com?"
+			  ]
+			}
+	</script>
+	
+	
+	
+
+
+	<script type="application/ld+json">
+	{
+		 "@context": "https://schema.org",
+		 "@type": "TechArticle",
+		 "@id": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node",
+		 "headline": "Node in Diagram Control | Syncfusion",
+		 "name": "Node in Diagram Control | Syncfusion",
+		 "description": "Check out and learn about Diagram control of Syncfusion Essential JS 2 and more.",
+		 "inLanguage": "en",
+		 "datePublished": "22-07-2026",
+		 "dateModified": "##Last Modified date##",
+		 "mainEntityOfPage": {
+			"@type": "WebPage",
+			"@id": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node"
+		 },
+		 "publisher": {
+			"@id": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node"
+		 },
+		 "author": {
+			"@type": "Organization",
+			"@id": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node"
+		 },
+		 "about": {
+			"@type": "Thing",
+			"name": "javascript documentation component"
+		 },
+		 "isPartOf": {
+			"@type": "CreativeWorkSeries",
+			"name": "Syncfusion javascript documentation Components Documentation"
+		 }
+	}
+	</script>
+    <script>
+        function ExceptionlessLazyLoader() {
+            let s = 0, e = ['mousemove', 'scroll', 'keydown', 'touchstart'], l = () => {
+                if (s) return; s = 1;
+                let j = document.createElement('script');
+                j.type = 'module';
+                j.src = 'https://cdn.syncfusion.com/documentation/scripts/Exceptionless-logger.min.js';
+                document.head.appendChild(j);
+                e.forEach(x => removeEventListener(x, l));
+            };
+            e.forEach(x => addEventListener(x, l, { once: 1 }));
+        }
+    </script>
+    <script src="https://cdn.syncfusion.com/documentation/scripts/console-capture.min.js" async defer onload="ExceptionlessLazyLoader()">
+    </script>
+    <meta http-equiv="expires" content="-1" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+	<link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" as="style" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+	<link rel="preload" href="https://cdn.syncfusion.com/documentation/styles/ej/v13.4.0.58/ej.widgets.core.min.css" as="style">
+	<link rel="stylesheet" href="https://cdn.syncfusion.com/documentation/styles/ej/v13.4.0.58/ej.widgets.core.min.css">
+
+	<!--Doc-site.css file has minified, gziped and referred here
+		File path : "DocumentationAutomation\website\Content\Stylesheets\CSS\"
+	-->
+	<link rel="preload" href="https://cdn.syncfusion.com/documentation/styles/doc-site.min.css" as="style">
+	<link rel="stylesheet" href="https://cdn.syncfusion.com/documentation/styles/doc-site.min.css">
+
+    <script src="//cdn.syncfusion.com/documentation/scripts/documentation.gzip.min.js" defer></script>
+
+	
+	<link rel="preload" href="https://cdn.syncfusion.com/documentation/styles/prettify.css" as="style">
+    <link rel="stylesheet" href="https://cdn.syncfusion.com/documentation/styles/prettify.css">
+    <script src="https://cdn.syncfusion.com/documentation/scripts/prettify.js" defer></script>
+	
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
+	<script src="//cdn.syncfusion.com/documentation/scripts/ej.widget.v13.4.0.58.min.js" defer></script>
+
+    <!--Combined the following scripts files dashboard.js, doc-site.js, waitingpopup.js and named as doc-site.js. it has minified, gziped and referred here.
+        File path : "DocumentationAutomation\website\Scripts\"
+    -->
+    <script src="https://cdn.syncfusion.com/documentation/scripts/doc-site.min.js" defer></script>
+	<script src="https://cdn.syncfusion.com/documentation/scripts/helpbot-search.min.js" defer></script>
+	<script src="https://cdn.syncfusion.com/documentation/scripts/pagevisit.min.js" defer></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.2/markdown-it.min.js" defer></script>
+    <script src="//d2g29cya9iq7ip.cloudfront.net/documentation/scripts/clipboard.min.js" defer></script>
+    <script>
+        window.$boldAgent = window.$boldAgent || [];
+        // Clear session on page load (clears messages, cookies, local storage)
+        window.$boldAgent.push(["do:clearSession"]);
+    </script>
+    <script src="https://syncfusion.boldagent.ai/widgetscript-api/v1/widgets/103702a1-edf5-4d50-8883-71ce19593e47" defer async></script>
+    <script>
+	 window.addEventListener('load', function () {
+        if (typeof $ === 'undefined' || typeof ej === 'undefined') {
+            console.warn("Syncfusion scripts still loading... waiting");
+            return;
+        }
+			$(document).ready(function() {
+				// left tree view
+				$('#rightsidetoc').toc();
+				$('#rightsidetoc').toc({noBackToTopLinks: true});
+				$('#rightsidetoc').toc({listType: 'ol'});
+				$("#rightsidetoc ul:first").attr("id", "righttree");
+				$('#rightsidetoc ol').length ? $(".right-toc-icon").css("display","block") : $(".right-toc-icon").css("display","none");
+				$('#rightsidetoc ol').length ? $("#rightsidetoc").css("display","block") : $("#rightsidetoc").css("display","none");
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				$.ajax({
+					type: 'get',
+					url: './../sidebar/ej2-ui-javascript-api-toc.json',
+					dataType: 'json',
+					success: function(data) {
+						$(".left-toc").css("background-image", "none");
+						var dataManger = data;
+						$(".treeview").ejTreeView(
+						{
+							loadOnDemand: true,
+							fields: { id: "id", parentId: "pid", text: "name", hasChild: "hasChild", dataSource: dataManger},
+							expandOn:"click"
+						}
+						);
+						var linkObject = null
+					   if((window.location.pathname.split('/')[1]=="api" || window.location.pathname.split('/')[3]=="ejdashboardviewer")){
+							linkObject = getObjects(data,'linkAttribute',window.location.pathname+window.location.hash);
+						}
+						else{
+							linkObject = getObjects(data,'linkAttribute',window.location.pathname);
+						}
+
+						expand(data,linkObject);
+						onCreate();
+					}
+				});
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			});
+		});
+    </script>
+    <script>
+        // Share referral origin URL details to syncfusion site
+        var expireDate = new Date();
+        expireDate.setTime(expireDate.getTime() + (30 * 60 * 1000)); // set 30 minutes expire time
+        var existingCookieValue = getCookieValue("SampleSiteReferrer");
+        if (document.referrer && document.referrer.split('/')[2].indexOf('syncfusion.com') == -1) {
+            document.cookie = "SampleSiteReferrer" + "=" + document.referrer + "," + window.location.href + ";expires=" + expireDate + ";path=/;domain=syncfusion.com";
+        }
+        else if (existingCookieValue != "undefined" && existingCookieValue != undefined && existingCookieValue != "") {
+            // Increase expire time for SampleSiteReferrer cookie with 30 minutes if exists
+            document.cookie = "SampleSiteReferrer" + "=" + existingCookieValue + ";expires=" + expireDate + ";path=/;domain=syncfusion.com";
+        }
+        else {
+            document.cookie = "SampleSiteReferrer" + "=" + window.location.href + ";expires=" + expireDate + ";path=/;domain=syncfusion.com";
+        }
+
+        // To get cookie value
+        function getCookieValue(cookieName) {
+            var name = cookieName + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var cookieValues = decodedCookie.split(';');
+            for (var i = 0; i < cookieValues.length; i++) {
+                var cookie = cookieValues[i];
+                while (cookie.charAt(0) == ' ') {
+                    cookie = cookie.substring(1);
+                }
+                if (cookie.indexOf(name) == 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return "";
+        }
+    </script>
+
+    
+    
+    
+    
+    
+    <meta name="robots" content="follow, index" />
+    
+
+	
+
+	<link rel="canonical" href="https://ej2.syncfusion.com/javascript/documentation/api/diagram/node"/>
+
+	<link rel="alternate" type="text/markdown" title="Syncfusion agent instructions for javascript" href="https://ai.syncfusion.com/javascript/llms.txt" />
+</head>
+
+<body onload="prettyPrint();">
+	<!-- Google Tag Manager (noscript) -->
+	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P3WXFWCW"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe>
+	</noscript>
+	<!--Interaction-->
+	<noscript>
+	<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W8WD8WN"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe>
+	</noscript>
+	<!-- End Google Tag Manager (noscript) -->
+
+<div hidden="" id="sync-analytics" data-queue="EJ2 - Documentation"></div>
+
+<div hidden="" id="sync-analytics" data-queue="EJ2 - Documentation"></div>
+
+<div hidden="" id="sync-analytics" data-queue="EJ2 - Documentation"></div>
+
+<div hidden="" id="sync-analytics" data-queue="EJ2 - Documentation"></div>
+
+<div hidden="" id="sync-analytics" data-queue="EJ2 - Documentation"></div>   
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <nav class="navbar navbar-default navbar-fixed-top syncfusion-menu">
+			 
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <div class="syncfusion-logo">
+                            <div class="left-menu-icon" data-bs-toggle="collapse" data-bs-target="#table-of-contents">
+                            </div>
+                            <div>
+                                <a href="https://help.syncfusion.com/">
+                                    <i class="brand-logo syncfusion-brand-logo"></i>
+                                </a>
+                            </div>
+                            <div class="js-doc">
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+
+                                
+
+                                
+
+                                
+
+                                
+								
+								
+
+								
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+
+                                
+								
+								
+								
+								
+
+								
+
+								
+
+
+                                
+
+                                 
+								
+								
+								
+								
+								
+                                
+                                <span>EJ2 JavaScript API</span>
+                                
+																
+								
+								
+								
+								
+								 
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+
+
+                            </div>
+							
+							
+							<div class="sdk-dropdowns-row">
+								<div id="sdk-platform-switcher" class="sdk-dropdown">
+									<button type="button" class="sdk-dropdown-button sdk-platform-button" aria-haspopup="true" aria-expanded="false">
+										<span class="sdk-dropdown-button-text">Choose a SDK</span>
+										<span class="sdk-dropdown-arrow"></span>
+									</button>
+									<div class="sdk-dropdown-menu-container" id="sdk-platform-menu" hidden></div>
+								</div>
+							</div>
+							
+							
+                        </div>
+						<div class="search">
+								
+
+
+<input type="text" id="customSearchBox" placeholder="Search or ask Syncfusion AI" autocomplete="off" />
+<div id="suggestionModal">
+    <div class="icon-background">
+        <span class="icon-left"></span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search or ask Syncfusion AI">
+        <span class="icon-right"></span>
+    </div>
+    <div class="suggestionContainer">
+        <div class="docssuggestioncontainer">
+            <h3 class="suggestionhtmlheading">Search docs</h3>
+            <ul id="docsSuggestions"></ul>
+        </div>
+        <div class="helpbotsuggestioncontainer">
+            <h3 class="icon-before">Ask Syncfusion AI Assistant</h3>
+            <div id="helpbotlistcontainer">
+                <ul id="helpBotSuggestions"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+						</div>
+						<button type="button" class="navbar-toggle desktop-icon collapsed" data-bs-toggle="collapse" data-bs-target="#desktop-links">
+                            <span class="sr-only">Toggle navigation</span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+                        </button>
+						<button type="button" class="navbar-toggle mobile-icon collapsed" data-bs-toggle="collapse" data-bs-target="#mobile-view-link">
+                           <span class="mobile-view-icon"></span>
+                        </button>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="desktop-links">
+                        <ul class="nav navbar-nav navbar-right">
+									
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+					
+						<li class="menu-links active"><a href="https://ej2.syncfusion.com/javascript/demos" target="_blank">Demos</a></li>
+<li class="menu-links active"><a href="https://www.syncfusion.com/support/directtrac/incidents" target="_blank">Support</a></li>
+<li class="menu-links active"><a href="https://www.syncfusion.com/forums/essential-js2">Forum</a></li>
+<li class="menu-links active"><a href="https://www.syncfusion.com/downloads/essential-js2" target="_blank" id="download_section">FREE TRIAL</a></li>
+
+									
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+				
+			
+			
+						</ul>
+					</div><!-- /.navbar-collapse -->
+                    <div class="collapse navbar-collapse" id="mobile-view-link">
+                        <ul class="nav navbar-nav mobile-unorderlist">
+                             <li class="search-mobile">
+                                
+
+
+<input type="text" id="customSearchBox" placeholder="Search or ask Syncfusion AI" autocomplete="off" />
+<div id="suggestionModal">
+    <div class="icon-background">
+        <span class="icon-left"></span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search or ask Syncfusion AI">
+        <span class="icon-right"></span>
+    </div>
+    <div class="suggestionContainer">
+        <div class="docssuggestioncontainer">
+            <h3 class="suggestionhtmlheading">Search docs</h3>
+            <ul id="docsSuggestions"></ul>
+        </div>
+        <div class="helpbotsuggestioncontainer">
+            <h3 class="icon-before">Ask Syncfusion AI Assistant</h3>
+            <div id="helpbotlistcontainer">
+                <ul id="helpBotSuggestions"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                            </li>
+                        </ul>
+                    </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+        </div>
+        <div id="breadcrumb">
+		
+
+<ul class="breadcrumb">
+  <li>
+    <a href="https://ej2.syncfusion.com/home/"><i class="sf-icon-Home"></i></a>
+  </li>
+
+  
+  
+
+  
+    <!-- Split the URL at '/api/' to isolate the logical API root -->
+    
+    
+    
+
+    <!-- First crumb: Platform name linking to the full API root (e.g., https://ej2.syncfusion.com/documentation/api/documentation/api/) -->
+    <li class="active breadcrumb-links">
+      <a href="/javascript/documentation/api/">
+        EJ2 JavaScript API 
+      </a>
+    </li>
+
+    <!-- Now process only the part after /api/ -->
+    
+      
+      
+      
+        
+          
+          
+          
+            <li class="active breadcrumb-links">
+              <a href="/javascript/documentation/api/diagram/">diagram</a>
+            </li>
+          
+        
+      
+        
+          
+          
+          
+            <li class="active" data-text="node">node</li>
+          
+        
+      
+    
+
+   
+	</ul>
+<!-- Breadcrumb Schema (JSON-LD) -->
+			<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			  "@type": "BreadcrumbList",
+			  "@id": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node/#breadcrumb",
+			  "itemListElement": [
+				
+				
+				
+				
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 1,
+						"name": "Domain URL",
+						"item": "https://ej2.syncfusion.com/"
+					  },
+					
+					
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 2,
+						"name": "Javascript",
+						"item": "https://ej2.syncfusion.com/javascript/"
+					  },
+					
+					
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 3,
+						"name": "Documentation",
+						"item": "https://ej2.syncfusion.com/javascript/documentation/"
+					  },
+					
+					
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 4,
+						"name": "Api",
+						"item": "https://ej2.syncfusion.com/javascript/documentation/api/"
+					  },
+					
+					
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 5,
+						"name": "Diagram",
+						"item": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/"
+					  },
+					
+					
+				  
+				
+				  
+				     
+					
+					  {
+						"@type": "ListItem",
+						"position": 6,
+						"name": "Node",
+						"item": "https://ej2.syncfusion.com/javascript/documentation/api/diagram/node"
+					  }
+					
+					
+				  
+				
+			  ]
+			}
+			</script>
+		<div class="right-aiassistant">
+			<div class="split-button">
+				<button id="assistant-toggle" class="assistant-btn" data-tooltip="Syncfusion AI Assistant">Ask AI</button>				
+				<button id="dropdown-btn" data-tooltip="More" aria-expanded="true"> <span class="dropdown-arrow"></span></button>
+			</div>
+	   <div class="right-breadcrumb">
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			 
+			
+			
+			
+			 
+			
+			
+			
+			
+			
+			
+			
+			
+        </div>
+      </div>
+		</div>
+		
+    </div>
+
+<div class="help-content">
+	<div class="left-toc" id="table-of-contents">
+		<div class="left-toc-content">
+			<ul class="treeview"></ul>
+		</div>
+	</div>
+
+	
+	<div class="post">
+        <button type="button" id="left-toc-closebtn"></button>
+		<button type="button" id="right-toc-closebtn"></button>	
+			
+			<div id="rightsidetoc"></div>
+		
+
+		<div class="post-content">
+		<h1 id="node">Node</h1><p id="resultRT">6 Jul 2026<span class="dot"></span>5 minutes to read</p>
+
+<p>Defines the behavior of nodes</p>
+
+<h2 id="properties">Properties</h2>
+
+<h3 class="doc-prop-wrapper" id="addinfo" data-path="addinfo-addInfo">
+<span class="doc-prop-name">addInfo</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">Object</span></span>
+
+</h3>
+
+<p>Allows the user to save custom information/data about a node/connector</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="annotations" data-path="annotations-annotations">
+<span class="doc-prop-name">annotations</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./shapeannotationmodel" class="doc-type-link exclude-righttoc">ShapeAnnotationModel[]</a></span></span>
+
+</h3>
+
+<p>Defines the collection of textual annotations of nodes/connectors</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="backgroundcolor" data-path="backgroundcolor-backgroundColor">
+<span class="doc-prop-name">backgroundColor</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">string</span></span>
+
+</h3>
+
+<p>Sets the background color of the shape</p>
+
+<p>Defaults to <em>‘transparent’</em></p>
+
+<h3 class="doc-prop-wrapper" id="bordercolor" data-path="bordercolor-borderColor">
+<span class="doc-prop-name">borderColor</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">string</span></span>
+
+</h3>
+
+<p>Sets the border color of the node</p>
+
+<p>Defaults to <em>‘none’</em></p>
+
+<h3 class="doc-prop-wrapper" id="borderwidth" data-path="borderwidth-borderWidth">
+<span class="doc-prop-name">borderWidth</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the border width of the node</p>
+
+<p>Defaults to <em>0</em></p>
+
+<h3 class="doc-prop-wrapper" id="branch" data-path="branch-branch">
+<span class="doc-prop-name">branch</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./branchtypes" class="doc-type-link exclude-righttoc">BranchTypes</a></span></span>
+
+</h3>
+
+<p>Set the branch for the mind map</p>
+
+<p>Defaults to <em>’’</em></p>
+
+<h3 class="doc-prop-wrapper" id="children" data-path="children-children">
+<span class="doc-prop-name">children</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">string[]</span></span>
+
+</h3>
+
+<p>Defines the children of group element</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="collapseicon" data-path="collapseicon-collapseIcon">
+<span class="doc-prop-name">collapseIcon</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./iconshapemodel" class="doc-type-link exclude-righttoc">IconShapeModel</a></span></span>
+
+</h3>
+
+<p>Defines the collapsed state of a node</p>
+
+<p>Defaults to <em>{}</em></p>
+
+<h3 class="doc-prop-wrapper" id="columnindex" data-path="columnindex-columnIndex">
+<span class="doc-prop-name">columnIndex</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Used to define a index of column in the grid</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="columnspan" data-path="columnspan-columnSpan">
+<span class="doc-prop-name">columnSpan</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Merge the column use the property in the grid container</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="columns" data-path="columns-columns">
+<span class="doc-prop-name">columns</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./columndefinition" class="doc-type-link exclude-righttoc">ColumnDefinition[]</a></span></span>
+
+</h3>
+
+<p>Used to define the column for the grid container</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="constraints" data-path="constraints-constraints">
+<span class="doc-prop-name">constraints</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./nodeconstraints" class="doc-type-link exclude-righttoc">NodeConstraints</a></span></span>
+
+</h3>
+
+<p>Enables/Disables certain features of nodes</p>
+<ul>
+  <li>None - Disable all node Constraints</li>
+  <li>Select - Enables node to be selected</li>
+  <li>Drag - Enables node to be Dragged</li>
+  <li>Rotate - Enables node to be Rotate</li>
+  <li>Shadow - Enables node to display shadow</li>
+  <li>PointerEvents - Enables node to provide pointer  option</li>
+  <li>Delete - Enables node to delete</li>
+  <li>InConnect - Enables node to provide in connect option</li>
+  <li>OutConnect - Enables node to provide out connect option</li>
+  <li>Individual - Enables node to provide individual resize option</li>
+  <li>Expandable - Enables node to provide Expandable option</li>
+  <li>AllowDrop - Enables node to provide allow to drop option</li>
+  <li>Inherit - Enables node to inherit the interaction option</li>
+  <li>ResizeNorthEast - Enable ResizeNorthEast of the node</li>
+  <li>ResizeEast - Enable ResizeEast of the node</li>
+  <li>ResizeSouthEast - Enable ResizeSouthEast of the node</li>
+  <li>ResizeSouth - Enable ResizeSouthWest of the node</li>
+  <li>ResizeSouthWest - Enable ResizeSouthWest of the node</li>
+  <li>ResizeSouth - Enable ResizeSouth of the node</li>
+  <li>ResizeSouthWest - Enable ResizeSouthWest of the node</li>
+  <li>ResizeWest - Enable ResizeWest of the node</li>
+  <li>ResizeNorth - Enable ResizeNorth of the node</li>
+  <li>Resize - Enables the Aspect ratio fo the node</li>
+  <li>AspectRatio - Enables the Aspect ratio fo the node</li>
+  <li>Tooltip - Enables or disables tool tip for the Nodes</li>
+  <li>InheritTooltip - Enables or disables tool tip for the Nodes</li>
+  <li>ReadOnly - Enables the  ReadOnly support for Annotation</li>
+</ul>
+
+<p>Defaults to <em>‘Default’</em></p>
+
+<h3 class="doc-prop-wrapper" id="container" data-path="container-container">
+<span class="doc-prop-name">container</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./childcontainermodel" class="doc-type-link exclude-righttoc">ChildContainerModel</a></span></span>
+
+</h3>
+
+<p>Defines the type of the container</p>
+
+<p>Defaults to <em>null</em></p>
+
+<h3 class="doc-prop-wrapper" id="data" data-path="data-data">
+<span class="doc-prop-name">data</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">Object</span></span>
+
+</h3>
+
+<p>Sets the data source of the node</p>
+
+<h3 class="doc-prop-wrapper" id="dragsize" data-path="dragsize-dragSize">
+<span class="doc-prop-name">dragSize</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./symbolsizemodel" class="doc-type-link exclude-righttoc">SymbolSizeModel</a></span></span>
+
+</h3>
+
+<p>Defines the size of a drop symbol</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="excludefromlayout" data-path="excludefromlayout-excludeFromLayout">
+<span class="doc-prop-name">excludeFromLayout</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">boolean</span></span>
+
+</h3>
+
+<p>Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.</p>
+
+<p>Defaults to <em>false</em></p>
+
+<h3 class="doc-prop-wrapper" id="expandicon" data-path="expandicon-expandIcon">
+<span class="doc-prop-name">expandIcon</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./iconshapemodel" class="doc-type-link exclude-righttoc">IconShapeModel</a></span></span>
+
+</h3>
+
+<p>Defines the expanded state of a node</p>
+
+<p>Defaults to <em>{}</em></p>
+
+<h3 class="doc-prop-wrapper" id="fixeduserhandles" data-path="fixeduserhandles-fixedUserHandles">
+<span class="doc-prop-name">fixedUserHandles</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./nodefixeduserhandlemodel" class="doc-type-link exclude-righttoc">NodeFixedUserHandleModel[]</a></span></span>
+
+</h3>
+
+<p>Specifies the collection of the fixed user handle</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="flip" data-path="flip-flip">
+<span class="doc-prop-name">flip</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./flipdirection" class="doc-type-link exclude-righttoc">FlipDirection</a></span></span>
+
+</h3>
+
+<p>Flip the element in Horizontal/Vertical directions</p>
+
+<p>Defaults to <em>None</em></p>
+
+<h3 class="doc-prop-wrapper" id="flipmode" data-path="flipmode-flipMode">
+<span class="doc-prop-name">flipMode</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./flipmode" class="doc-type-link exclude-righttoc">FlipMode</a></span></span>
+
+</h3>
+
+<p>Allows you to flip only the node or along with port and label.<br>
+This functionality is applicable only for nodes.</p>
+
+<p>Defaults to <em>All</em></p>
+
+<h3 class="doc-prop-wrapper" id="height" data-path="height-height">
+<span class="doc-prop-name">height</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the height of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="horizontalalignment" data-path="horizontalalignment-horizontalAlignment">
+<span class="doc-prop-name">horizontalAlignment</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./horizontalalignment" class="doc-type-link exclude-righttoc">HorizontalAlignment</a></span></span>
+
+</h3>
+
+<p>Sets the horizontalAlignment of the node</p>
+
+<p>Defaults to <em>‘Stretch’</em></p>
+
+<h3 class="doc-prop-wrapper" id="id" data-path="id-id">
+<span class="doc-prop-name">id</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">string</span></span>
+
+</h3>
+
+<p>Represents the unique id of nodes/connectors</p>
+
+<p>Defaults to <em>’’</em></p>
+
+<h3 class="doc-prop-wrapper" id="isexpanded" data-path="isexpanded-isExpanded">
+<span class="doc-prop-name">isExpanded</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">boolean</span></span>
+
+</h3>
+
+<p>Defines whether the node is expanded or not</p>
+
+<p>Defaults to <em>true</em></p>
+
+<h3 class="doc-prop-wrapper" id="layoutinfo" data-path="layoutinfo-layoutInfo">
+<span class="doc-prop-name">layoutInfo</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./layoutinfo" class="doc-type-link exclude-righttoc">LayoutInfo</a></span></span>
+
+</h3>
+
+<p>Sets the layout properties using node property</p>
+
+<p>Defaults to <em>new NodeLayoutInfo()</em></p>
+
+<h3 class="doc-prop-wrapper" id="margin" data-path="margin-margin">
+<span class="doc-prop-name">margin</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./marginmodel" class="doc-type-link exclude-righttoc">MarginModel</a></span></span>
+
+</h3>
+
+<p>Defines the space to be left between the node and its immediate parent</p>
+
+<p>Defaults to <em>{}</em></p>
+
+<h3 class="doc-prop-wrapper" id="maxheight" data-path="maxheight-maxHeight">
+<span class="doc-prop-name">maxHeight</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the maximum height of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="maxwidth" data-path="maxwidth-maxWidth">
+<span class="doc-prop-name">maxWidth</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the maximum width of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="minheight" data-path="minheight-minHeight">
+<span class="doc-prop-name">minHeight</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the minimum height of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="minwidth" data-path="minwidth-minWidth">
+<span class="doc-prop-name">minWidth</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the minimum width of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="offsetx" data-path="offsetx-offsetX">
+<span class="doc-prop-name">offsetX</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the x-coordinate of the position of the node</p>
+
+<p>Defaults to <em>0</em></p>
+
+<h3 class="doc-prop-wrapper" id="offsety" data-path="offsety-offsetY">
+<span class="doc-prop-name">offsetY</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the y-coordinate of the position of the node</p>
+
+<p>Defaults to <em>0</em></p>
+
+<h3 class="doc-prop-wrapper" id="padding" data-path="padding-padding">
+<span class="doc-prop-name">padding</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./marginmodel" class="doc-type-link exclude-righttoc">MarginModel</a></span></span>
+
+</h3>
+
+<p>Defines the space between the group node edges and its children</p>
+
+<p>Defaults to <em>0</em></p>
+
+<h3 class="doc-prop-wrapper" id="pivot" data-path="pivot-pivot">
+<span class="doc-prop-name">pivot</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./pointmodel" class="doc-type-link exclude-righttoc">PointModel</a></span></span>
+
+</h3>
+
+<p>Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node</p>
+
+<p>Defaults to <em>new Point(0.5,0.5)</em></p>
+
+<h3 class="doc-prop-wrapper" id="ports" data-path="ports-ports">
+<span class="doc-prop-name">ports</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./pointportmodel" class="doc-type-link exclude-righttoc">PointPortModel[]</a></span></span>
+
+</h3>
+
+<p>Defines the collection of connection points of nodes/connectors</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="previewsize" data-path="previewsize-previewSize">
+<span class="doc-prop-name">previewSize</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./symbolsizemodel" class="doc-type-link exclude-righttoc">SymbolSizeModel</a></span></span>
+
+</h3>
+
+<p>Defines the size of the symbol preview</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="rotateangle" data-path="rotateangle-rotateAngle">
+<span class="doc-prop-name">rotateAngle</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the rotate angle of the node</p>
+
+<p>Defaults to <em>0</em></p>
+
+<h3 class="doc-prop-wrapper" id="rowindex" data-path="rowindex-rowIndex">
+<span class="doc-prop-name">rowIndex</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Used to define a index of row in the grid</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="rowspan" data-path="rowspan-rowSpan">
+<span class="doc-prop-name">rowSpan</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Merge the row use the property in the grid container</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="rows" data-path="rows-rows">
+<span class="doc-prop-name">rows</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./rowdefinition" class="doc-type-link exclude-righttoc">RowDefinition[]</a></span></span>
+
+</h3>
+
+<p>Used to define the rows for the grid container</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="shadow" data-path="shadow-shadow">
+<span class="doc-prop-name">shadow</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./shadowmodel" class="doc-type-link exclude-righttoc">ShadowModel</a></span></span>
+
+</h3>
+
+<p>Defines the shadow of a shape/path</p>
+
+<p>Defaults to <em>null</em></p>
+
+<h3 class="doc-prop-wrapper" id="shape" data-path="shape-shape">
+<span class="doc-prop-name">shape</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./shapemodel" class="doc-type-link exclude-righttoc">ShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./flowshapemodel" class="doc-type-link exclude-righttoc">FlowShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./basicshapemodel" class="doc-type-link exclude-righttoc">BasicShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./imagemodel" class="doc-type-link exclude-righttoc">ImageModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./pathmodel" class="doc-type-link exclude-righttoc">PathModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./textmodel" class="doc-type-link exclude-righttoc">TextModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./bpmnshapemodel" class="doc-type-link exclude-righttoc">BpmnShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./nativemodel" class="doc-type-link exclude-righttoc">NativeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./htmlmodel" class="doc-type-link exclude-righttoc">HtmlModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./umlactivityshapemodel" class="doc-type-link exclude-righttoc">UmlActivityShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./umlclassifiershapemodel" class="doc-type-link exclude-righttoc">UmlClassifierShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./swimlanemodel" class="doc-type-link exclude-righttoc">SwimLaneModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./diagramshapemodel" class="doc-type-link exclude-righttoc">DiagramShapeModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./containermodel" class="doc-type-link exclude-righttoc">ContainerModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./ershapemodel" class="doc-type-link exclude-righttoc">ErShapeModel</a></span></span>
+
+</h3>
+
+<p>Defines the shape of a node</p>
+
+<p>Defaults to <em>Basic Shape</em></p>
+
+<h3 class="doc-prop-wrapper" id="style" data-path="style-style">
+<span class="doc-prop-name">style</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./shapestylemodel" class="doc-type-link exclude-righttoc">ShapeStyleModel</a></span><span class="exclude-righttoc-splitter">|</span><span class="exclude-righttoc"><a href="./textstylemodel" class="doc-type-link exclude-righttoc">TextStyleModel</a></span></span>
+
+</h3>
+
+<p>Sets the shape style of the node</p>
+
+<p>Defaults to <em>new ShapeStyle()</em></p>
+
+<h3 class="doc-prop-wrapper" id="symbolinfo" data-path="symbolinfo-symbolInfo">
+<span class="doc-prop-name">symbolInfo</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./symbolpaletteinfomodel" class="doc-type-link exclude-righttoc">SymbolPaletteInfoModel</a></span></span>
+
+</h3>
+
+<p>Defines the symbol info of a connector</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="tooltip" data-path="tooltip-tooltip">
+<span class="doc-prop-name">tooltip</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./diagramtooltipmodel" class="doc-type-link exclude-righttoc">DiagramTooltipModel</a></span></span>
+
+</h3>
+
+<p>defines the tooltip for the node</p>
+
+<p>Defaults to <em>{}</em></p>
+
+<h3 class="doc-prop-wrapper" id="verticalalignment" data-path="verticalalignment-verticalAlignment">
+<span class="doc-prop-name">verticalAlignment</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./verticalalignment" class="doc-type-link exclude-righttoc">VerticalAlignment</a></span></span>
+
+</h3>
+
+<p>Sets the verticalAlignment of the node</p>
+
+<p>Defaults to <em>‘Stretch’</em></p>
+
+<h3 class="doc-prop-wrapper" id="visible" data-path="visible-visible">
+<span class="doc-prop-name">visible</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">boolean</span></span>
+
+</h3>
+
+<p>Sets the visibility of the node/connector</p>
+
+<p>Defaults to <em>true</em></p>
+
+<h3 class="doc-prop-wrapper" id="width" data-path="width-width">
+<span class="doc-prop-name">width</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Sets the width of the node</p>
+
+<p>Defaults to <em>undefined</em></p>
+
+<h3 class="doc-prop-wrapper" id="wrapper" data-path="wrapper-wrapper">
+<span class="doc-prop-name">wrapper</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc"><a href="./groupableview" class="doc-type-link exclude-righttoc">GroupableView</a></span></span>
+
+</h3>
+
+<p>Sets or gets the UI of a node</p>
+
+<p>Defaults to <em>null</em></p>
+
+<h3 class="doc-prop-wrapper" id="zindex" data-path="zindex-zIndex">
+<span class="doc-prop-name">zIndex</span>
+
+<span class="doc-prop-type"><span class="exclude-righttoc">number</span></span>
+
+</h3>
+
+<p>Defines the visual order of the node/connector in DOM</p>
+
+<p>Defaults to <em>Number.MIN_VALUE</em></p>
+
+		</div>
+              <div class="feedback-down-response" style="display:none">			
+				Help us improve this page
+				
+		      <div id="checkboxes" class="multiselect">			     
+                   <input type="checkbox" name="checkbox" id="one" value="Correct inaccurate or outdated content" /><label for="one" class="label-one">Correct inaccurate or outdated content</label>
+				   
+				   <br />
+				   <textarea id="commentone" class="form-control message hide" rows="3" placeholder="Please specify what content needs correction..."></textarea>
+				   <div class="error-messageone">Please provide additional information</div>				  
+				   <input type="checkbox" name="checkbox" id="two" value="Improve illustrations or images" /><label for="two" class="label-two">Improve illustrations or images</label>				   
+
+				   <br />
+				   <textarea id="commenttwo" class="form-control message hide" rows="3" placeholder="Please specify which images can be improved..."></textarea>
+				   <div class="error-messagetwo">Please provide additional information</div>
+                   <input type="checkbox" name="checkbox" id="three" value="Fix typos or broken links" /><label for="three" class="label-three">Fix typos or broken links</label>
+				   <br />
+				  
+				 <textarea id="commentthree" class="form-control message hide" rows="3" placeholder="Please specify what needs to be fixed..."></textarea>
+				 <div class="error-messagethree">Please provide additional information</div>
+				 
+				   <input type="checkbox" name="checkbox" id="four" value="Add more information" /> <label for="four" class="label-four">Add more information</label>
+				   <br />
+				   
+				   <textarea id="commentfour" class="form-control message hide" rows="3" placeholder="Please specify what information should be added..."></textarea>
+			       <div class="error-messagefour">Please provide additional information</div>
+				   				  
+                   <input type="checkbox" name="checkbox" id="five" value="Correct inaccurate or outdated code samples" /><label for="five" class="label-five">Correct inaccurate or outdated code samples</label>
+				   <br />
+				   
+				   
+				   <textarea id="commentfive" class="form-control message hide" rows="3" placeholder="Please specify what needs correction..."></textarea>
+				   <div class="error-messagefive">Please provide additional information</div>
+				   
+				   <input type="checkbox" name="checkbox" id="six" value="Other" /><label for="six" class="label-six">Other</label>	
+                   
+			      <textarea id="commentsix" class="form-control message hide" rows="3" placeholder="Please enter feedback on topics not previously listed..."></textarea>
+                   <div class="error-messagesix">Please provide additional information</div>				   
+			  </div>
+			      <input type="text" class="form-control mail" placeholder="Email (optional)" />
+				  <div class="emailcheckbox"><input type="checkbox" id="email" disabled /></div>
+				  <label class="information">I agree to the creation of a Syncfusion account in my name and to be contacted regarding this message. No further action will be taken. Please see our <a href="https://www.syncfusion.com/legal/privacy-policy">Privacy Policy.</a></label>
+				  <div id="email-error-message"></div>
+			  <div class="button">
+                <input type="button" id="skipButton" class="btn" value="Cancel" />		
+                <input type="submit" id="submitButton" name="submit" class="btn" value="Submit" />
+              </div>
+		   
+			<div id="feedbacks-dialogue">
+				<div id="closeicon"></div> 
+				<iframe id="feedback-frame"></iframe>
+			</div>
+		</div>
+		
+
+		</div>
+		
+
+<footer class="row-fluid">
+	<div class="hidden-xs">
+		
+		<a class="copyright" href="/cdn-cgi/l/email-protection#14676164647b666054676d7a777261677d7b7a3a777b79" title="Follow Syncfusion on Mail"><span class="icon-mail"></span></a>
+		
+		<a class="copyright" target="_blank" href="https://www.linkedin.com/company/syncfusion?trk=top_nav_home" title="Follow Syncfusion on LinkedIn"><span class="icon-linkedin"></span></a>
+		<a class="copyright" target="_blank" href="https://x.com/Syncfusion" title="Follow Syncfusion on X"><span class="icon-twitter"></span></a>
+		<a class="copyright" target="_blank" href="https://www.facebook.com/Syncfusion" title="Follow Syncfusion on Facebook"><span class="icon-fb"></span></a>
+		<a class="copyright" target="_blank" href="https://www.syncfusion.com/copyright">Copyright &copy; 2001 - <span id="copyright-year"></span> Syncfusion Inc. All Rights Reserved</a>
+		<div class="feedback-section">
+			<div class="feedback-part">
+				<div class="feedback-ques">
+					Was this page helpful?
+					<span id="feedback-up" class="feedback">
+						Yes
+					</span>
+					<span id="feedback-down" class="feedback">
+						No
+					</span>
+				</div>
+				<div class="feedback-up-response">
+					Thank you for your feedback!
+				</div>
+				<div class="feedback-confirmation">
+					Thank you for your feedback and comments. We will rectify this as soon as possible!
+				</div>
+				<div class="feedback-error">
+					An unknown error has occurred. Please try again.
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="visible-xs ">
+		<div class="feedback-section">
+			<div class="feedback-part">
+				<div class="feedback-ques">
+					Was this page helpful?
+					<span id="feedback-up" class="feedback">
+						Yes
+					</span>
+					<span id="feedback-down" class="feedback">
+						No
+					</span>
+				</div>
+
+				<div class="feedback-up-response">
+					Thank you for your feedback!
+				</div>
+				<div class="feedback-confirmation">
+					Thank you for your feedback and comments. We will rectify this as soon as possible!
+				</div>
+				<div class="feedback-error">
+					An unknown error has occurred. Please try again.
+				</div>
+			</div>
+		</div>
+		<div class="col-xs social-icons">
+			<a target="_blank" href="https://www.facebook.com/Syncfusion" title="Follow Syncfusion on Facebook"><span class="icon-fb"></span></a>
+			<a target="_blank" href="https://x.com/Syncfusion" title="Follow Syncfusion on X"><span class="icon-twitter"></span></a>
+			<a target="_blank" href="https://www.linkedin.com/company/syncfusion?trk=top_nav_home" title="Follow Syncfusion on LinkedIn"><span class="icon-linkedin"></span></a>
+			
+			<a href="/cdn-cgi/l/email-protection#9feceaefeff0edebdfece6f1fcf9eaecf6f0f1b1fcf0f2" title="Follow Syncfusion on Mail"><span class="icon-mail"></span></a>
+			
+			<div class="col-xs">
+				<a class="copyright" target="_blank" href="https://www.syncfusion.com/copyright">Copyright &copy; 2001 - <span id="copyright-year-mobile"></span> Syncfusion Inc. All Rights Reserved</a>
+			</div>
+		</div>
+	</div>
+</footer>
+
+
+	
+
+
+
+<!-- The Modal -->
+<div id="image-modal" class="modal">
+
+  <!-- The Close Button -->
+  <span class="modal-close">&times;</span>
+
+  <!-- Modal Content (The Image) -->
+  <img class="modal-content" id="original-img">
+
+  <!-- Modal Caption (Image Text) -->
+  <div id="caption"></div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

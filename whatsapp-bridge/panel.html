@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BestWork · WhatsApp İş Paneli</title>
+<style>
+  :root{--bg:#eef2f6;--ink:#0f172a;--muted:#64748b;--brand:#1E8B5A;--brand2:#29a56c;--amber:#d97706;--red:#dc2626;--blue:#2563eb;--line:#e6ebf1;--gray:#cbd5e1}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  header{background:linear-gradient(135deg,#1E8B5A,#29a56c);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px -14px rgba(30,139,90,.7)}
+  header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:.3px}
+  .conn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700}
+  .dot{width:8px;height:8px;border-radius:50%;background:#a7f3d0;box-shadow:0 0 0 3px rgba(167,243,208,.35)}
+  .wrap{max-width:920px;margin:22px auto 60px;padding:0 16px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 10px 24px -18px rgba(16,24,40,.5)}
+  .stat .n{font-size:26px;font-weight:800;line-height:1.1}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-top:2px}
+  .stat.p .n{color:var(--blue)} .stat.w .n{color:var(--amber)} .stat.d .n{color:var(--brand2)} .stat.e .n{color:var(--red)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 22px;margin-bottom:14px;box-shadow:0 12px 30px -22px rgba(16,24,40,.55);position:relative;overflow:hidden}
+  .card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--blue)}
+  .card.processing:before{background:var(--amber)} .card.done:before{background:var(--brand2)} .card.error:before{background:var(--red)} .card.ignored:before{background:var(--gray)}
+  .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .badge{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:999px;padding:2px 9px}
+  .b-pending{background:#e0f2fe;color:#075985} .b-processing{background:#fef3c7;color:#92400e} .b-done{background:#dcfce7;color:#166534} .b-error{background:#fee2e2;color:#991b1b} .b-ignored{background:#f1f5f9;color:#94a3b8}
+  .req{font-size:15px;font-weight:600;margin:8px 0 14px;white-space:pre-wrap}
+  .steps{display:flex;align-items:center}
+  .step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#94a3b8;white-space:nowrap}
+  .step .ic{width:22px;height:22px;border-radius:50%;border:2px solid var(--gray);display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1}
+  .step.done{color:var(--brand2)} .step.done .ic{background:var(--brand2);border-color:var(--brand2);color:#fff}
+  .step.active{color:var(--amber)} .step.active .ic{border-color:var(--amber)}
+  .step.bad{color:var(--red)} .step.bad .ic{background:var(--red);border-color:var(--red);color:#fff}
+  .bar{flex:1;height:2px;background:#e2e8f0;margin:0 10px;min-width:20px;border-radius:2px}
+  .res{font-size:12.5px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;white-space:pre-wrap;color:#334155;max-height:240px;overflow:auto}
+  .empty{text-align:center;color:var(--muted);padding:48px;background:#fff;border:1px dashed var(--line);border-radius:16px}
+  .spinner{width:12px;height:12px;border:2px solid rgba(217,119,6,.35);border-top-color:var(--amber);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .ignored .req,.ignored .meta{color:#94a3b8}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.steps{font-size:11px}.step{gap:6px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>BestWork · WhatsApp İş Paneli</h1>
+  <span class="conn"><span class="dot"></span><span id="conn">…</span></span>
+</header>
+<div class="wrap">
+  <div class="stats">
+    <div class="stat p"><div class="n" id="s-pending">0</div><div class="l">İş emri bekliyor</div></div>
+    <div class="stat w"><div class="n" id="s-processing">0</div><div class="l">İşleniyor</div></div>
+    <div class="stat d"><div class="n" id="s-done">0</div><div class="l">Sonuçlandı</div></div>
+    <div class="stat e"><div class="n" id="s-error">0</div><div class="l">Hata</div></div>
+  </div>
+  <div id="list"></div>
+</div>
+<script>
+  const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const step = (cls, label, ic) => '<div class="step ' + cls + '"><span class="ic">' + (ic || '') + '</span>' + label + '</div>';
+  const bars = '<div class="bar"></div>';
+  const dot = '<span class="spinner"></span>';
+
+  function stepsFor(st) {
+    if (st === 'processing')
+      return step('done', 'İş emri geldi', '✓') + bars + step('active', 'İşleniyor', '<span class="spinner"></span>') + bars + step('', 'Sonuçlandırıldı');
+    if (st === 'done')
+      return step('done', 'İş emri geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('done', 'Sonuçlandırıldı', '✓');
+    if (st === 'error')
+      return step('done', 'İş emri geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('bad', 'Başarısız', '✕');
+    if (st === 'ignored')
+      return step('', 'İş emri geldi') + bars + step('', '—') + bars + step('', 'Yok sayıldı');
+    return step('active', 'İş emri geldi') + bars + step('', 'İşleniyor') + bars + step('', 'Sonuçlandırıldı');
+  }
+
+  const LABEL = { pending: 'İş emri bekliyor', processing: 'İşleniyor', done: 'Sonuçlandı', error: 'Hata', ignored: 'Yok sayıldı' };
+
+  async function tick() {
+    try {
+      const q = await (await fetch('/qr')).json();
+      document.getElementById('conn').textContent = q.status || '-';
+    } catch (e) {}
+    try {
+      const d = await (await fetch('/messages')).json();
+      const ms = (d.messages || []).slice().reverse();
+      const c = { pending: 0, processing: 0, done: 0, error: 0 };
+      ms.forEach((m) => { if (c[m.status] !== undefined) c[m.status]++; });
+      document.getElementById('s-pending').textContent = c.pending;
+      document.getElementById('s-processing').textContent = c.processing;
+      document.getElementById('s-done').textContent = c.done;
+      document.getElementById('s-error').textContent = c.error;
+
+      document.getElementById('list').innerHTML = ms.map((m) => {
+        const st = m.status || 'pending';
+        const t = new Date(m.ts).toLocaleString('tr-TR');
+        return '<div class="card ' + st + '">' +
+          '<div class="meta">' + t + ' · ' + m.from + (m.name ? ' · ' + esc(m.name) : '') +
+          ' <span class="badge b-' + st + '">' + (LABEL[st] || st) + '</span></div>' +
+          '<div class="req">' + esc(m.text) + '</div>' +
+          '<div class="steps">' + stepsFor(st) + '</div>' +
+          (m.result ? '<div class="res">' + esc(m.result) + '</div>' : '') +
+          '</div>';
+      }).join('') || '<div class="empty">Henüz iş emri yok.<br/>Ender “panda ... ” yazınca burada görünür.</div>';
+    } catch (e) {}
+  }
+  tick();
+  setInterval(tick, 2000);
+</script>
+</body>
+</html>

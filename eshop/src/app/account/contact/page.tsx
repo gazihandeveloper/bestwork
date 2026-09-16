@@ -157,7 +157,7 @@ export default function ContactPage() {
                   </div>
                 </a>
                 <a
-                  href="tel:+905000000000"
+                  href="tel:+902242248896"
                   className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2.5 transition-colors hover:bg-brand-50/50"
                 >
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600">
@@ -165,7 +165,7 @@ export default function ContactPage() {
                   </span>
                   <div>
                     <p className="text-[10px] font-bold tracking-wide text-gray-400 uppercase">Telefon</p>
-                    <p className="font-semibold text-gray-800">Destek hattı</p>
+                    <p className="font-semibold text-gray-800">0224 224 88 96</p>
                   </div>
                 </a>
               </div>
