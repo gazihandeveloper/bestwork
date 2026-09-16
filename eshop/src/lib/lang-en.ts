@@ -16,7 +16,7 @@ export const en: Record<string, string> = {
   'Sepetim': 'My Cart',
   'Giriş Yap': 'Sign In',
   'Çıkış Yap': 'Sign Out',
-  'Ürün ara...': 'Search products...',
+  'Ürün arama': 'Search products...',
   'Tüm Kategoriler': 'All Categories',
   'Anasayfa': 'Home',
   'Kişisel': 'Personal',

@@ -125,7 +125,7 @@ export function Header() {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Ürün ara..."
+                placeholder="Ürün arama"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-12 pr-4 rounded-full bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 transition-all"
@@ -211,7 +211,7 @@ export function Header() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Ürün ara..."
+                placeholder="Ürün arama"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-12 pr-4 rounded-full bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:border-brand-500"
