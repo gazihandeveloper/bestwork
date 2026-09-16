@@ -263,8 +263,8 @@ function Inner({
       const rn = rfNodes.find((n) => n.id === id)
       if (!rn) return
       const k = 1
-      // Yatayda ortala, dikeyde kökü ÜSTE yakın yerleştir (üstte boşluk olmasın).
-      const topPad = CARD_H / 2 + 12
+      // Yatayda ortala, dikeyde kökü üstten biraz aşağıda konumlandır.
+      const topPad = CARD_H / 2 + 52
       if (rfWidth > 0) {
         rf.setViewport(
           { x: rfWidth / 2 - (rn.position.x + CARD_W / 2) * k, y: topPad - (rn.position.y + NODE_BOX_H / 2) * k, zoom: k },
