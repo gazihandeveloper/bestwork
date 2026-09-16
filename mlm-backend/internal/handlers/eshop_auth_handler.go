@@ -76,6 +76,9 @@ func (h *EshopAuthHandler) resolveLogin(c *gin.Context, login string) (*models.U
 		if errors.Is(err, services.ErrUserNotFound) {
 			u, err = h.users.GetUserByName(c.Request.Context(), login)
 		}
+		if errors.Is(err, services.ErrUserNotFound) {
+			u, err = h.users.GetUserByEmailLocal(c.Request.Context(), login)
+		}
 	}
 	return u, err
 }

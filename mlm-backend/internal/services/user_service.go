@@ -224,6 +224,20 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*models
 	return s.getUser(ctx, "SELECT "+userColumns+" FROM users WHERE email = $1", email)
 }
 
+// GetUserByEmailLocal e-postanın @ öncesi kısmıyla (kullanıcı adı) eşleşen
+// aktif kullanıcıyı bulur. Kolay giriş için: "best" → "best@bestwork.com".
+func (s *UserService) GetUserByEmailLocal(ctx context.Context, login string) (*models.User, error) {
+	login = strings.ToLower(strings.TrimSpace(login))
+	if login == "" {
+		return nil, ErrUserNotFound
+	}
+	return s.getUser(ctx, `
+		SELECT `+userColumns+` FROM users
+		WHERE is_active = true
+		  AND split_part(lower(email), '@', 1) = $1
+		ORDER BY id LIMIT 1`, login)
+}
+
 // GetUserByPhone telefon numarasına göre kullanıcıyı bulur.
 func (s *UserService) GetUserByPhone(ctx context.Context, phone string) (*models.User, error) {
 	phone = strings.TrimSpace(phone)
