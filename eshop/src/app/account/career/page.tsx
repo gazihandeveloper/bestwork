@@ -62,8 +62,11 @@ function GemBadge({ name, size = 64, active = false }: { name: string; size?: nu
 
 function Bar({ value, dark = false }: { value: number; dark?: boolean }) {
   return (
-    <div className={`h-2 w-full overflow-hidden rounded-full ${dark ? 'bg-white/15' : 'bg-gray-100'}`}>
-      <div className="h-full rounded-full bg-brand-500 transition-[width] duration-500" style={{ width: `${value}%` }} />
+    <div className={`h-2 w-full overflow-hidden rounded-full ${dark ? 'bg-white/25' : 'bg-gray-100'}`}>
+      <div
+        className={`h-full rounded-full transition-[width] duration-500 ${dark ? 'bg-white' : 'bg-brand-500'}`}
+        style={{ width: `${value}%` }}
+      />
     </div>
   )
 }
@@ -208,9 +211,9 @@ export default function CareerPage() {
               </div>
             </div>
 
-            {/* ── HEDEF İLERLEME ANALİZİ (koyu) ── */}
-            <div className="rounded-2xl bg-[#0f172a] p-5 text-white shadow-md">
-              <div className="mb-4 flex items-center gap-2 text-[11px] fw-800 tracking-wider text-emerald-400 uppercase">
+            {/* ── HEDEF İLERLEME ANALİZİ (marka yeşili) ── */}
+            <div className="rounded-2xl bg-[#29a56c] p-5 text-white shadow-md">
+              <div className="mb-4 flex items-center gap-2 text-[11px] fw-800 tracking-wider text-white/90 uppercase">
                 <Sparkles size={15} /> Hedef İlerleme Analizi
               </div>
 
@@ -218,20 +221,20 @@ export default function CareerPage() {
               <div className="mb-4 flex items-center justify-between gap-2">
                 <div className="flex flex-col items-center gap-1.5">
                   <GemBadge name={currentName} size={48} active />
-                  <span className="text-[10px] fw-700 text-white/80">{currentName}</span>
+                  <span className="text-[10px] fw-700 text-white/90">{currentName}</span>
                 </div>
-                <ArrowRight size={20} className="text-emerald-400" />
+                <ArrowRight size={20} className="text-white" />
                 <div className="flex flex-col items-center gap-1.5">
                   <GemBadge name={target?.name ?? currentName} size={48} active />
-                  <span className="text-[10px] fw-700 text-white/80">{target?.name ?? '—'}</span>
+                  <span className="text-[10px] fw-700 text-white/90">{target?.name ?? '—'}</span>
                 </div>
               </div>
 
               <div className="space-y-3.5">
                 <div>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-white/70">Kalan Sol PV</span>
-                    <span className={`rounded px-1.5 py-0.5 fw-700 ${remLeft === 0 ? 'bg-emerald-500/20 text-emerald-300' : 'text-white'}`}>
+                    <span className="text-white/85">Kalan Sol PV</span>
+                    <span className={`rounded px-1.5 py-0.5 fw-700 ${remLeft === 0 ? 'bg-white/20 text-white' : 'text-white'}`}>
                       {remLeft === 0 ? 'Ulaştınız' : `+${fmt(remLeft)}`}
                     </span>
                   </div>
@@ -239,8 +242,8 @@ export default function CareerPage() {
                 </div>
                 <div>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-white/70">Kalan Sağ PV</span>
-                    <span className={`rounded px-1.5 py-0.5 fw-700 ${remRight === 0 ? 'bg-emerald-500/20 text-emerald-300' : 'text-white'}`}>
+                    <span className="text-white/85">Kalan Sağ PV</span>
+                    <span className={`rounded px-1.5 py-0.5 fw-700 ${remRight === 0 ? 'bg-white/20 text-white' : 'text-white'}`}>
                       {remRight === 0 ? 'Ulaştınız' : `+${fmt(remRight)}`}
                     </span>
                   </div>
@@ -248,14 +251,14 @@ export default function CareerPage() {
                 </div>
                 <div>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-white/70">Kalan Kol Adeti</span>
+                    <span className="text-white/85">Kalan Kol Adeti</span>
                     <span className="fw-700 text-white">{downlineCount} adet</span>
                   </div>
                   <Bar value={downlineCount > 0 ? 0 : 100} dark />
                 </div>
                 <div>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-white/70">Paket Şartı</span>
+                    <span className="text-white/85">Paket Şartı</span>
                     <span className="fw-700 text-white">{fmt(activityPV)} PV</span>
                   </div>
                   <Bar value={activityPV > 0 ? 100 : 0} dark />
