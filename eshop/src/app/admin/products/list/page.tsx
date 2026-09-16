@@ -85,7 +85,7 @@ export default function AdminProductListPage() {
         <div className="p-4 border-b border-gray-100 flex items-center gap-4">
           <div className="relative max-w-xs flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Ürün ara..." value={search} onChange={(e) => setSearch(e.target.value)}
+            <input type="text" placeholder="Ürün arama" value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full h-10 pl-10 pr-4 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-brand-500" />
           </div>
         </div>
