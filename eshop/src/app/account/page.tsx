@@ -589,9 +589,9 @@ export default function AccountDashboardPage() {
                 <a
                   href={registerLink}
                   title="Kayıt sayfasına git"
-                  className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
+                  className="rounded-xl border-2 border-gray-300 bg-white p-3 shadow-md ring-1 ring-gray-100 transition-shadow hover:shadow-lg"
                 >
-                  <QRCodeSVG value={registerLink} size={124} level="M" />
+                  <QRCodeSVG value={registerLink} size={150} level="M" />
                 </a>
                 <span className="text-[10px] text-gray-400">QR'ı okutup üye olun</span>
               </div>
