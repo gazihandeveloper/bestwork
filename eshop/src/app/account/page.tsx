@@ -625,7 +625,7 @@ export default function AccountDashboardPage() {
             <button
               type="button"
               onClick={() => setUpgradeOpen(true)}
-              className="mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#29a56c] py-3 text-base font-extrabold text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:brightness-110"
+              className="mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#29a56c] py-3.5 text-lg font-extrabold text-white shadow-lg ring-2 ring-[#29a56c]/40 transition-transform duration-200 hover:-translate-y-0.5 hover:brightness-110"
             >
               Üyelik seviyenizi yükseltmek için buraya tıklayınız!
             </button>
