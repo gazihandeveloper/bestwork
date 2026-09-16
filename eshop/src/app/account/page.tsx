@@ -500,7 +500,7 @@ export default function AccountDashboardPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="bw-dash space-y-5">
       {/* Üst menü — bestwork backoffice menüsü */}
       <AccountTopMenu />
 

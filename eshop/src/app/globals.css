@@ -221,3 +221,22 @@ body .bw-logo span {
 .react-flow__pane:active {
   cursor: grabbing;
 }
+
+/* ============================================
+   Dashboard: kartlara derinlik + yazı belirginliği
+   (Gövde metnini 400'e sabitleyen kural bu kapsamda esnetilir.)
+   ============================================ */
+.bw-dash .shadow-sm {
+  box-shadow:
+    0 6px 20px -6px rgba(16, 24, 40, 0.14),
+    0 2px 6px -3px rgba(16, 24, 40, 0.08) !important;
+}
+.bw-dash .shadow {
+  box-shadow: 0 8px 24px -8px rgba(16, 24, 40, 0.18) !important;
+}
+.bw-dash .font-medium { font-weight: 500 !important; }
+.bw-dash .font-semibold { font-weight: 600 !important; }
+.bw-dash .font-bold { font-weight: 700 !important; }
+.bw-dash .font-extrabold { font-weight: 800 !important; }
+/* Soluk gri metinleri bir tık belirginleştir */
+.bw-dash .text-gray-400 { color: #6b7280 !important; }
