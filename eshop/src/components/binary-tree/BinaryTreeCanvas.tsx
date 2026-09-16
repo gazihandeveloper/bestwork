@@ -470,7 +470,8 @@ function Inner({
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
-          panOnScroll
+          panOnScroll={false}
+          zoomOnScroll
           zoomOnDoubleClick={false}
           proOptions={{ hideAttribution: true }}
           fitView={false}
