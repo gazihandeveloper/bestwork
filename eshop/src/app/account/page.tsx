@@ -643,12 +643,12 @@ export default function AccountDashboardPage() {
               onClick={() => go('/account/career')}
             />
             <StatBlock
-              label="Güncel Kariyeriniz"
+              label="Kariyeriniz"
               value={currentRankName}
               icon={<BadgeCheck size={20} />}
               info="Bu ayki güncel kariyeriniz."
-              flipped={flippedCard === 'Güncel Kariyeriniz'}
-              onFlip={() => flip('Güncel Kariyeriniz')}
+              flipped={flippedCard === 'Kariyeriniz'}
+              onFlip={() => flip('Kariyeriniz')}
               onClick={() => go('/account/career')}
             />
             <StatBlock
