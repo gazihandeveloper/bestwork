@@ -149,7 +149,7 @@ function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, valueClas
   return (
     <div
       onClick={onClick}
-      className={`relative h-full rounded-xl border border-gray-200 bg-white shadow-md ring-1 ring-gray-100 transition-shadow hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative h-full rounded-xl border border-gray-300 bg-white shadow-lg ring-1 ring-gray-200 transition-shadow hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
       style={{ perspective: 1000 }}
     >
       <div
@@ -725,7 +725,7 @@ export default function AccountDashboardPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Link
           href="/account/orders"
-          className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 transition-shadow hover:shadow-md"
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-500">
@@ -739,7 +739,7 @@ export default function AccountDashboardPage() {
         </Link>
         <Link
           href="/account/wallet"
-          className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 transition-shadow hover:shadow-md"
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-50 text-yellow-500">
@@ -753,7 +753,7 @@ export default function AccountDashboardPage() {
         </Link>
         <Link
           href="/account/addresses"
-          className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 transition-shadow hover:shadow-md"
+          className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
