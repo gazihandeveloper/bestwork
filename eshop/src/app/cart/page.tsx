@@ -27,7 +27,7 @@ import {
 } from '@/components/icons'
 import { MainLayout } from '@/app/main-layout'
 import { Button } from '@/components/ui/Button'
-import { formatPrice, formatPV, get } from '@/lib/api'
+import { formatPV, get } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
 
 function QtyField({ value, stock, onChange }: { value: number; stock?: number; onChange: (n: number) => void }) {
@@ -92,14 +92,21 @@ function QtyField({ value, stock, onChange }: { value: number; stock?: number; o
   )
 }
 
-/** CV (mor) ve PV (mavi) rozetleri. */
+/** Fiyat biçimi: ₺ SONDА (1.215,50 ₺). */
+const tl = (cents: number) =>
+  `${((Number(cents) || 0) / 100).toLocaleString('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ₺`
+
+/** CV (yeşil) ve PV (mor) rozetleri. */
 function CvPvBadges({ cv, pv }: { cv: number; pv: number }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[11px] fw-700 text-purple-700 ring-1 ring-purple-200">
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] fw-700 text-emerald-700 ring-1 ring-emerald-200">
         <Star size={11} /> CV: {formatPV(cv)}
       </span>
-      <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[11px] fw-700 text-sky-700 ring-1 ring-sky-200">
+      <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[11px] fw-700 text-purple-700 ring-1 ring-purple-200">
         <Droplets size={11} /> PV: {formatPV(pv)}
       </span>
     </div>
@@ -184,7 +191,7 @@ export default function CartPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="bw-cart container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-2 text-sm text-gray-400">
           <Link href="/" className="hover:text-brand-500">
             Ana Sayfa
@@ -235,7 +242,7 @@ export default function CartPage() {
                       <div className="truncate text-sm fw-700 text-gray-800">{p.name}</div>
                       <div className="text-[11px] text-gray-400">{p.sku || ''}</div>
                     </div>
-                    <span className="shrink-0 text-xs fw-700 text-brand-600">{formatPrice(Number(p.price))}</span>
+                    <span className="shrink-0 text-xs fw-700 text-brand-600">{tl(Number(p.price))}</span>
                   </button>
                 ))}
               </div>
@@ -313,10 +320,10 @@ export default function CartPage() {
                     <div className="flex w-full items-center justify-between gap-3 border-t border-gray-100 pt-3 sm:w-auto sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
                       <div className="text-right">
                         <div className="text-[11px] text-gray-400">
-                          {cmp > unit && <span className="mr-1 line-through">{formatPrice(cmp)}</span>}
-                          <span className="fw-700 text-gray-600">{formatPrice(unit)} / ad.</span>
+                          {cmp > unit && <span className="mr-1 line-through">{tl(cmp)}</span>}
+                          <span className="fw-700 text-gray-600">{tl(unit)} / ad.</span>
                         </div>
-                        <div className="text-lg fw-800 text-brand-600">{formatPrice(unit * item.quantity)}</div>
+                        <div className="text-lg fw-800 text-brand-600">{tl(unit * item.quantity)}</div>
                       </div>
                       <button
                         type="button"
@@ -349,29 +356,29 @@ export default function CartPage() {
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Toplam Satış Tutarı</span>
-                  <span className="fw-700 text-gray-800">{formatPrice(saleTotal)}</span>
+                  <span className="fw-700 text-gray-800">{tl(saleTotal)}</span>
                 </div>
                 {totalDiscount > 0 && (
                   <div className="flex justify-between">
                     <span className="inline-flex items-center gap-1.5 text-gray-500">
                       <Tag size={14} className="text-green-600" /> Toplam İndiriminiz
                     </span>
-                    <span className="fw-700 text-green-600">− {formatPrice(totalDiscount)}</span>
+                    <span className="fw-700 text-green-600">− {tl(totalDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">Toplam CV</span>
-                  <span className="fw-700 text-purple-600">{formatPV(totalCV)}</span>
+                  <span className="fw-700 text-emerald-600">{formatPV(totalCV)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Toplam PV</span>
-                  <span className="fw-700 text-sky-600">{formatPV(totalPV)}</span>
+                  <span className="fw-700 text-purple-600">{formatPV(totalPV)}</span>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3.5">
                 <span className="text-sm fw-800 text-gray-800">Ödenecek Tutar</span>
-                <span className="text-xl fw-800 text-brand-600">{formatPrice(payable)}</span>
+                <span className="text-2xl fw-800 text-brand-600">{tl(payable)}</span>
               </div>
 
               <Link href="/checkout" className="mt-5 block">

@@ -220,6 +220,13 @@ body .bw-logo span {
 .bw-tree-ui .fw-700 { font-weight: 700 !important; }
 .bw-tree-ui .fw-800 { font-weight: 800 !important; }
 
+/* Global ağırlık yardımcıları (gövde 400 kuralını geçersiz kılar).
+   Sepet/ödeme gibi sayfalarda kalın metin için kullanılır. */
+.fw-500 { font-weight: 500 !important; }
+.fw-600 { font-weight: 600 !important; }
+.fw-700 { font-weight: 700 !important; }
+.fw-800 { font-weight: 800 !important; }
+
 /* ============================================
    React Flow (binary ağaç) — düğümler etkileşimli olmalı.
    React Flow, "selectable/draggable/connectable" kapalı düğümlere
