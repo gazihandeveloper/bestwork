@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Open_Sans, Quicksand } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
+import '@xyflow/react/dist/style.css'
 import { Providers } from './providers'
 
 /* Site geneli yazı tipi — flptr.com ile aynı: Open Sans (400/600/700)

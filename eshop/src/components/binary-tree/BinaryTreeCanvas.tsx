@@ -1,18 +1,31 @@
 // ============================================
-// BestWork - Binary ağaç tuvali (d3 yerleşim + zoom/pan)
+// BestWork - Binary ağaç tuvali (React Flow)
 //
-// Yalnızca AÇIK düğümlerin çocukları yerleşime girer; gizli dallar için yan
-// yer tutucu çizilmez. Her kartın ALTINDA bir + / − düğmesi bulunur: + ile
-// dal (/tree/level) getirilir ve açılır, − ile gizlenir.
+// NEDEN REACT FLOW: pan/zoom + mobil dokunma/pinch + Safari uyumu kütüphanenin
+// içinde gelir; d3.zoom'un React/WebKit uyumsuzluklarından tamamen kurtuluruz.
+// Yerleşim yalnızca d3-hierarchy (saf matematik) ile hesaplanır; düğümler React
+// bileşeni olarak (NodeCard) çizilir.
 // ============================================
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import * as d3 from 'd3'
+import {
+  ReactFlow,
+  ReactFlowProvider,
+  Background,
+  BackgroundVariant,
+  Handle,
+  Position,
+  useReactFlow,
+  type Edge as RFEdge,
+  type Node as RFNode,
+  type NodeProps,
+} from '@xyflow/react'
 import { Maximize, Minus, Plus, RotateCcw, TreePine } from '@/components/icons'
 import { NodeCard } from './NodeCard'
 import { TreeReportModal } from './TreeReportModal'
-import { CARD_H, FO_H, FO_PAD, FO_W, NODE_DX, NODE_DY, type NodeRec } from './types'
+import { CARD_H, CARD_W, NODE_DX, NODE_DY, type NodeRec } from './types'
 
 interface LayoutNode {
   id: number
@@ -27,18 +40,30 @@ interface BinaryTreeCanvasProps {
   expanded: Record<number, boolean>
   busy: Record<number, boolean>
   rootId: number | null
-  /** Alt hat sayaçları (aktif/toplam). */
   stats: { toplam: number; aktif: number } | null
-  /** Değiştiğinde ağaç yeniden ekrana sığdırılır (dönem değişimi). */
   fitKey: string
   focusId: number | null
   selectedId: number | null
-  /** Sabitlenmiş (pinlenmiş) üye kimlikleri — kartlarda iğne rozeti için. */
   pinnedIds: Record<number, boolean>
   onSelect: (id: number) => void
   onToggle: (id: number) => void
   onTogglePin: (id: number) => void
 }
+
+interface MemberData extends Record<string, unknown> {
+  rec: NodeRec
+  isRoot: boolean
+  selected: boolean
+  pinned: boolean
+  hasChildren: boolean
+  isOpen: boolean
+  busy: boolean
+  onSelect: (id: number) => void
+  onToggle: (id: number) => void
+  onTogglePin: (id: number) => void
+}
+
+type MemberNode = RFNode<MemberData, 'member'>
 
 function buildLayout(
   id: number,
@@ -60,13 +85,6 @@ function buildLayout(
     }
   }
   return { id, children }
-}
-
-function linkD(s: HPoint, t: HPoint) {
-  const sy = s.y + CARD_H / 2
-  const ty = t.y - CARD_H / 2 - 4
-  const my = (sy + ty) / 2
-  return `M${s.x},${sy} C${s.x},${my} ${t.x},${my} ${t.x},${ty}`
 }
 
 const BADGE_TONES = {
@@ -113,7 +131,35 @@ function CountBadge({
   )
 }
 
-export function BinaryTreeCanvas({
+/** React Flow özel düğümü: mevcut kart + gizli bağlantı noktaları (üst/alt). */
+function MemberNode({ data }: NodeProps<MemberNode>) {
+  const hidden: CSSProperties = { opacity: 0, width: 1, height: 1, border: 0, background: 'transparent' }
+  return (
+    <div className="relative">
+      <Handle type="target" position={Position.Top} style={hidden} isConnectable={false} />
+      <NodeCard
+        rec={data.rec}
+        isRoot={data.isRoot}
+        selected={data.selected}
+        pinned={data.pinned}
+        hasChildren={data.hasChildren}
+        isOpen={data.isOpen}
+        busy={data.busy}
+        onSelect={data.onSelect}
+        onToggle={data.onToggle}
+        onTogglePin={data.onTogglePin}
+      />
+      <Handle type="source" position={Position.Bottom} style={hidden} isConnectable={false} />
+    </div>
+  )
+}
+
+const nodeTypes = { member: MemberNode }
+
+/** React Flow'u ölçmek için düğüm yüksekliği (kart + pin/+- taşması payı). */
+const NODE_BOX_H = CARD_H
+
+function Inner({
   nodes,
   loaded,
   expanded,
@@ -128,16 +174,12 @@ export function BinaryTreeCanvas({
   onToggle,
   onTogglePin,
 }: BinaryTreeCanvasProps) {
-  const svgRef = useRef<SVGSVGElement | null>(null)
-  const gRef = useRef<SVGGElement | null>(null)
-  const wrapRef = useRef<HTMLDivElement | null>(null)
-  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+  const rf = useReactFlow()
   const interactedRef = useRef(false)
   const fitKeyRef = useRef('')
   const pendingFocusRef = useRef<number | null>(null)
-
-  const [size, setSize] = useState({ w: 0, h: 0 })
   const [zoomLevel, setZoomLevel] = useState(1)
+  const [rfReady, setRfReady] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [reportTab, setReportTab] = useState<'aktif' | 'pasif' | null>(null)
 
@@ -146,26 +188,6 @@ export function BinaryTreeCanvas({
     setShowReport(true)
   }
 
-  /* ── Responsive ölçüm ── */
-  useEffect(() => {
-    const el = wrapRef.current
-    if (!el) return
-    const update = () => {
-      const r = el.getBoundingClientRect()
-      // Mobil/taşma durumunda ölçülen genişlik ekrandan büyük çıkabilir; ağacın
-      // ortalama/ölçek hesabı görünür alana göre yapılsın diye ekranla sınırla.
-      const vw = typeof window !== 'undefined' ? window.innerWidth : r.width
-      const vh = typeof window !== 'undefined' ? window.innerHeight : r.height
-      const w = Math.max(320, Math.min(Math.round(r.width), vw))
-      const h = Math.max(360, Math.min(Math.round(r.height), Math.max(360, vh)))
-      setSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }))
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
   /* ── d3 yerleşim (yalnız açık düğümler) ── */
   const layout = useMemo(() => {
     if (rootId == null) return null
@@ -173,125 +195,97 @@ export function BinaryTreeCanvas({
     if (!root) return null
     const hier = d3.hierarchy<LayoutNode>(root, (d) => (d.children.length ? d.children : undefined))
     const rt = d3.tree<LayoutNode>().nodeSize([NODE_DX, NODE_DY])(hier)
-    let x0 = Infinity
-    let x1 = -Infinity
-    let y0 = Infinity
-    let y1 = -Infinity
-    rt.each((n) => {
-      x0 = Math.min(x0, n.x)
-      x1 = Math.max(x1, n.x)
-      y0 = Math.min(y0, n.y)
-      y1 = Math.max(y1, n.y)
-    })
-    return { rt, x0, x1, y0, y1 }
+    return { rt, x0: 0, x1: 0, y0: 0, y1: 0 }
   }, [rootId, nodes, loaded, expanded])
 
-  /* ── Zoom + pan davranışı (bir kez) ── */
-  useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
-    const zb = d3
-      .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.08, 2.5])
-      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-        if (event.sourceEvent) interactedRef.current = true
-        if (gRef.current) d3.select(gRef.current).attr('transform', event.transform.toString())
-        setZoomLevel(event.transform.k)
+  /* ── React Flow düğüm/kenarları ── */
+  const { rfNodes, rfEdges } = useMemo(() => {
+    const outNodes: MemberNode[] = []
+    const outEdges: RFEdge[] = []
+    if (!layout) return { rfNodes: outNodes, rfEdges: outEdges }
+
+    for (const n of layout.rt.descendants()) {
+      const item = n.data
+      const rec = nodes[item.id]
+      if (!rec) continue
+      const isLoaded = !!loaded[item.id]
+      const isOpen = isLoaded && !!expanded[item.id]
+      const hasChildren = isLoaded
+        ? rec.leftId != null || rec.rightId != null
+        : rec.has_left || rec.has_right
+      outNodes.push({
+        id: String(item.id),
+        type: 'member',
+        position: { x: n.x - CARD_W / 2, y: n.y - NODE_BOX_H / 2 },
+        data: {
+          rec,
+          isRoot: item.id === rootId,
+          selected: selectedId === item.id,
+          pinned: !!pinnedIds[item.id],
+          hasChildren,
+          isOpen,
+          busy: !!busy[item.id],
+          onSelect,
+          onToggle,
+          onTogglePin,
+        },
+        draggable: false,
+        selectable: false,
+        connectable: false,
+        width: CARD_W,
+        height: NODE_BOX_H,
       })
-    zoomRef.current = zb
-    d3.select(svg).call(zb).on('dblclick.zoom', null)
-    return () => {
-      d3.select(svg).on('.zoom', null)
     }
-  }, [])
 
-  /* ── Ekrana sığdırma yardımcıları ── */
-  const computeTransform = (
-    ignoreFloor: boolean
-  ): d3.ZoomTransform | null => {
-    if (!layout || size.w <= 0) return null
-    const { rt, x0, x1, y0, y1 } = layout
-    const padX = size.w < 640 ? 12 : 48
-    const padY = size.w < 640 ? 20 : 40
-    const minX = x0 - FO_W / 2
-    const maxX = x1 + FO_W / 2
-    const minY = y0 - FO_H / 2
-    const maxY = y1 + FO_H / 2
-    const contentW = maxX - minX
-    const contentH = maxY - minY
-    const fit = Math.min(
-      (size.w - padX * 2) / contentW,
-      (size.h - padY * 2) / contentH
-    )
-    const floor = ignoreFloor ? 0.05 : size.w < 1024 ? 0.45 : 0.3
-    const scale = Math.min(1.1, Math.max(Math.max(fit, 0), floor))
-    let tx: number
-    let ty: number
-    if (scale > fit + 0.001) {
-      // Ağaç sığmıyor: kökü üst-orta hizala, gerisi kaydırmayla görülsün.
-      tx = size.w / 2 - rt.x * scale
-      ty = padY - minY * scale
-    } else {
-      tx = (size.w - contentW * scale) / 2 - minX * scale
-      ty = (size.h - contentH * scale) / 2 - minY * scale
+    for (const l of layout.rt.links()) {
+      const rec = nodes[l.target.data.id]
+      const side = rec?.position ?? (l.target.x < l.source.x ? 'L' : 'R')
+      outEdges.push({
+        id: `e-${l.source.data.id}-${l.target.data.id}`,
+        source: String(l.source.data.id),
+        target: String(l.target.data.id),
+        type: 'default',
+        style: { stroke: side === 'L' ? '#38bdf8' : '#a78bfa', strokeWidth: 2 },
+        selectable: false,
+        focusable: false,
+      })
     }
-    return d3.zoomIdentity.translate(tx, ty).scale(scale)
-  }
+    return { rfNodes: outNodes, rfEdges: outEdges }
+  }, [layout, nodes, loaded, expanded, rootId, selectedId, pinnedIds, busy, onSelect, onToggle, onTogglePin])
 
-  /**
-   * İlk görünüm: KÖKÜ her zaman yatayda EKRANIN ORTASINA, dikeyde üste hizalar.
-   * (Sınırlayıcı kutu ortalaması, dengesiz ağaçlarda kökü yana kaydırıyordu.)
-   */
-  const computeRootTransform = (): d3.ZoomTransform | null => {
-    if (!layout || size.w <= 0) return null
-    const { rt, x0, x1, y0, y1 } = layout
-    const padX = size.w < 640 ? 12 : 48
-    const padY = size.w < 640 ? 20 : 40
-    const minX = x0 - FO_W / 2
-    const maxX = x1 + FO_W / 2
-    const minY = y0 - FO_H / 2
-    const maxY = y1 + FO_H / 2
-    const contentW = maxX - minX
-    const contentH = maxY - minY
-    const fit = Math.min((size.w - padX * 2) / contentW, (size.h - padY * 2) / contentH)
-    const floor = size.w < 1024 ? 0.55 : 0.4
-    const scale = Math.min(1, Math.max(fit, floor))
-    const tx = size.w / 2 - rt.x * scale
-    const ty = padY - minY * scale
-    return d3.zoomIdentity.translate(tx, ty).scale(scale)
-  }
+  const centerRoot = useCallback(
+    (duration = 0) => {
+      const id = rootId != null ? String(rootId) : null
+      if (!id) return
+      const rn = rfNodes.find((n) => n.id === id)
+      if (!rn) return
+      const zoom = typeof window !== 'undefined' && window.innerWidth < 640 ? 0.75 : 0.9
+      rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom, duration })
+    },
+    [rf, rfNodes, rootId]
+  )
 
-  const applyTransform = (t: d3.ZoomTransform | null, duration: number) => {
-    const svg = svgRef.current
-    const zb = zoomRef.current
-    if (!svg || !zb || !t) return
-    // duration 0: doğrudan uygula (Safari'de 0 süreli transition güvenilir değil)
-    if (duration <= 0) {
-      d3.select(svg).call(zb.transform, t)
-      return
-    }
-    d3.select(svg).transition().duration(duration).call(zb.transform, t)
-  }
-
-  /* ── fitKey değişince (yeni dönem) veya ilk yerleşimde sığdır ── */
+  /* ── İlk/dönem değişiminde kökü ortala ── */
   useEffect(() => {
-    if (!layout || size.w <= 0) return
+    if (!rfReady || !layout || rfNodes.length === 0) return
     const changed = fitKeyRef.current !== fitKey
-    if (!changed && interactedRef.current) return
     if (changed) {
       fitKeyRef.current = fitKey
       interactedRef.current = false
     }
-    applyTransform(computeRootTransform(), 0)
-    if (changed) {
-      // Mobil/Safari: ilk karede ölçüm/yerleşim gecikirse bir kare sonra tekrar uygula.
-      const raf = requestAnimationFrame(() => {
-        if (!interactedRef.current) applyTransform(computeRootTransform(), 0)
-      })
-      return () => cancelAnimationFrame(raf)
+    if (interactedRef.current) return
+    let id = 0
+    let tries = 0
+    const run = () => {
+      if (interactedRef.current) return
+      centerRoot(0)
+      // Ölçüm gecikirse birkaç kez tekrar dene
+      if (tries++ < 3) id = window.setTimeout(run, 120)
     }
+    id = window.setTimeout(run, 60)
+    return () => window.clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout, size, fitKey])
+  }, [rfReady, layout, rfNodes.length, fitKey])
 
   /* ── Arama ile odaklanan düğüme ortala ── */
   useEffect(() => {
@@ -300,25 +294,31 @@ export function BinaryTreeCanvas({
 
   useEffect(() => {
     const id = pendingFocusRef.current
-    if (!layout || id == null || size.w <= 0) return
-    const pt = layout.rt.descendants().find((n) => n.data.id === id)
-    if (!pt) return
+    if (!layout || id == null) return
+    const rn = rfNodes.find((n) => n.id === String(id))
+    if (!rn) return
     pendingFocusRef.current = null
     interactedRef.current = true
-    const scale = 0.9
-    const t = d3.zoomIdentity
-      .translate(size.w / 2 - pt.x * scale, size.h / 2 - pt.y * scale)
-      .scale(scale)
-    applyTransform(t, 420)
-  }, [layout, size, focusId])
+    rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom: 0.9, duration: 500 })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rfNodes, focusId])
 
   const zoomBy = (factor: number) => {
-    const svg = svgRef.current
-    const zb = zoomRef.current
-    if (!svg || !zb) return
     interactedRef.current = true
-    d3.select(svg).transition().duration(200).call(zb.scaleBy, factor)
+    rf.zoomTo(rf.getZoom() * factor, { duration: 200 })
   }
+
+  const fitAll = () => {
+    interactedRef.current = true
+    rf.fitView({ padding: 0.2, minZoom: 0.05, maxZoom: 1, duration: 260 })
+  }
+
+  const rootActive = rootId != null && nodes[rootId]?.is_active !== false
+  const teamTotal = stats ? stats.toplam : null
+  const teamActive = stats ? stats.aktif : null
+  const aktif = teamActive == null ? null : teamActive + (rootActive ? 1 : 0)
+  const pasif = teamActive == null || teamTotal == null ? null : teamTotal - teamActive + (rootActive ? 0 : 1)
+  const toplam = teamTotal == null ? null : teamTotal + 1
 
   const controls = (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -343,14 +343,8 @@ export function BinaryTreeCanvas({
         aria-label="Kökü ortala"
         title="Kökü ortala"
         onClick={() => {
-          if (!layout) return
           interactedRef.current = true
-          applyTransform(
-            d3.zoomIdentity
-              .translate(size.w / 2 - layout.rt.x, size.h / 2 - layout.rt.y)
-              .scale(1),
-            300
-          )
+          centerRoot(300)
         }}
         className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
       >
@@ -358,10 +352,7 @@ export function BinaryTreeCanvas({
       </button>
       <button
         type="button"
-        onClick={() => {
-          interactedRef.current = true
-          applyTransform(computeTransform(true), 260)
-        }}
+        onClick={fitAll}
         className="flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs fw-700 text-gray-600 transition-colors hover:bg-gray-50"
       >
         <Maximize size={13} /> Sığdır
@@ -378,17 +369,6 @@ export function BinaryTreeCanvas({
       <span className="w-10 text-center text-xs fw-700 text-gray-400">%{Math.round(zoomLevel * 100)}</span>
     </div>
   )
-
-  const links = layout?.rt.links() ?? []
-  const points = layout?.rt.descendants() ?? []
-
-  /* Sayaçlar: alt hat (aktif/pasif/toplam) + kökün kendisi. */
-  const rootActive = rootId != null && nodes[rootId]?.is_active !== false
-  const teamTotal = stats ? stats.toplam : null
-  const teamActive = stats ? stats.aktif : null
-  const aktif = teamActive == null ? null : teamActive + (rootActive ? 1 : 0)
-  const pasif = teamActive == null || teamTotal == null ? null : teamTotal - teamActive + (rootActive ? 0 : 1)
-  const toplam = teamTotal == null ? null : teamTotal + 1
 
   return (
     <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -423,60 +403,28 @@ export function BinaryTreeCanvas({
         {controls}
       </div>
 
-      <div
-        ref={wrapRef}
-        className="relative h-[calc(100vh-260px)] min-h-[360px] w-full max-w-full overflow-hidden bg-[radial-gradient(#e9eef5_1px,transparent_1px)] [background-size:22px_22px] sm:min-h-[440px] lg:min-h-[600px]"
-      >
-        <svg ref={svgRef} className="block h-full w-full cursor-grab touch-none active:cursor-grabbing">
-          <g ref={gRef}>
-            {links.map((l, i) => {
-              const rec = nodes[l.target.data.id]
-              const side = rec?.position ?? (l.target.x < l.source.x ? 'L' : 'R')
-              const color = side === 'L' ? '#38bdf8' : '#a78bfa'
-              return (
-                <path
-                  key={`link-${i}`}
-                  d={linkD(l.source, l.target)}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                />
-              )
-            })}
-
-            {points.map((n) => {
-              const item = n.data
-              const rec = nodes[item.id]
-              if (!rec) return null
-              const isLoaded = !!loaded[item.id]
-              const isOpen = isLoaded && !!expanded[item.id]
-              const hasChildren = isLoaded
-                ? rec.leftId != null || rec.rightId != null
-                : rec.has_left || rec.has_right
-              return (
-                <g key={`node-${item.id}`} transform={`translate(${n.x},${n.y})`}>
-                  <foreignObject x={-FO_W / 2} y={-FO_H / 2} width={FO_W} height={FO_H}>
-                    <div style={{ padding: FO_PAD }}>
-                      <NodeCard
-                        rec={rec}
-                        isRoot={item.id === rootId}
-                        selected={selectedId === item.id}
-                        pinned={!!pinnedIds[item.id]}
-                        hasChildren={hasChildren}
-                        isOpen={isOpen}
-                        busy={!!busy[item.id]}
-                        onSelect={onSelect}
-                        onToggle={onToggle}
-                        onTogglePin={onTogglePin}
-                      />
-                    </div>
-                  </foreignObject>
-                </g>
-              )
-            })}
-          </g>
-        </svg>
+      <div className="relative h-[calc(100vh-260px)] min-h-[360px] w-full max-w-full overflow-hidden sm:min-h-[440px] lg:min-h-[600px]">
+        <ReactFlow
+          nodes={rfNodes}
+          edges={rfEdges}
+          nodeTypes={nodeTypes}
+          onInit={() => setRfReady(true)}
+          onMoveStart={(e) => {
+            if (e) interactedRef.current = true
+          }}
+          onMove={(_e, vp) => setZoomLevel(vp.zoom)}
+          minZoom={0.05}
+          maxZoom={2.5}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          panOnScroll
+          zoomOnDoubleClick={false}
+          proOptions={{ hideAttribution: true }}
+          fitView={false}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#e9eef5" />
+        </ReactFlow>
       </div>
 
       {showReport && (
@@ -490,5 +438,13 @@ export function BinaryTreeCanvas({
         />
       )}
     </div>
+  )
+}
+
+export function BinaryTreeCanvas(props: BinaryTreeCanvasProps) {
+  return (
+    <ReactFlowProvider>
+      <Inner {...props} />
+    </ReactFlowProvider>
   )
 }
