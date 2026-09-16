@@ -81,7 +81,7 @@ export function Header() {
               <LiveClock />
               <span className="text-gray-300">|</span>
               <Phone size={12} className="text-brand-500" />
-              <span className="font-semibold text-gray-700">+90 850 555 0 888</span>
+              <span className="font-semibold text-gray-700">0224 224 88 96</span>
               <span className="text-gray-300">|</span>
               <button
                 type="button"
@@ -366,7 +366,7 @@ export function Header() {
               </div>
               <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
                 <Phone size={14} />
-                +90 850 555 0 888
+                0224 224 88 96
               </div>
             </div>
           </div>
