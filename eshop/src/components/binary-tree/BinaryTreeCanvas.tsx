@@ -482,13 +482,13 @@ function Inner({
 
       {pinsOpen && (
         <div
-          className="bw-tree-ui fixed inset-0 z-[70] flex justify-end bg-black/30"
+          className="bw-tree-ui fixed inset-0 z-[70] flex justify-start bg-black/30"
           onClick={() => setPinsOpen(false)}
           role="dialog"
           aria-label="Sabitlenen üyeler"
         >
           <div
-            className="flex h-full w-72 max-w-[85vw] flex-col border-l border-gray-100 bg-white shadow-2xl"
+            className="flex h-full w-72 max-w-[85vw] flex-col border-r border-gray-100 bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
