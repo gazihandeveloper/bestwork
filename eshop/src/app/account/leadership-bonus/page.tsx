@@ -141,7 +141,7 @@ export default function LeadershipBonusPage() {
                     <td className="px-4 py-2.5 text-gray-600">
                       {c.from_user_id != null ? `Üye #${c.from_user_id}` : '-'}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-semibold text-green-600">
+                    <td className="px-4 py-2.5 text-right font-semibold text-[#29a56c]">
                       {c.related_cv != null ? `${Number(c.related_cv).toLocaleString('tr-TR')} CV` : '-'}
                     </td>
                   </tr>

@@ -101,7 +101,7 @@ const tl = (cents: number) =>
 function CvPvBadges({ cv, pv }: { cv: number; pv: number }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="rounded-full bg-green-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
+      <span className="rounded-full bg-[#29a56c] px-2 py-0.5 text-[10px] fw-700 text-white shadow">
         {formatPV(cv)} CV
       </span>
       <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
@@ -366,7 +366,7 @@ export default function CartPage() {
                 )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">Toplam CV</span>
-                  <span className="fw-700 text-emerald-600">{formatPV(totalCV)}</span>
+                  <span className="fw-700 text-[#29a56c]">{formatPV(totalCV)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Toplam PV</span>

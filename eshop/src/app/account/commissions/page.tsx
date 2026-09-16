@@ -219,7 +219,7 @@ export default function CommissionsPage() {
                           {meta.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-right font-semibold text-green-600">{cv(c.related_cv)}</td>
+                      <td className="px-4 py-2.5 text-right font-semibold text-[#29a56c]">{cv(c.related_cv)}</td>
                       <td className="px-4 py-2.5 text-right text-sm font-extrabold text-green-600">+{tl(c.amount)}</td>
                     </tr>
                   )

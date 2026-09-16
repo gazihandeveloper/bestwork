@@ -95,12 +95,12 @@ export default function BinaryTransactionsPage() {
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-600">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#29a56c]/10 text-[#29a56c]">
               <TrendingUp size={18} />
             </span>
             <p className="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Ekleme CV (sayfa)</p>
           </div>
-          <p className="mt-1.5 text-lg font-extrabold text-green-600">{addCV.toLocaleString('tr-TR')} CV</p>
+          <p className="mt-1.5 text-lg font-extrabold text-[#29a56c]">{addCV.toLocaleString('tr-TR')} CV</p>
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function BinaryTransactionsPage() {
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         {t.cv > 0 ? (
-                          <span className="font-extrabold text-green-600">+{Number(t.cv).toLocaleString('tr-TR')} CV</span>
+                          <span className="font-extrabold text-[#29a56c]">+{Number(t.cv).toLocaleString('tr-TR')} CV</span>
                         ) : (
                           '—'
                         )}

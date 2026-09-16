@@ -56,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           {(product as any).cv > 0 && isAuthenticated && (
-            <span className="bg-green-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
+            <span className="bg-[#29a56c] text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow">
               {formatPV((product as any).cv)} CV
             </span>
           )}

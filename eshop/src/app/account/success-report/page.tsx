@@ -411,7 +411,7 @@ export default function SuccessReportPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <CompareCard title="AYLIK KAZANÇ" icon={<TrendingUp size={18} />} now={cmp.earn.now} prev={cmp.earn.prev} unit="TL" />
             <CompareCard title="TOPLAM PV" icon={<TrendingUp size={18} />} now={cmp.pv.now} prev={cmp.pv.prev} unit="PV" valueClass="text-purple-600" />
-            <CompareCard title="TOPLAM CV" icon={<TrendingUp size={18} />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" valueClass="text-green-600" />
+            <CompareCard title="TOPLAM CV" icon={<TrendingUp size={18} />} now={cmp.cv.now} prev={cmp.cv.prev} unit="CV" valueClass="text-[#29a56c]" />
           </div>
 
           {/* Grafikler */}
