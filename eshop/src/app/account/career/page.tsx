@@ -202,7 +202,7 @@ export default function CareerPage() {
                 </div>
                 <div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Paket Şartı</span>
+                    <span className="text-gray-500">Aktiflik Şartı</span>
                     <span className="fw-700 text-gray-900">{fmt(activityPV)} PV</span>
                   </div>
                   <div className="mt-1.5">
@@ -259,7 +259,7 @@ export default function CareerPage() {
                 </div>
                 <div>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-white/85">Paket Şartı</span>
+                    <span className="text-white/85">Aktiflik Şartı</span>
                     <span className="fw-700 text-white">{fmt(activityPV)} PV</span>
                   </div>
                   <Bar value={activityPV > 0 ? 100 : 0} dark />
@@ -303,7 +303,7 @@ export default function CareerPage() {
                     </div>
                     <div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Paket Şartı</span>
+                        <span className="text-gray-500">Aktiflik Şartı</span>
                         <span className="fw-700 text-gray-900">{fmt(activityPV)} PV</span>
                       </div>
                       <div className="mt-1.5">
