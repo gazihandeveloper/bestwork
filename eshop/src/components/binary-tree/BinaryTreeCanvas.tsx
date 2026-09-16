@@ -135,7 +135,9 @@ function CountBadge({
 function MemberNode({ data }: NodeProps<MemberNode>) {
   const hidden: CSSProperties = { opacity: 0, width: 1, height: 1, border: 0, background: 'transparent' }
   return (
-    <div className="relative">
+    // "nopan": React Flow bu düğümde kaydırma başlatmaz → kart tıklaması, pin
+    // ve +/- butonları güvenilir çalışır. Kaydırma, tuval boşluğundan yapılır.
+    <div className="nopan relative">
       <Handle type="target" position={Position.Top} style={hidden} isConnectable={false} />
       <NodeCard
         rec={data.rec}
@@ -259,8 +261,7 @@ function Inner({
       if (!id) return
       const rn = rfNodes.find((n) => n.id === id)
       if (!rn) return
-      const zoom = typeof window !== 'undefined' && window.innerWidth < 640 ? 0.75 : 0.9
-      rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom, duration })
+      rf.setCenter(rn.position.x + CARD_W / 2, rn.position.y + NODE_BOX_H / 2, { zoom: 1, duration })
     },
     [rf, rfNodes, rootId]
   )

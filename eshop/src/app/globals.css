@@ -201,3 +201,23 @@ body .bw-logo span {
 .bw-tree-ui .fw-600 { font-weight: 600 !important; }
 .bw-tree-ui .fw-700 { font-weight: 700 !important; }
 .bw-tree-ui .fw-800 { font-weight: 800 !important; }
+
+/* ============================================
+   React Flow (binary ağaç) — düğümler etkileşimli olmalı.
+   React Flow, "selectable/draggable/connectable" kapalı düğümlere
+   pointer-events:none verir; bu da kart tıklaması ve butonları (pin, +/-)
+   ölü bırakır. Düğümleri tıklanabilir yapıyoruz; kaydırma (pan) düğümde
+   başlamasın diye MemberNode'a "nopan" sınıfı verildi.
+   ============================================ */
+.bw-tree-ui .react-flow__node {
+  pointer-events: all;
+}
+.react-flow__node {
+  pointer-events: all !important;
+}
+.react-flow__pane {
+  cursor: grab;
+}
+.react-flow__pane:active {
+  cursor: grabbing;
+}
