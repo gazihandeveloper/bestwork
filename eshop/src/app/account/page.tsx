@@ -37,6 +37,7 @@ import { get, put, tokenStorage, formatPrice } from '@/lib/api'
 import toast from 'react-hot-toast'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { CareerLevels } from '@/components/CareerLevels'
+import { QRCodeSVG } from 'qrcode.react'
 
 const UPLOAD_BASE = 'https://mahmutgazihanarslan.com.tr'
 const BW_BASE = 'https://mahmutgazihanarslan.com.tr'
@@ -581,6 +582,20 @@ export default function AccountDashboardPage() {
                 )}
               </div>
             </div>
+
+            {/* Kayıt QR kodu */}
+            {registerLink && (
+              <div className="flex flex-col items-center gap-1 px-4 pt-3">
+                <a
+                  href={registerLink}
+                  title="Kayıt sayfasına git"
+                  className="rounded-xl border border-gray-200 bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <QRCodeSVG value={registerLink} size={124} level="M" />
+                </a>
+                <span className="text-[10px] text-gray-400">QR'ı okutup üye olun</span>
+              </div>
+            )}
 
             {/* Üye kayıt linki */}
             <div className="mt-auto border-t border-gray-100 px-4 pt-2.5 pb-3.5">

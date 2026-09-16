@@ -240,3 +240,9 @@ body .bw-logo span {
 .bw-dash .font-extrabold { font-weight: 800 !important; }
 /* Soluk gri metinleri bir tık belirginleştir */
 .bw-dash .text-gray-400 { color: #6b7280 !important; }
+
+/* Yazıları bir tık küçült */
+.bw-dash { font-size: 0.95rem; }
+.bw-dash .text-2xl { font-size: 1.35rem !important; }
+.bw-dash .text-xl { font-size: 1.15rem !important; }
+.bw-dash .text-lg { font-size: 1rem !important; }
