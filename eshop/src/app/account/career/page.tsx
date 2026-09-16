@@ -213,7 +213,7 @@ export default function CareerPage() {
             </div>
 
             {/* ── HEDEF İLERLEME ANALİZİ (marka yeşili) ── */}
-            <div className="rounded-2xl bg-[#29a56c] p-5 text-white shadow-md">
+            <div className="rounded-2xl border-2 border-[#1e7d51] bg-[#29a56c] p-5 text-white shadow-lg ring-2 ring-[#29a56c]/30">
               <div className="mb-4 flex items-center gap-2 text-[11px] fw-800 tracking-wider text-white/90 uppercase">
                 <Sparkles size={15} /> Hedef İlerleme Analizi
               </div>
