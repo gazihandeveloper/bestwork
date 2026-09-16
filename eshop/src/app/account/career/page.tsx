@@ -183,7 +183,7 @@ export default function CareerPage() {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* ── MEVCUT KARİYER ── */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border-2 border-gray-300 bg-white p-5 shadow-md ring-1 ring-gray-100">
               <div className="mb-4 flex items-center gap-2 text-[11px] fw-800 tracking-wider text-gray-500 uppercase">
                 <CircleCheck size={15} className="text-brand-600" /> Mevcut Kariyer
               </div>
@@ -268,7 +268,7 @@ export default function CareerPage() {
             </div>
 
             {/* ── HEDEF KARİYER ── */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border-2 border-gray-300 bg-white p-5 shadow-md ring-1 ring-gray-100">
               <div className="mb-4 flex items-center gap-2 text-[11px] fw-800 tracking-wider text-amber-500 uppercase">
                 <Star size={15} /> Hedef Kariyer
               </div>
