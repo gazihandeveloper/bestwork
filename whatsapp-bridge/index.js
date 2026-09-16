@@ -49,7 +49,7 @@ let sockRef = null
 // Kalıcılık: yeniden başlatmada mesajlar/durumlar kaybolmasın.
 try {
   const saved = JSON.parse(fs.readFileSync(STATE, 'utf8'))
-  if (Array.isArray(saved)) messages.push(...saved)
+  if (Array.isArray(saved)) messages.push(...saved.filter((m) => m.status !== 'ignored'))
 } catch {
   /* kayıt yok */
 }
