@@ -514,7 +514,7 @@ export default function AccountDashboardPage() {
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm lg:sticky lg:top-24">
             {/* Fotoğraf */}
-            <div className="group relative flex h-[190px] w-full shrink-0 items-center justify-center bg-gradient-to-br from-brand-50 to-blue-100">
+            <div className="group relative flex h-[190px] w-full shrink-0 items-center justify-center bg-gray-800">
               {avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
