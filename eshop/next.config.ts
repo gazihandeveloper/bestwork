@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
     return [
       // HSTS: tum yanitlara (Cloudflare onunde de iletilir)
       { source: '/:path*', headers: [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }] },
+      // Kimlik gerektiren/kisisel sayfalar: HTML asla onbellege alinmasin.
+      // (Aksi halde Safari/deploy sonrasi eski JS chunk'larina isaret eden eski
+      //  HTML'i onbellekten sunar; "duzeltme gelmedi" gibi gorunur.)
+      { source: '/account/:path*', headers: [{ key: 'Cache-Control', value: 'no-store, must-revalidate' }] },
+      { source: '/checkout', headers: [{ key: 'Cache-Control', value: 'no-store, must-revalidate' }] },
+      { source: '/cart', headers: [{ key: 'Cache-Control', value: 'no-store, must-revalidate' }] },
       // K4: kok sayfa HTML cache 1 yildan 5 dk'ya
       { source: '/', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
       { source: '/products', headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' }] },
