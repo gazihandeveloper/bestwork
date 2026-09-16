@@ -74,7 +74,16 @@ export function rankIcon(name: string) {
   return Medal
 }
 
-export function CareerLevels({ className = '' }: { className?: string }) {
+export function CareerLevels({
+  className = '',
+  onSelect,
+  selectedId = null,
+}: {
+  className?: string
+  /** Verilirse kutular link yerine seçim yapar (hedef rütbe seçimi). */
+  onSelect?: (rankId: number) => void
+  selectedId?: number | null
+}) {
   const [ranks, setRanks] = useState<RankInfo[]>([])
   const [career, setCareer] = useState<CareerItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -129,21 +138,18 @@ export function CareerLevels({ className = '' }: { className?: string }) {
         {steps.map(({ rank, isAchieved, isActive, isNext }) => {
           const meta = rankStyle(rank.name)
           const Icon = rankIcon(rank.name)
-          return (
-            <Link
-              key={rank.id}
-              href="/account/career"
-              title={`${rank.name} — Kariyer Takibi`}
-              className={`flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
-                isActive
-                  ? 'border-brand-600 bg-brand-600 shadow-md'
-                  : isAchieved
-                    ? 'border-amber-300 bg-amber-50'
-                    : isNext
-                      ? 'border-brand-300 bg-brand-50/50'
-                      : 'border-gray-100 bg-white'
-              }`}
-            >
+          const selected = selectedId === rank.id
+          const cls = `flex min-h-[86px] w-[92px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 px-1.5 py-2.5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md sm:w-auto sm:shrink ${
+            isActive
+              ? 'border-brand-600 bg-brand-600 shadow-md'
+              : isAchieved
+                ? 'border-amber-300 bg-amber-50'
+                : isNext
+                  ? 'border-brand-300 bg-brand-50/50'
+                  : 'border-gray-100 bg-white'
+          } ${selected ? 'ring-2 ring-brand-500 ring-offset-1' : ''}`
+          const content = (
+            <>
               <span
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-white/60"
                 style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : meta.color }}
@@ -164,6 +170,24 @@ export function CareerLevels({ className = '' }: { className?: string }) {
                 {rank.name}
               </span>
               {isActive && <span className="text-[8px] fw-700 text-white/90">GÜNCEL</span>}
+            </>
+          )
+          if (onSelect) {
+            return (
+              <button
+                key={rank.id}
+                type="button"
+                onClick={() => onSelect(rank.id)}
+                title={`${rank.name} — hedef seç`}
+                className={cls}
+              >
+                {content}
+              </button>
+            )
+          }
+          return (
+            <Link key={rank.id} href="/account/career" title={`${rank.name} — Kariyer Takibi`} className={cls}>
+              {content}
             </Link>
           )
         })}

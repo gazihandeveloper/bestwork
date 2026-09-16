@@ -74,6 +74,7 @@ export default function CareerPage() {
   const [me, setMe] = useState<MePV | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedRankId, setSelectedRankId] = useState<number | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -102,16 +103,18 @@ export default function CareerPage() {
   const achievedMap = new Map(career.map((c) => [c.rank_id, c]))
   const activeRank = ranks.find((r) => r.id === (career.find((c) => c.is_active)?.rank_id ?? -1)) ?? null
   const nextRank = ranks.find((r) => !achievedMap.has(r.id)) ?? null
+  // Hedef: kullanıcı seçtiyse o rütbe, yoksa sıradaki (ilk kazanılmamış) rütbe.
+  const target = (selectedRankId != null ? ranks.find((r) => r.id === selectedRankId) ?? null : null) ?? nextRank
   const leftPV = Number(me?.total_pv_left) || 0
   const rightPV = Number(me?.total_pv_right) || 0
 
   const currentName = activeRank?.name ?? 'Girişimci'
-  const allDone = !nextRank
+  const allDone = !target
 
-  const reqLeft = Number(nextRank?.required_left_pv) || 0
-  const reqRight = Number(nextRank?.required_right_pv) || 0
-  const downlineCount = Number(nextRank?.required_downline_count) || 0
-  const activityPV = Number(nextRank?.personal_activity_pv) || 0
+  const reqLeft = Number(target?.required_left_pv) || 0
+  const reqRight = Number(target?.required_right_pv) || 0
+  const downlineCount = Number(target?.required_downline_count) || 0
+  const activityPV = Number(target?.personal_activity_pv) || 0
 
   const remLeft = Math.max(0, reqLeft - leftPV)
   const remRight = Math.max(0, reqRight - rightPV)
@@ -151,8 +154,8 @@ export default function CareerPage() {
         </div>
       ) : (
         <>
-          {/* Kariyer Seviyeleri şeridi */}
-          <CareerLevels />
+          {/* Kariyer Seviyeleri şeridi — tıklayınca hedef seçilir */}
+          <CareerLevels onSelect={setSelectedRankId} selectedId={selectedRankId ?? target?.id ?? null} />
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* ── MEVCUT KARİYER ── */}
@@ -199,8 +202,8 @@ export default function CareerPage() {
                 </div>
                 <ArrowRight size={20} className="text-emerald-400" />
                 <div className="flex flex-col items-center gap-1.5">
-                  <GemBadge name={nextRank?.name ?? currentName} size={48} active />
-                  <span className="text-[10px] fw-700 text-white/80">{nextRank?.name ?? '—'}</span>
+                  <GemBadge name={target?.name ?? currentName} size={48} active />
+                  <span className="text-[10px] fw-700 text-white/80">{target?.name ?? '—'}</span>
                 </div>
               </div>
 
@@ -253,8 +256,8 @@ export default function CareerPage() {
               ) : (
                 <>
                   <div className="flex flex-col items-center gap-3 py-2">
-                    <GemBadge name={nextRank!.name} size={72} />
-                    <h3 className="text-xl font-extrabold text-gray-900 uppercase">{nextRank!.name}</h3>
+                    <GemBadge name={target!.name} size={72} />
+                    <h3 className="text-xl font-extrabold text-gray-900 uppercase">{target!.name}</h3>
                   </div>
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center justify-between text-sm">
@@ -268,8 +271,8 @@ export default function CareerPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">
                         Kol Adeti
-                        {nextRank!.required_downline_rank_id
-                          ? ` (${downlineName(ranks, nextRank!.required_downline_rank_id)})`
+                        {target!.required_downline_rank_id
+                          ? ` (${downlineName(ranks, target!.required_downline_rank_id)})`
                           : ''}
                       </span>
                       <span className="fw-700 text-gray-900">{downlineCount} Adet</span>
