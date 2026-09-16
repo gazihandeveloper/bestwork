@@ -16,6 +16,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Zap,
+  DollarSign,
+  Diamond,
   Tag,
   Lock,
   ShieldCheck,
@@ -101,11 +103,11 @@ const tl = (cents: number) =>
 function CvPvBadges({ cv, pv }: { cv: number; pv: number }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="rounded-full bg-[#29a56c] px-2 py-0.5 text-[10px] fw-700 text-white shadow">
-        {formatPV(cv)} CV
+      <span className="inline-flex items-center gap-1 rounded-full bg-[#29a56c] px-2 py-0.5 text-[10px] fw-700 text-white shadow">
+        <DollarSign size={11} /> {formatPV(cv)} CV
       </span>
-      <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
-        {formatPV(pv)} PV
+      <span className="inline-flex items-center gap-1 rounded-full bg-purple-500 px-2 py-0.5 text-[10px] fw-700 text-white shadow">
+        <Diamond size={11} /> {formatPV(pv)} PV
       </span>
     </div>
   )
