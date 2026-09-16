@@ -32,7 +32,7 @@ function Panel({
     <div className="overflow-hidden rounded-xl border border-gray-100">
       <div
         className={`flex items-center gap-2 px-4 py-2.5 text-sm fw-800 tracking-wide uppercase ${
-          isLeft ? 'bg-[#29a56c]/10 text-[#1E8B5A]' : 'bg-purple-50 text-purple-700'
+          isLeft ? 'bg-[#29a56c]/20 text-[#0E5C3A]' : 'bg-purple-100 text-purple-800'
         }`}
       >
         {isLeft ? <ArrowLeft size={15} /> : <ArrowRight size={15} />} {isLeft ? 'Sol Kol' : 'Sağ Kol'}
@@ -69,7 +69,7 @@ function Panel({
                   <td className="px-3 py-2">
                     <span
                       className={`rounded px-2 py-0.5 text-[11px] fw-700 ${
-                        isLeft ? 'bg-[#29a56c]/10 text-[#1E8B5A]' : 'bg-purple-50 text-purple-700'
+                        isLeft ? 'bg-[#29a56c]/20 text-[#0E5C3A]' : 'bg-purple-100 text-purple-800'
                       }`}
                     >
                       {r.rank || 'Girişimci'}
