@@ -33,6 +33,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const AUTH_DIR = path.join(__dirname, 'auth')
 const INBOX = path.join(__dirname, 'inbox.jsonl')
+const STATE = path.join(__dirname, 'state.json')
 const PORT = Number(process.env.WA_PORT || 4599)
 
 const TARGETS = (process.env.WA_TARGETS || '')
@@ -44,6 +45,21 @@ let currentQR = null
 let status = 'başlatılıyor'
 const messages = []
 let sockRef = null
+
+// Kalıcılık: yeniden başlatmada mesajlar/durumlar kaybolmasın.
+try {
+  const saved = JSON.parse(fs.readFileSync(STATE, 'utf8'))
+  if (Array.isArray(saved)) messages.push(...saved)
+} catch {
+  /* kayıt yok */
+}
+function persist() {
+  try {
+    fs.writeFileSync(STATE, JSON.stringify(messages))
+  } catch {
+    /* yoksay */
+  }
+}
 
 const app = express()
 app.use(express.json())
@@ -57,19 +73,42 @@ app.get('/messages', (_req, res) => res.json({ status, targets: TARGETS, message
 app.get('/pending', (_req, res) =>
   res.json({ messages: messages.filter((m) => m.status === 'pending') })
 )
+
+// Canlı log (worker'ın düşünceleri + köprü logu)
+const WORKER_LOG =
+  process.env.WA_WORKER_LOG ||
+  '/Users/mahmutgazihanarslan/Library/Logs/bestwork/wa-worker.log'
+const BRIDGE_LOG =
+  process.env.WA_BRIDGE_LOG ||
+  '/Users/mahmutgazihanarslan/Library/Logs/bestwork/wa-bridge.log'
+function tailLines(file, n) {
+  try {
+    return fs.readFileSync(file, 'utf8').split('\n').slice(-n).join('\n')
+  } catch {
+    return '(log yok: ' + file + ')'
+  }
+}
+app.get('/log', (req, res) => {
+  const n = Math.min(Math.max(parseInt(req.query.lines || '400', 10) || 400, 20), 4000)
+  res.json({ ok: true, worker: tailLines(WORKER_LOG, n), bridge: tailLines(BRIDGE_LOG, 200) })
+})
 app.post('/status', (req, res) => {
   const { id, status: st } = req.body || {}
   const m = messages.find((x) => x.id === id)
   if (m) {
     m.status = st
     m.updatedAt = Date.now()
+    persist()
   }
   res.json({ ok: !!m })
 })
 app.post('/result', (req, res) => {
   const { id, result } = req.body || {}
   const m = messages.find((x) => x.id === id)
-  if (m) m.result = String(result || '').slice(0, 4000)
+  if (m) {
+    m.result = String(result || '').slice(0, 4000)
+    persist()
+  }
   res.json({ ok: !!m })
 })
 app.post('/inject', (req, res) => {
@@ -102,6 +141,7 @@ function add({ from, name, text, jid }) {
   const rec = { id: `${ts}-${from}`, ts, from, name, text, jid: jid || '', status: 'pending' }
   messages.push(rec)
   if (messages.length > 500) messages.shift()
+  persist()
   try {
     fs.appendFileSync(INBOX, JSON.stringify(rec) + '\n')
   } catch {

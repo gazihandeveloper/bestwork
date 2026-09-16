@@ -149,7 +149,7 @@ function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, valueClas
   return (
     <div
       onClick={onClick}
-      className={`relative h-full rounded-xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative h-full rounded-xl border border-gray-200 bg-white shadow-md ring-1 ring-gray-100 transition-shadow hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
       style={{ perspective: 1000 }}
     >
       <div
