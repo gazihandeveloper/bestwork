@@ -14,7 +14,7 @@ import path from 'node:path'
 
 const BRIDGE = process.env.WA_BRIDGE || 'http://localhost:4599'
 const REPO = process.env.WA_REPO || '/Users/mahmutgazihanarslan/Desktop/Bestwork'
-const MODEL = process.env.WA_MODEL || 'deepseek/deepseek-flash'
+const MODEL = process.env.WA_MODEL || 'deepseek/deepseek-v4-flash'
 const LOG_DIR =
   process.env.WA_LOG_DIR || '/Users/mahmutgazihanarslan/Library/Logs/bestwork'
 const LOG = process.env.WA_WORKER_LOG || path.join(LOG_DIR, 'wa-worker.log')
@@ -94,7 +94,7 @@ function runOpencode(text) {
     const sargs = sessionId ? ['-s', sessionId] : []
     const p = spawn(
       OPENCODE,
-      ['run', '--auto', '--format', 'json', '--thinking', '--agent', 'whatsapp-task', ...sargs, prompt],
+      ['run', '--auto', '--format', 'json', '--thinking', '-m', MODEL, '--agent', 'whatsapp-task', ...sargs, prompt],
       {
         cwd: REPO,
         env: { ...process.env, PATH: (process.env.PATH || '') + EXTRA_PATH },

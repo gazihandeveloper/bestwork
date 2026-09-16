@@ -1,7 +1,7 @@
 ---
 description: WhatsApp'tan gelen kucuk degisiklik isteklerini Bestwork projesinde hizlica uygular (yerel dogrula + git + sunucu deploy).
 mode: all
-model: deepseek/deepseek-flash
+model: deepseek/deepseek-v4-flash
 permission:
   edit: allow
   bash: allow
