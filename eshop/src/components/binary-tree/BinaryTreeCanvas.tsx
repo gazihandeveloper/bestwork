@@ -22,7 +22,7 @@ import {
   type Node as RFNode,
   type NodeProps,
 } from '@xyflow/react'
-import { Maximize, Minus, Plus, RotateCcw, TreePine } from '@/components/icons'
+import { Expand, Maximize, Minus, Plus, RotateCcw, Shrink, TreePine } from '@/components/icons'
 import { NodeCard } from './NodeCard'
 import { TreeReportModal } from './TreeReportModal'
 import { CARD_H, CARD_W, NODE_DX, NODE_DY, type NodeRec } from './types'
@@ -31,8 +31,6 @@ interface LayoutNode {
   id: number
   children: LayoutNode[]
 }
-
-type HPoint = d3.HierarchyPointNode<LayoutNode>
 
 interface BinaryTreeCanvasProps {
   nodes: Record<number, NodeRec>
@@ -182,6 +180,7 @@ function Inner({
   const pendingFocusRef = useRef<number | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
   const [rfReady, setRfReady] = useState(false)
+  const [full, setFull] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [reportTab, setReportTab] = useState<'aktif' | 'pasif' | null>(null)
 
@@ -367,14 +366,29 @@ function Inner({
       >
         <TreePine size={15} />
       </button>
+      <button
+        type="button"
+        title={full ? 'Tam ekrandan çık' : 'Tam ekran'}
+        aria-label={full ? 'Tam ekrandan çık' : 'Tam ekran'}
+        onClick={() => setFull((v) => !v)}
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50"
+      >
+        {full ? <Shrink size={15} /> : <Expand size={15} />}
+      </button>
       <span className="w-10 text-center text-xs fw-700 text-gray-400">%{Math.round(zoomLevel * 100)}</span>
     </div>
   )
 
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-gray-100 px-3 py-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+    <div
+      className={
+        full
+          ? 'fixed inset-0 z-[60] flex h-[100dvh] flex-col rounded-none border border-gray-100 bg-white shadow-sm'
+          : 'w-full min-w-0 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm'
+      }
+    >
+      <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-2 border-b border-gray-100 px-3 py-2 sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:justify-start">
           <div className="flex items-center gap-3 text-[11px] font-medium text-gray-400">
             <span className="inline-flex items-center gap-1">
               <span className="h-2.5 w-2.5 rounded-full bg-sky-400" /> SOL HAT
@@ -404,7 +418,13 @@ function Inner({
         {controls}
       </div>
 
-      <div className="relative h-[calc(100vh-260px)] min-h-[360px] w-full max-w-full overflow-hidden sm:min-h-[440px] lg:min-h-[600px]">
+      <div
+        className={
+          full
+            ? 'relative h-full min-h-0 w-full flex-1 overflow-hidden bg-[#f8fbff]'
+            : 'relative h-[calc(100vh-260px)] min-h-[360px] w-full max-w-full overflow-hidden bg-[#f8fbff] sm:min-h-[440px] lg:min-h-[600px]'
+        }
+      >
         <ReactFlow
           nodes={rfNodes}
           edges={rfEdges}
@@ -424,7 +444,8 @@ function Inner({
           proOptions={{ hideAttribution: true }}
           fitView={false}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#e9eef5" />
+          <Background id="minor" variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="#e2eefb" />
+          <Background id="major" variant={BackgroundVariant.Lines} gap={100} lineWidth={1.2} color="#c2dcf5" />
         </ReactFlow>
       </div>
 
