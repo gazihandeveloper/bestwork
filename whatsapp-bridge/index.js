@@ -100,6 +100,15 @@ app.post('/clear', (_req, res) => {
   persist()
   res.json({ ok: true })
 })
+app.post('/delete', (req, res) => {
+  const { id } = req.body || {}
+  const i = messages.findIndex((x) => x.id === id)
+  if (i >= 0) {
+    messages.splice(i, 1)
+    persist()
+  }
+  res.json({ ok: i >= 0 })
+})
 app.post('/status', (req, res) => {
   const { id, status: st } = req.body || {}
   const m = messages.find((x) => x.id === id)
