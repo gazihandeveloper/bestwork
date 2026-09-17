@@ -15,6 +15,7 @@ import path from 'node:path'
 const BRIDGE = process.env.WA_BRIDGE || 'http://localhost:4599'
 const REPO = process.env.WA_REPO || '/Users/mahmutgazihanarslan/Desktop/Bestwork'
 const MODEL = process.env.WA_MODEL || 'deepseek/deepseek-v4-flash'
+const VISION_MODEL = process.env.WA_VISION_MODEL || 'deepseek/deepseek-v4-flash-vision-exp'
 const LOG_DIR =
   process.env.WA_LOG_DIR || '/Users/mahmutgazihanarslan/Library/Logs/bestwork'
 const LOG = process.env.WA_WORKER_LOG || path.join(LOG_DIR, 'wa-worker.log')
@@ -128,10 +129,14 @@ async function sendWhatsApp(jid, text) {
   }
 }
 
-function runOpencode(text) {
+function runOpencode(text, image) {
   return new Promise((resolve) => {
     const prompt =
       'Bestwork projesinde WhatsApp üzerinden gelen bir istek var. Sırayı aynen uygula:\n' +
+      (image
+        ? '0) Sana bir GÖRSEL (ekran görüntüsü olabilir) eklenmiştir; önce resmi dikkatle incele, ' +
+          'üzerindeki metin/alan/butonları oku ve isteği ona göre uygula.\n'
+        : '') +
       '1) İlgili dosyayı bul, isteği minimal uygula.\n' +
       '2) YEREL doğrula: eshop için `npm run build`; gerekiyorsa `curl -s localhost:3000/` ile kontrol et.\n' +
       '3) Yerel build başarılıysa GIT + SUNUCU için tek komut: ' +
@@ -143,9 +148,11 @@ function runOpencode(text) {
       `İSTEK: ${text}`
     const sessionId = readSession()
     const sargs = sessionId ? ['-s', sessionId] : []
+    const model = image ? VISION_MODEL : MODEL
+    const fileArgs = image ? ['-f', image] : []
     const p = spawn(
       OPENCODE,
-      ['run', '--auto', '--format', 'json', '--thinking', '-m', MODEL, '--agent', 'whatsapp-task', ...sargs, prompt],
+      ['run', '--auto', '--format', 'json', '--thinking', '-m', model, '--agent', 'whatsapp-task', ...fileArgs, ...sargs, prompt],
       {
         cwd: REPO,
         env: { ...process.env, PATH: (process.env.PATH || '') + EXTRA_PATH },
@@ -246,25 +253,29 @@ async function loop() {
       const list = await pending()
       for (const m of list) {
         const t = (m.text || '').trim()
-        // Yalnızca "panda" ile başlayanlar istek sayılır.
-        if (!isPanda(t)) {
+        const hasImage = !!m.image
+        // "panda" ile başlayanlar VEYA görsel içeren mesajlar istek sayılır.
+        if (!isPanda(t) && !hasImage) {
           await setStatus(m.id, 'ignored')
           continue
         }
-        const request = t.replace(/^panda\s*,?\s*/i, '').trim()
-        if (!request) {
+        const request = isPanda(t) ? t.replace(/^panda\s*,?\s*/i, '').trim() : t
+        if (!request && !hasImage) {
           await setStatus(m.id, 'ignored')
           continue
         }
         fs.appendFileSync(
           LOG,
-          `\n>> [${new Date().toISOString()}] başladı: ${request}`
+          `\n>> [${new Date().toISOString()}] başladı: ${request}${hasImage ? ' [resim]' : ''}`
         )
         await setStatus(m.id, 'processing')
         const t0 = Date.now()
         const headBefore = git('HEAD')
         const dirtyBefore = dirty().split('\n').filter(Boolean)
-        const { ok } = await runOpencode(request)
+        const { ok } = await runOpencode(
+          request || 'Ekli görseli incele; görselde bir sorun/istek varsa düzelt.',
+          m.image
+        )
         const secs = ((Date.now() - t0) / 1000).toFixed(0)
         // Gerçek doğrulama: kod değiştiyse commit edilmiş + sunucuya gitmiş olmalı.
         const headAfter = git('HEAD')

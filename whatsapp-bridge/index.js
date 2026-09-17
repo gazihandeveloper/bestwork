@@ -22,6 +22,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
+  downloadMediaMessage,
 } from '@whiskeysockets/baileys'
 import express from 'express'
 import QRCode from 'qrcode'
@@ -34,6 +35,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const AUTH_DIR = path.join(__dirname, 'auth')
 const INBOX = path.join(__dirname, 'inbox.jsonl')
 const STATE = path.join(__dirname, 'state.json')
+const MEDIA_DIR = path.join(__dirname, 'media')
+fs.mkdirSync(MEDIA_DIR, { recursive: true })
 const PORT = Number(process.env.WA_PORT || 4599)
 
 const TARGETS = (process.env.WA_TARGETS || '')
@@ -122,9 +125,9 @@ app.post('/result', (req, res) => {
   res.json({ ok: !!m })
 })
 app.post('/inject', (req, res) => {
-  const { from = 'test', name = 'Test', text = '', jid = '' } = req.body || {}
-  if (!text) return res.status(400).json({ ok: false })
-  add({ from, name, text, jid })
+  const { from = 'test', name = 'Test', text = '', jid = '', image = '' } = req.body || {}
+  if (!text && !image) return res.status(400).json({ ok: false })
+  add({ from, name, text: text || (image ? '(resim gönderildi)' : ''), jid, image })
   res.json({ ok: true })
 })
 
@@ -146,9 +149,18 @@ app.listen(PORT, () => {
   else console.log('Filtre yok: TÜM gelen mesajlar yakalanacak.')
 })
 
-function add({ from, name, text, jid }) {
+function add({ from, name, text, jid, image }) {
   const ts = Date.now()
-  const rec = { id: `${ts}-${from}`, ts, from, name, text, jid: jid || '', status: 'pending' }
+  const rec = {
+    id: `${ts}-${from}`,
+    ts,
+    from,
+    name,
+    text,
+    jid: jid || '',
+    image: image || '',
+    status: 'pending',
+  }
   messages.push(rec)
   if (messages.length > 500) messages.shift()
   persist()
@@ -157,21 +169,49 @@ function add({ from, name, text, jid }) {
   } catch {
     /* yoksay */
   }
-  console.log(`MSG ${from} (${name}): ${text}`)
+  console.log(`MSG ${from} (${name}): ${text}${image ? ' [resim]' : ''}`)
   return rec
 }
 
-function record(m) {
+async function record(m) {
   const from = (m.key.remoteJid || '').split('@')[0]
+  if (TARGETS.length && !TARGETS.includes(from)) return
   const text =
     m.message?.conversation ||
     m.message?.extendedTextMessage?.text ||
     m.message?.imageMessage?.caption ||
     m.message?.videoMessage?.caption ||
     ''
-  if (!text) return
-  if (TARGETS.length && !TARGETS.includes(from)) return
-  add({ from, name: m.pushName || '', text, jid: m.key.remoteJid || '' })
+  // Görsel/ses: medyayı indir, diske kaydet (worker görseli modele ekleyecek).
+  let image = ''
+  const imgMsg = m.message?.imageMessage
+  if (imgMsg) {
+    try {
+      const buf = await downloadMediaMessage(
+        m,
+        'buffer',
+        {},
+        { logger: pino({ level: 'silent' }), reuploadRequest: sockRef?.updateMediaMessage }
+      )
+      const ext = String(imgMsg.mimetype || 'image/jpeg')
+        .split('/')[1]
+        .split(';')[0]
+        .replace('jpeg', 'jpg')
+      const file = path.join(MEDIA_DIR, `${Date.now()}-${from}.${ext}`)
+      fs.writeFileSync(file, buf)
+      image = file
+    } catch (e) {
+      console.log('resim indirilemedi:', e?.message || String(e))
+    }
+  }
+  if (!text && !image) return
+  add({
+    from,
+    name: m.pushName || '',
+    text: text || (image ? '(resim gönderildi)' : ''),
+    jid: m.key.remoteJid || '',
+    image,
+  })
 }
 
 async function start() {
@@ -216,7 +256,7 @@ async function start() {
     if (type !== 'notify') return
     for (const m of msgs) {
       if (m.key.fromMe) continue
-      record(m)
+      await record(m)
     }
   })
 }
