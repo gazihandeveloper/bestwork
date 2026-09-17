@@ -5,44 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BestWork · WhatsApp İş Paneli</title>
 <style>
-  :root{--bg:#eef2f6;--ink:#0f172a;--muted:#64748b;--brand:#1E8B5A;--brand2:#29a56c;--amber:#d97706;--red:#dc2626;--blue:#2563eb;--line:#e6ebf1;--gray:#cbd5e1}
+  :root{--bg1:#eef4f1;--bg2:#e7eef7;--ink:#0f172a;--muted:#64748b;--brand:#1E8B5A;--brand2:#29a56c;--amber:#d97706;--red:#dc2626;--blue:#2563eb;--line:#e6ebf1;--gray:#cbd5e1}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-  header{background:linear-gradient(135deg,#1E8B5A,#29a56c);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px -14px rgba(30,139,90,.7)}
-  header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:.3px}
-  .conn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700}
+  body{margin:0;background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#eef2f6);color:var(--ink);font-family:'Poppins',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+  header{background:linear-gradient(135deg,#1E8B5A,#29a56c 55%,#2fb37a);color:#fff;padding:18px 26px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 14px 36px -16px rgba(30,139,90,.75);position:sticky;top:0;z-index:5}
+  header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:10px}
+  header h1 .logo{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .conn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);padding:7px 14px;border-radius:999px;font-size:12px;font-weight:700;backdrop-filter:blur(4px)}
   .dot{width:8px;height:8px;border-radius:50%;background:#a7f3d0;box-shadow:0 0 0 3px rgba(167,243,208,.35)}
-  .wrap{max-width:920px;margin:22px auto 60px;padding:0 16px}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 10px 24px -18px rgba(16,24,40,.5)}
-  .stat .n{font-size:26px;font-weight:800;line-height:1.1}
-  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-top:2px}
+  .wrap{max-width:1240px;margin:22px auto 64px;padding:0 18px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:0 14px 30px -22px rgba(16,24,40,.55);position:relative;overflow:hidden}
+  .stat:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--gray)}
+  .stat.p:before{background:var(--blue)} .stat.w:before{background:var(--amber)} .stat.d:before{background:var(--brand2)} .stat.e:before{background:var(--red)}
+  .stat .n{font-size:28px;font-weight:800;line-height:1.1}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-top:3px}
   .stat.p .n{color:var(--blue)} .stat.w .n{color:var(--amber)} .stat.d .n{color:var(--brand2)} .stat.e .n{color:var(--red)}
-  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px 16px 22px;margin-bottom:14px;box-shadow:0 12px 30px -22px rgba(16,24,40,.55);position:relative;overflow:hidden}
-  .card:before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--blue)}
-  .card.processing:before{background:var(--amber)} .card.done:before{background:var(--brand2)} .card.error:before{background:var(--red)} .card.ignored:before{background:var(--gray)}
-  .meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .badge{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:999px;padding:2px 9px}
+
+  /* Mesaj kutuları: yan yana grid */
+  #list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));grid-auto-rows:1fr;gap:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;box-shadow:0 16px 34px -26px rgba(16,24,40,.6);position:relative;overflow:hidden;display:flex;flex-direction:column;height:236px;transition:transform .16s ease,box-shadow .16s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 22px 44px -26px rgba(16,24,40,.7)}
+  .card:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:var(--blue)}
+  .card.processing:before{background:linear-gradient(90deg,var(--amber),#f59e0b)} .card.done:before{background:linear-gradient(90deg,var(--brand),var(--brand2))} .card.error:before{background:var(--red)} .card.ignored:before{background:var(--gray)}
+  .card.processing{animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 16px 34px -26px rgba(16,24,40,.6)}50%{box-shadow:0 18px 40px -22px rgba(217,119,6,.55)}}
+  .meta{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .who{display:flex;align-items:center;gap:8px;min-width:0}
+  .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#1E8B5A,#29a56c);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .badge{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:999px;padding:3px 10px;white-space:nowrap}
   .b-pending{background:#e0f2fe;color:#075985} .b-processing{background:#fef3c7;color:#92400e} .b-done{background:#dcfce7;color:#166534} .b-error{background:#fee2e2;color:#991b1b} .b-ignored{background:#f1f5f9;color:#94a3b8}
-  .req{font-size:15px;font-weight:600;margin:8px 0 14px;white-space:pre-wrap}
-  .steps{display:flex;align-items:center}
-  .step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#94a3b8;white-space:nowrap}
-  .step .ic{width:22px;height:22px;border-radius:50%;border:2px solid var(--gray);display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1}
+  .req{font-size:14.5px;font-weight:600;line-height:1.45;margin:2px 0 14px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .steps{display:flex;align-items:center;margin-top:auto}
+  .step{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#94a3b8;white-space:nowrap}
+  .step .ic{width:20px;height:20px;border-radius:50%;border:2px solid var(--gray);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
   .step.done{color:var(--brand2)} .step.done .ic{background:var(--brand2);border-color:var(--brand2);color:#fff}
   .step.active{color:var(--amber)} .step.active .ic{border-color:var(--amber)}
   .step.bad{color:var(--red)} .step.bad .ic{background:var(--red);border-color:var(--red);color:#fff}
-  .bar{flex:1;height:2px;background:#e2e8f0;margin:0 10px;min-width:20px;border-radius:2px}
-  .res{font-size:12.5px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;white-space:pre-wrap;color:#334155;max-height:240px;overflow:auto}
-  .empty{text-align:center;color:var(--muted);padding:48px;background:#fff;border:1px dashed var(--line);border-radius:16px}
-  .spinner{width:12px;height:12px;border:2px solid rgba(217,119,6,.35);border-top-color:var(--amber);border-radius:50%;animation:sp 1s linear infinite}
+  .bar{flex:1;height:2px;background:#e2e8f0;margin:0 8px;min-width:14px;border-radius:2px}
+  .res{font-size:12px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:10px;white-space:pre-wrap;color:#334155;max-height:64px;overflow:auto}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:56px;background:#fff;border:1px dashed var(--line);border-radius:20px}
+  .spinner{width:11px;height:11px;border:2px solid rgba(217,119,6,.35);border-top-color:var(--amber);border-radius:50%;animation:sp 1s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
-  .ignored .req,.ignored .meta{color:#94a3b8}
-  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.steps{font-size:11px}.step{gap:6px}}
+  .ignored{opacity:.55}
+  .pager{display:flex;justify-content:center;align-items:center;gap:6px;margin:22px 0 0;flex-wrap:wrap}
+  .pg{min-width:36px;height:36px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:#fff;color:#334155;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 8px 18px -14px rgba(16,24,40,.6);font-family:inherit}
+  .pg:hover:not(:disabled){border-color:var(--brand2);color:var(--brand2)}
+  .pg.on{background:linear-gradient(135deg,#1E8B5A,#29a56c);border-color:#1E8B5A;color:#fff}
+  .pg:disabled{opacity:.45;cursor:not-allowed}
+  .pg.info{border:none;background:transparent;box-shadow:none;color:var(--muted);font-weight:600;cursor:default}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}#list{grid-template-columns:1fr}.step{font-size:10.5px;gap:5px}.card{height:auto;min-height:200px}}
 </style>
 </head>
 <body>
 <header>
-  <h1>BestWork · WhatsApp İş Paneli</h1>
+  <h1><span class="logo">🐼</span> BestWork · WhatsApp İş Paneli</h1>
   <span class="conn"><span class="dot"></span><span id="conn">…</span></span>
 </header>
 <div class="wrap">
@@ -53,22 +70,28 @@
     <div class="stat e"><div class="n" id="s-error">0</div><div class="l">Hata</div></div>
   </div>
   <div id="list"></div>
+  <div class="pager" id="pager"></div>
 </div>
 <script>
   const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const step = (cls, label, ic) => '<div class="step ' + cls + '"><span class="ic">' + (ic || '') + '</span>' + label + '</div>';
   const bars = '<div class="bar"></div>';
+  const spin = '<span class="spinner"></span>';
+  const initials = (m) => {
+    const n = (m.name || m.from || '?').trim();
+    return n.slice(0, 1).toUpperCase();
+  };
 
   function stepsFor(st) {
     if (st === 'processing')
-      return step('done', 'İş emri geldi', '✓') + bars + step('active', 'İşleniyor', '<span class="spinner"></span>') + bars + step('', 'Sonuçlandırıldı');
+      return step('done', 'Geldi', '✓') + bars + step('active', 'İşleniyor', spin) + bars + step('', 'Bitti');
     if (st === 'done')
-      return step('done', 'İş emri geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('done', 'Sonuçlandırıldı', '✓');
+      return step('done', 'Geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('done', 'Bitti', '✓');
     if (st === 'error')
-      return step('done', 'İş emri geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('bad', 'Başarısız', '✕');
+      return step('done', 'Geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('bad', 'Başarısız', '✕');
     if (st === 'ignored')
-      return step('', 'İş emri geldi') + bars + step('', '—') + bars + step('', 'Yok sayıldı');
-    return step('active', 'İş emri geldi') + bars + step('', 'İşleniyor') + bars + step('', 'Sonuçlandırıldı');
+      return step('', 'Geldi') + bars + step('', '—') + bars + step('', 'Yok sayıldı');
+    return step('active', 'Geldi') + bars + step('', 'İşleniyor') + bars + step('', 'Bitti');
   }
 
   const LABEL = { pending: 'İş emri bekliyor', processing: 'İşleniyor', done: 'Sonuçlandı', error: 'Hata', ignored: 'Yok sayıldı' };
@@ -88,19 +111,79 @@
       document.getElementById('s-done').textContent = c.done;
       document.getElementById('s-error').textContent = c.error;
 
-      document.getElementById('list').innerHTML = ms.map((m) => {
-        const st = m.status || 'pending';
-        const t = new Date(m.ts).toLocaleString('tr-TR');
-        return '<div class="card ' + st + '">' +
-          '<div class="meta">' + t + ' · ' + m.from + (m.name ? ' · ' + esc(m.name) : '') +
-          ' <span class="badge b-' + st + '">' + (LABEL[st] || st) + '</span></div>' +
-          '<div class="req">' + esc(m.text) + '</div>' +
-          '<div class="steps">' + stepsFor(st) + '</div>' +
-          (m.result ? '<div class="res">' + esc(m.result) + '</div>' : '') +
-          '</div>';
-      }).join('') || '<div class="empty">Henüz iş emri yok.<br/>Ender “panda ... ” yazınca burada görünür.</div>';
+      allMs = ms;
+      render();
     } catch (e) {}
   }
+
+  // ── Sayfalama ──
+  let allMs = [];
+  let page = 1;
+  const PER = 8;
+
+  function cardHtml(m) {
+    const st = m.status || 'pending';
+    const t = new Date(m.ts).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return '<div class="card ' + st + '">' +
+      '<div class="meta">' +
+        '<span class="who"><span class="avatar">' + esc(initials(m)) + '</span>' + esc(m.name || m.from) + '</span>' +
+        '<span class="badge b-' + st + '">' + (LABEL[st] || st) + '</span>' +
+      '</div>' +
+      '<div class="req">' + esc(m.text) + (m.image ? ' <span class="badge b-pending">📷 resim</span>' : '') + '</div>' +
+      '<div class="steps">' + stepsFor(st) + '</div>' +
+      (m.result ? '<div class="res">' + esc(m.result) + '</div>' : '') +
+      '<div style="font-size:10.5px;color:#94a3b8;margin-top:8px">' + t + '</div>' +
+      '</div>';
+  }
+
+  function pageNums(cur, total) {
+    const out = [];
+    const add = (v) => { if (!out.includes(v)) out.push(v); };
+    add(1);
+    for (let i = cur - 1; i <= cur + 1; i++) if (i > 1 && i < total) add(i);
+    add(total);
+    out.sort((a, b) => a - b);
+    const res = [];
+    let prev = 0;
+    for (const n of out) {
+      if (n - prev > 1) res.push('…');
+      res.push(n);
+      prev = n;
+    }
+    return res;
+  }
+
+  function render() {
+    const pages = Math.max(1, Math.ceil(allMs.length / PER));
+    if (page > pages) page = pages;
+    if (page < 1) page = 1;
+    const slice = allMs.slice((page - 1) * PER, page * PER);
+    document.getElementById('list').innerHTML =
+      slice.map(cardHtml).join('') ||
+      '<div class="empty">Henüz iş emri yok.<br/>Ender “panda ... ” yazınca burada kutu olarak görünür.</div>';
+
+    const p = document.getElementById('pager');
+    if (allMs.length <= PER) {
+      p.innerHTML = allMs.length ? '<span class="pg info">' + allMs.length + ' iş emri</span>' : '';
+      return;
+    }
+    let h = '<button class="pg" ' + (page === 1 ? 'disabled' : '') + ' onclick="go(' + (page - 1) + ')">‹</button>';
+    for (const n of pageNums(page, pages)) {
+      h += n === '…'
+        ? '<span class="pg info">…</span>'
+        : '<button class="pg ' + (n === page ? 'on' : '') + '" onclick="go(' + n + ')">' + n + '</button>';
+    }
+    h += '<button class="pg" ' + (page === pages ? 'disabled' : '') + ' onclick="go(' + (page + 1) + ')">›</button>';
+    h += '<span class="pg info">' + page + ' / ' + pages + ' · ' + allMs.length + ' iş</span>';
+    p.innerHTML = h;
+  }
+
+  window.go = (n) => {
+    page = n;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   tick();
   setInterval(tick, 2000);
 </script>
