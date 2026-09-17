@@ -77,6 +77,17 @@
   .pg.on{background:var(--blue);border-color:var(--blue);color:#202124}
   .pg:disabled{opacity:.4;cursor:not-allowed}
   .pg.info{border:none;background:transparent;color:var(--muted);font-weight:400;cursor:default}
+  /* Modal: iş emri geldi → beyin → sonuçlandı */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .modal.on{opacity:1;pointer-events:auto}
+  .modal-card{background:var(--surface2);border:1px solid var(--line2);border-radius:16px;padding:28px 34px;text-align:center;min-width:300px;max-width:420px;box-shadow:0 28px 70px -24px rgba(0,0,0,.85);transform:scale(.96);transition:transform .2s ease}
+  .modal.on .modal-card{transform:scale(1)}
+  .modal-ic{font-size:54px;line-height:1;display:block;margin-bottom:14px}
+  .modal-ic.pulse{animation:brain 1.3s ease-in-out infinite}
+  @keyframes brain{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.2);opacity:1}}
+  .modal-title{font-size:18px;font-weight:500;color:var(--ink)}
+  .modal-sub{font-size:13px;color:var(--muted);margin-top:6px;max-width:340px;word-break:break-word}
+  .modal-step{font-size:11px;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-top:14px;font-weight:500}
   @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}#list{grid-template-columns:1fr}.step{font-size:10.5px;gap:5px}.card{height:auto;min-height:200px}}
 </style>
 </head>
@@ -95,6 +106,14 @@
   <div id="list"></div>
   <div class="pager" id="pager"></div>
 </div>
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <span class="modal-ic" id="m-ic">📥</span>
+    <div class="modal-title" id="m-title">İş emri geldi</div>
+    <div class="modal-sub" id="m-sub"></div>
+    <div class="modal-step" id="m-step">1 / 3</div>
+  </div>
+</div>
 <script>
   const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const step = (cls, label, ic) => '<div class="step ' + cls + '"><span class="ic">' + (ic || '') + '</span>' + label + '</div>';
@@ -107,14 +126,10 @@
 
   function stepsFor(st) {
     if (st === 'processing')
-      return step('done', 'Geldi', '✓') + bars + step('active', 'İşleniyor', spin) + bars + step('', 'Bitti');
-    if (st === 'done')
-      return step('done', 'Geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('done', 'Bitti', '✓');
+      return step('done', 'Alındı', '✓') + bars + step('active', 'İşleniyor', spin) + bars + step('', 'Bitti');
     if (st === 'error')
-      return step('done', 'Geldi', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('bad', 'Başarısız', '✕');
-    if (st === 'ignored')
-      return step('', 'Geldi') + bars + step('', '—') + bars + step('', 'Yok sayıldı');
-    return step('active', 'Geldi') + bars + step('', 'İşleniyor') + bars + step('', 'Bitti');
+      return step('done', 'Alındı', '✓') + bars + step('done', 'İşlendi', '✓') + bars + step('bad', 'Başarısız', '✕');
+    return step('active', 'Sırada') + bars + step('', 'İşleniyor') + bars + step('', 'Bitti');
   }
 
   const LABEL = { pending: 'İş emri bekliyor', processing: 'İşleniyor', done: 'Sonuçlandı', error: 'Hata', ignored: 'Yok sayıldı' };
@@ -126,9 +141,11 @@
     } catch (e) {}
     try {
       const d = await (await fetch('/messages')).json();
-      const ms = (d.messages || []).filter((m) => m.status !== 'ignored').slice().reverse();
+      const all = (d.messages || []).slice().reverse();
+      // Sonuçlananları ve yok sayılanları panelde gösterme.
+      const ms = all.filter((m) => m.status !== 'ignored' && m.status !== 'done');
       const c = { pending: 0, processing: 0, done: 0, error: 0 };
-      ms.forEach((m) => { if (c[m.status] !== undefined) c[m.status]++; });
+      all.forEach((m) => { if (c[m.status] !== undefined) c[m.status]++; });
       document.getElementById('s-pending').textContent = c.pending;
       document.getElementById('s-processing').textContent = c.processing;
       document.getElementById('s-done').textContent = c.done;
@@ -136,6 +153,7 @@
 
       allMs = ms;
       render();
+      updateModal(all);
     } catch (e) {}
   }
 
@@ -205,6 +223,67 @@
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // ── Modal akışı: iş emri geldi → beyin → sonuçlandı ──
+  let modalId = null;
+  let modalPhase = '';
+
+  function showModal(ic, title, sub, step, pulse) {
+    document.getElementById('m-ic').textContent = ic;
+    document.getElementById('m-ic').className = 'modal-ic' + (pulse ? ' pulse' : '');
+    document.getElementById('m-title').textContent = title;
+    document.getElementById('m-sub').textContent = sub || '';
+    document.getElementById('m-step').textContent = step;
+    document.getElementById('modal').classList.add('on');
+  }
+  function hideModal() {
+    document.getElementById('modal').classList.remove('on');
+  }
+
+  function updateModal(all) {
+    // 1) Açık modalın işi bitti mi?
+    if (modalId) {
+      const cur = all.find((m) => m.id === modalId);
+      if (cur && cur.status === 'done' && modalPhase !== 'done') {
+        modalPhase = 'done';
+        showModal('✅', 'Sonuçlandı', cur.text, '3 / 3', false);
+        setTimeout(() => {
+          if (modalPhase === 'done') {
+            hideModal();
+            modalId = null;
+            modalPhase = '';
+          }
+        }, 2600);
+        return;
+      }
+      if (cur && cur.status === 'error' && modalPhase !== 'error') {
+        modalPhase = 'error';
+        showModal('❌', 'Başarısız oldu', cur.text, '3 / 3', false);
+        setTimeout(() => {
+          if (modalPhase === 'error') {
+            hideModal();
+            modalId = null;
+            modalPhase = '';
+          }
+        }, 3000);
+        return;
+      }
+    }
+    // 2) Yeni iş geldi mi?
+    if (!modalId) {
+      const act = all.find((m) => m.status === 'processing') || all.find((m) => m.status === 'pending');
+      if (!act) return;
+      modalId = act.id;
+      modalPhase = 'arrived';
+      showModal('📥', 'İş emri geldi', act.text, '1 / 3', false);
+      setTimeout(() => {
+        if (modalId === act.id && modalPhase === 'arrived') {
+          modalPhase = 'working';
+          showModal('🧠', 'Düşünüyorum…', act.text, '2 / 3', true);
+        }
+      }, 1600);
+    }
+  }
 
   tick();
   setInterval(tick, 2000);

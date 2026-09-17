@@ -46,5 +46,6 @@ otomatik okunur. İstekleri buradaki bağlama ve akışa göre uygula.
 
 ## WhatsApp worker
 - Yalnızca **"panda"** ile başlayan mesajlar istek sayılır; "panda" öneki atılır.
-- İş bitince gönderene **"İş emriniz tamamlandı 😊"** gider.
+- İş başlarken gönderene kısa bir "başladım/yapıyorum" mesajı; iş bitince çeşitli/esprili bir
+  tamamlanma mesajı gider (rastgele seçilir).
 - Loglar: `~/Library/Logs/bestwork/wa-worker.log` (worker), `wa-bridge.log` (köprü).

@@ -43,6 +43,27 @@ fs.mkdirSync(LOG_DIR, { recursive: true })
 
 const isPanda = (t) => /^\s*panda\b/i.test(t)
 
+// Gönderilecek mesajlar (biraz esprili, çeşitli)
+const START_MSGS = [
+  '👀 Bakıyorum, hemen hallediyorum…',
+  '🛠️ Tamam, üzerindeyim. Birazdan haber veririm 😄',
+  '🧠 Düşünüyorum… kod bana bakıyor, ben koda bakıyorum 😅',
+  '⚡ Anlaşıldı patron, işleme aldım!',
+  '🫡 Emredersiniz, hemen ilgileniyorum…',
+  '☕ Bir kahve alıp geliyorum, 2 dakika 😄',
+]
+const DONE_MSGS = [
+  'İş emriniz tamamlandı 😊',
+  'Tamamdır! Şükür gene bunun verdiği işi yaptık 😄',
+  'Bitti bu iş ✅ Benden bu kadar kolay oldu, helal bana 😎',
+  'Hallettim! Başka emriniz var mı efendim 😁',
+  'Oldu da bitti maşallah 🎉 Gene bir işi devirdik!',
+  '✅ İş tamam! Kod bile benden korkuyor artık 😌',
+  'Tamamlandı efendim 🫡 Nasıl da akıllı bir robotum, alkışları alayım 👏',
+  'İşlem bitti 😊 Bu robot bugün formunda, söyleyeyim.',
+]
+const pick = (a) => a[Math.floor(Math.random() * a.length)]
+
 // Doğrulama: iş gerçekten commit + sunucuya gitti mi?
 const SERVER = process.env.WA_SERVER || 'root@212.154.77.35'
 const ASKPASS =
@@ -269,6 +290,8 @@ async function loop() {
           `\n>> [${new Date().toISOString()}] başladı: ${request}${hasImage ? ' [resim]' : ''}`
         )
         await setStatus(m.id, 'processing')
+        // İşe başlarken "yapıyorum" mesajı gönder
+        await sendWhatsApp(m.jid, pick(START_MSGS))
         const t0 = Date.now()
         const headBefore = git('HEAD')
         const dirtyBefore = dirty().split('\n').filter(Boolean)
@@ -306,8 +329,8 @@ async function loop() {
         await sendWhatsApp(
           m.jid,
           verified
-            ? 'İş emriniz tamamlandı 😊'
-            : `⚠️ İş emri tamamlanamadı (yayına alınamadı): ${request}`
+            ? pick(DONE_MSGS)
+            : `⚠️ Bu iş biraz direndi, yapamadım: ${request}`
         )
         await setStatus(m.id, verified ? 'done' : 'error')
       }
