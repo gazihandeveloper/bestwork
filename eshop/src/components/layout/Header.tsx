@@ -115,7 +115,7 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+            <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif', WebkitTextStroke: '0.5px #101828' }}>
               BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
             </span>
           </Link>
