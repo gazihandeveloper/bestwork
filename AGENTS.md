@@ -25,6 +25,7 @@ otomatik okunur. İstekleri buradaki bağlama ve akışa göre uygula.
 - Şifre/anahtar/secret okuma-yazma yok; `api.env` gibi dosyalara erişme.
 
 ## Görev akışı (her istek için sırayla)
+0. **Link:** istekte http/https link varsa `webfetch` ile oku (gerekirse `websearch`); içeriği isteğe göre uygula.
 1. **Bul:** ilgili dosyayı grep/glob ile çabuk bul. Repoyu baştan tarama.
 2. **Yerel uygula:** istenen değişikliği minimal yap.
 3. **Yerelde doğrula:**
