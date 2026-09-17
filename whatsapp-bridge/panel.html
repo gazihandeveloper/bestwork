@@ -31,6 +31,10 @@
   .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
   .stat .n{font-size:26px;font-weight:500;line-height:1.1;color:var(--ink)}
   .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:500;margin-top:4px}
+  .stat.clickable{cursor:pointer;transition:background .15s,border-color .15s}
+  .stat.clickable:hover{background:var(--surface2)}
+  .stat.active{border-color:var(--blue);background:var(--surface2)}
+  .stat.active .l{color:var(--blue)}
   .stat.p .n{color:var(--blue)}
   .stat.w .n{color:var(--amber)}
   .stat.d .n{color:var(--green)}
@@ -100,7 +104,7 @@
   <div class="stats">
     <div class="stat p"><div class="n" id="s-pending">0</div><div class="l">İş emri bekliyor</div></div>
     <div class="stat w"><div class="n" id="s-processing">0</div><div class="l">İşleniyor</div></div>
-    <div class="stat d"><div class="n" id="s-done">0</div><div class="l">Sonuçlandı</div></div>
+    <div class="stat d clickable" id="stat-done" onclick="toggleDone()"><div class="n" id="s-done">0</div><div class="l" id="l-done">Sonuçlandı · göster</div></div>
     <div class="stat e"><div class="n" id="s-error">0</div><div class="l">Hata</div></div>
   </div>
   <div id="list"></div>
@@ -142,8 +146,8 @@
     try {
       const d = await (await fetch('/messages')).json();
       const all = (d.messages || []).slice().reverse();
-      // Sonuçlananları ve yok sayılanları panelde gösterme.
-      const ms = all.filter((m) => m.status !== 'ignored' && m.status !== 'done');
+      // Sonuçlananlar varsayılan gizli; "Sonuçlandı" kutusuna basınca gösterilir.
+      const ms = all.filter((m) => m.status !== 'ignored' && (showDone || m.status !== 'done'));
       const c = { pending: 0, processing: 0, done: 0, error: 0 };
       all.forEach((m) => { if (c[m.status] !== undefined) c[m.status]++; });
       document.getElementById('s-pending').textContent = c.pending;
@@ -159,7 +163,16 @@
 
   let allMs = [];
   let page = 1;
+  let showDone = false;
   const PER = 9;
+
+  function toggleDone() {
+    showDone = !showDone;
+    document.getElementById('stat-done').classList.toggle('active', showDone);
+    document.getElementById('l-done').textContent = showDone ? 'Sonuçlandı · gizle' : 'Sonuçlandı · göster';
+    page = 1;
+    tick();
+  }
 
   function cardHtml(m) {
     const st = m.status || 'pending';
