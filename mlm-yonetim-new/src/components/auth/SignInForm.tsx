@@ -56,14 +56,14 @@ export default function SignInForm() {
   return (
     <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl px-6 py-8 sm:px-10 sm:py-10">
       <div className="text-center mb-8">
-        {/* Marka logosu — sitedeki LOGO ile aynı font (Quicksand), ® Georgia serif, koyu ton */}
+        {/* Marka logosu — e-ticaret sitesindeki logo ile aynı (Helvetica + ince kontur), ® Georgia serif */}
         <span
-          className="text-3xl font-extrabold tracking-tight text-black dark:text-white"
-          style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
+          className="bw-logo text-3xl font-extrabold tracking-tight text-[#101828] dark:text-white"
+          style={{ fontFamily: "Helvetica, Arial, sans-serif", WebkitTextStroke: "0.5px currentColor" }}
         >
           BEST<span className="ml-0.5">WORK</span>
           <span
-            className="ml-0.5 align-super text-[0.6em] font-bold text-black dark:text-white"
+            className="relative top-[-0.5em] ml-0.5 align-super text-[0.6em] font-bold text-[#101828] dark:text-white"
             style={{ fontFamily: "Georgia, serif" }}
           >
             ®
