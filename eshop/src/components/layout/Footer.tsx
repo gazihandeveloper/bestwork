@@ -67,7 +67,7 @@ export function Footer() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Mail size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Email" />
-                  <span>info@mahmutgazihanarslan.com.tr</span>
+                  <span>info@bestwork.com.tr</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Clock size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Saat" />
