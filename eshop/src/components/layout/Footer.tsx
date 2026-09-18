@@ -50,7 +50,7 @@ export function Footer() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {/* About */}
             <div className="col-span-2 lg:col-span-1">
-                <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'var(--font-quicksand), sans-serif' }}>
+                <span className="bw-logo text-2xl font-extrabold tracking-tight" style={{ color: '#101828', fontFamily: 'Helvetica, Arial, sans-serif', WebkitTextStroke: '0.5px #101828' }}>
                   BEST<span className="ml-0.5">WORK</span><span className="text-[0.6em] text-[#101828] font-bold ml-0.5 align-super relative top-[-0.5em]" style={{ fontFamily: "Georgia, serif" }}>®</span>
                 </span>
               <p className="text-sm text-gray-500 mb-4">
