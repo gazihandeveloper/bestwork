@@ -126,9 +126,7 @@ export default function ContactPage() {
                 <div>
                   <p className="text-xs font-bold tracking-wide text-gray-400 uppercase">Genel Merkez Adresi</p>
                   <p className="text-sm font-semibold leading-relaxed text-gray-800">
-                    Aymnet Bitkisel ve Temizlik Ürünleri İth. İhr. San. Tic. A.Ş.
-                    <br />
-                    Anadolu Mah. Vişne Cad. No:48 Yıldırım / BURSA
+                    Korupark Osmangazi / BURSA
                   </p>
                 </div>
               </div>
