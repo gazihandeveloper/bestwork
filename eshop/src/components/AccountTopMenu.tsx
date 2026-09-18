@@ -66,6 +66,15 @@ const MENU_GROUPS: MenuGroup[] = [
     ],
   },
   {
+    title: 'Üye Raporları',
+    icon: <Users size={16} />,
+    items: [
+      { path: '/success-report', eshopPath: '/account/success-report', label: 'Başarı Raporu', icon: <Trophy size={16} /> },
+      { path: '/retail-earnings', eshopPath: '/account/retail-earnings', label: 'Müşteri Kazancı', icon: <Receipt size={16} /> },
+      { path: '/eshop/sponsored', eshopPath: '/account/sponsored', label: 'Sponsor Olduklarım', icon: <Users size={16} /> },
+    ],
+  },
+  {
     title: 'İşlemlerim',
     icon: <ShoppingCart size={16} />,
     items: [
