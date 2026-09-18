@@ -117,7 +117,7 @@ export default function ContactPage() {
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600"><Mail size={18} /></span>
                 <div>
                   <p className="text-xs font-bold tracking-wide text-gray-400 uppercase">E-Posta Adresi</p>
-                  <a href="mailto:binsis@aymnet.com.tr" className="text-lg font-extrabold text-gray-900 hover:text-brand-600">binsis@aymnet.com.tr</a>
+                  <a href="mailto:info@bestwork.com.tr" className="text-lg font-extrabold text-gray-900 hover:text-brand-600">info@bestwork.com.tr</a>
                 </div>
               </div>
 
