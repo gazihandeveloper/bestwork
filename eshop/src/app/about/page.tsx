@@ -43,18 +43,11 @@ export default function AboutPage() {
               <h2 className="text-3xl font-extrabold text-gray-800 mb-6">Hikayemiz</h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  BestWork, 2024 yılında "doğal ve taze ürünlere herkesin kolayca ulaşabilmesi" vizyonuyla kuruldu. 
-                  Kurucularımız, geleneksel market alışverişini modern teknolojiyle buluşturarak, müşterilerimize 
-                  benzersiz bir alışveriş deneyimi sunmayı hedefledi.
-                </p>
-                <p>
-                  Bugün, 30'dan fazla yerel üretici ve tedarikçiyle çalışıyor, 500'ün üzerinde ürün çeşidini 
-                  en taze haliyle kapınıza kadar getiriyoruz. Kalite kontrol süreçlerimizle her ürünün 
-                  en yüksek standartlarda olduğundan emin oluyoruz.
-                </p>
-                <p>
-                  Teknolojiyi doğallıkla birleştiren BestWork, alışverişi sadece kolay değil, 
-                  aynı zamanda keyifli hale getirmek için çalışıyor.
+                  2002 yılından günümüze kadar çeyrek asır aşmış Türkiye'de MLM sektöründe sahada insanların
+                  neyi başarıp neyi başaramadığını çok iyi tecrübe edip ölçütlediğimiz büyük tecrübelerimiz var;
+                  konuşarak değil emek vererek çalışan insanların emeklerinin karşılığını fazlasıyla alacakları
+                  bir iş modeli ile "en büyük olmak değil en iyi olma" sloganıyla ideallerimizle insanlığa değer
+                  katmak için buradayız.
                 </p>
               </div>
             </div>
