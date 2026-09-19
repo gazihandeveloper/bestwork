@@ -271,18 +271,26 @@ export function Header() {
               >
                 Ürünler
               </Link>
-              <Link
-                href="/about"
-                className="px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
-              >
-                Hakkımızda
-              </Link>
-              <Link
-                href="/contact"
-                className="px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
-              >
-                İletişim
-              </Link>
+              <div className="relative group h-full">
+                <button className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors">
+                  Kurumsal
+                  <ChevronDown size={14} />
+                </button>
+                <div className="absolute top-full left-0 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-2">
+                  <Link
+                    href="/about"
+                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg transition-colors"
+                  >
+                    Hakkımızda
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg transition-colors"
+                  >
+                    İletişim
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {/* Telefon - sağa sabitli */}
@@ -350,7 +358,7 @@ export function Header() {
                 href="/about"
                 className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
               >
-                Hakkımızda
+                Kurumsal
               </Link>
               <Link
                 href="/contact"
