@@ -278,16 +278,10 @@ export function Header() {
                 </button>
                 <div className="absolute top-full left-0 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-2">
                   <Link
-                    href="/about"
+                    href="/vizyon-misyon"
                     className="block px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg transition-colors"
                   >
-                    Hakkımızda
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="block px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg transition-colors"
-                  >
-                    İletişim
+                    Vizyon ve Misyon
                   </Link>
                 </div>
               </div>
