@@ -291,6 +291,18 @@ export function Header() {
                   </Link>
                 </div>
               </div>
+              <Link
+                href="/about"
+                className="px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
+              >
+                Hakkımızda
+              </Link>
+              <Link
+                href="/contact"
+                className="px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
+              >
+                İletişim
+              </Link>
             </div>
 
             {/* Telefon - sağa sabitli */}
@@ -359,6 +371,12 @@ export function Header() {
                 className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
               >
                 Kurumsal
+              </Link>
+              <Link
+                href="/about"
+                className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
+              >
+                Hakkımızda
               </Link>
               <Link
                 href="/contact"
