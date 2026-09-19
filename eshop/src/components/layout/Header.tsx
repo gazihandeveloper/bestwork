@@ -379,6 +379,12 @@ export function Header() {
                 Hakkımızda
               </Link>
               <Link
+                href="/vizyon-misyon"
+                className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
+              >
+                Vizyon ve Misyon
+              </Link>
+              <Link
                 href="/neden-bestwork"
                 className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
               >
