@@ -292,7 +292,7 @@ export function Header() {
                 </div>
               </div>
               <Link
-                href="/about#neden-bestwork"
+                href="/neden-bestwork"
                 className="px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
               >
                 Neden BestWork?
@@ -379,7 +379,7 @@ export function Header() {
                 Hakkımızda
               </Link>
               <Link
-                href="/about#neden-bestwork"
+                href="/neden-bestwork"
                 className="block px-4 py-3 text-sm text-gray-600 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
               >
                 Neden BestWork?
