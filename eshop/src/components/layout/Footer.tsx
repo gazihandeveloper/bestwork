@@ -59,7 +59,7 @@ export function Footer() {
               <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-start gap-2">
                   <MapPin size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Adres" />
-                  <span>İstanbul, Türkiye</span>
+                  <span>Bursa, Türkiye</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Phone size={16} className="w-4 h-4 mt-0.5 shrink-0" aria-label="Telefon" />
