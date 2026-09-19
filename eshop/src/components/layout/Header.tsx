@@ -47,6 +47,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [corporateOpen, setCorporateOpen] = useState(false)
   const [categories, setCategories] = useState<{id:string,name:string,slug:string}[]>([])
   const pathname = usePathname()
   const { isAuthenticated, user, logout } = useAuth()
@@ -271,12 +272,20 @@ export function Header() {
               >
                 Ürünler
               </Link>
-              <div className="relative group h-full">
-                <button className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors">
+              <div
+                className="relative h-full"
+                onMouseEnter={() => setCorporateOpen(true)}
+                onMouseLeave={() => setCorporateOpen(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCorporateOpen((v) => !v)}
+                  className="flex items-center gap-1 px-4 py-2 text-sm font-bold text-white hover:text-brand-400 rounded-lg transition-colors"
+                >
                   Kurumsal
-                  <ChevronDown size={14} />
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${corporateOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <div className="absolute top-full left-0 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-2">
+                <div className={`absolute top-full left-0 w-48 bg-white rounded-xl shadow-xl border border-gray-100 transition-all duration-200 z-50 p-2 ${corporateOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                   <Link
                     href="/about"
                     className="block px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg transition-colors"
