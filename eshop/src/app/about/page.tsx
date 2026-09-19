@@ -84,7 +84,7 @@ export default function AboutPage() {
       </section>
 
       {/* Neden Biz */}
-      <section className="py-16">
+      <section id="neden-bestwork" className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-12">Neden BestWork?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
