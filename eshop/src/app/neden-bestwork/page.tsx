@@ -4,14 +4,6 @@
 'use client'
 
 import { MainLayout } from '@/app/main-layout'
-import { Truck, Shield, Leaf, Users } from '@/components/icons'
-
-const features = [
-  { icon: Truck, title: 'Hızlı Teslimat', desc: 'Siparişleriniz aynı gün kapınızda. İstanbul içi 2 saatte teslimat.' },
-  { icon: Shield, title: 'Güvenli Alışveriş', desc: '256-bit SSL ile korunan altyapı, güvenli ödeme sistemleri.' },
-  { icon: Leaf, title: 'Doğal Ürünler', desc: 'Tüm ürünlerimiz doğal ve taze, doğrudan üreticiden sofraya.' },
-  { icon: Users, title: 'Mutlu Müşteriler', desc: 'Binlerce mutlu müşteri, %98 memnuniyet oranı.' },
-]
 
 export default function NedenBestworkPage() {
   return (
@@ -29,19 +21,21 @@ export default function NedenBestworkPage() {
       {/* Neden Biz */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((f) => {
-              const Icon = f.icon
-              return (
-                <div key={f.title} className="bg-white rounded-xl border border-gray-100 p-6 text-center hover:shadow-lg transition-shadow">
-                  <div className="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-4">
-                    <Icon size={26} className="text-brand-500" />
-                  </div>
-                  <h3 className="font-bold text-gray-800 mb-2">{f.title}</h3>
-                  <p className="text-sm text-gray-500">{f.desc}</p>
-                </div>
-              )
-            })}
+          <div className="mx-auto max-w-3xl space-y-4 text-gray-600 leading-relaxed">
+            <p>
+              2002 yılında bir ABD firmasıyla MLM sektörüyle çalışmaya başlandı. O firmada full time 20
+              yıllık profesyonel olarak MLM saha çalışmasıyla yüzbinlerce kişinin hayatına dokunduk. Sahada
+              girişimcilerimizin neyi yapıp neyi yapamadıklarını, müşterilerin de neyi isteyip neyi
+              istemediklerini ve MLM sektöründe sürdürülebilir olmanın kriterlerinin neler olduğunu yaşayarak
+              ölçütledik.
+            </p>
+            <p>
+              Bazen etik dışı çalışan şirketlerin ve bazen de etik çalışmayan Liderlerin kurbanı olan
+              girişimciler tanıdık. Bu şirketi kurmamızdaki amacımız; sektörün bu kadar değerli olmasının
+              yanı sıra işini iyi yapmayan şirket sahipleri ve suni ve günlük çalışan amatör Liderlerden
+              dolayı, sektöre yıllarını vermiş dürüst ve etik çalışan ve sektörden alacaklı olduğunu düşünen
+              girişimcilerle en iyi işi kurmak ve geleceğe güvenle bakmak adına bu şirketi kurma kararı aldık.
+            </p>
           </div>
         </div>
       </section>
