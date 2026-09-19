@@ -23,19 +23,23 @@ export default function VizyonMisyonPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Vizyon */}
             <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-gray-800 mb-4">Vizyonumuz</h2>
+              <h2 className="text-2xl font-extrabold text-gray-800 mb-4">VİZYONUMUZ</h2>
               <p className="text-gray-600 leading-relaxed">
-                En taze ve doğal ürünleri, modern teknolojinin gücüyle herkesin kolayca ulaşabildiği
-                bir alışveriş deneyimine dönüştürmek; doğallık ile teknolojiyi buluşturan öncü marka olmak.
+                Türkiye'de network marketing sektörünün algısını dönüştüren, etik değerleri ve şeffaf iş
+                modeliyle referans gösterilen; 2030 yılına kadar 100.000'den fazla bireyin sürdürülebilir
+                gelir elde ettiği, teknolojiyi ve insan odaklı yaklaşımı birleştiren Türkiye'nin lider
+                yerli network marketing şirketi olmak.
               </p>
             </div>
 
             {/* Misyon */}
             <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-gray-800 mb-4">Misyonumuz</h2>
+              <h2 className="text-2xl font-extrabold text-gray-800 mb-4">MİSYONUMUZ</h2>
               <p className="text-gray-600 leading-relaxed">
-                Yerel üreticileri destekleyerek, kalite kontrollerinden geçmiş ürünleri en hızlı şekilde
-                sofralarınıza ulaştırmak; güvenilir, şeffaf ve sürdürülebilir bir alışveriş sunmak.
+                İnsanların potansiyelini keşfetmelerine, kendi işlerinin sahibi olmalarına ve finansal
+                özgürlüklerine giden yolda güvenilir, şeffaf ve sürdürülebilir bir ortaklık modeli sunmak;
+                her bireyin hem kişisel hem de mesleki gelişimini destekleyerek, topluma değer katan, etik
+                değerlere bağlı ve yenilikçi bir ekosistem oluşturmak.
               </p>
             </div>
           </div>
