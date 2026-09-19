@@ -58,14 +58,14 @@ const AppHeader: React.FC = () => {
 
           <Link href="/" className="lg:hidden">
             <span className="flex flex-col items-center text-center leading-none">
-              {/* Marka logosu — sitedeki LOGO ile aynı font (Quicksand), ® Georgia serif, koyu ton */}
+              {/* Marka logosu — e-ticaret sitesindeki logo ile aynı (Helvetica + ince kontur), ® Georgia serif */}
               <span
-                className="text-[22px] font-extrabold tracking-tight text-black dark:text-white"
-                style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
+                className="text-[22px] font-extrabold tracking-tight text-[#101828] dark:text-white"
+                style={{ fontFamily: "Helvetica, Arial, sans-serif", WebkitTextStroke: "0.5px currentColor" }}
               >
                 BEST<span className="ml-0.5">WORK</span>
                 <span
-                  className="ml-0.5 align-super text-[0.6em] font-bold text-black dark:text-white"
+                  className="relative top-[-0.5em] ml-0.5 align-super text-[0.6em] font-bold text-[#101828] dark:text-white"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
                   ®
