@@ -40,6 +40,8 @@ otomatik okunur. İstekleri buradaki bağlama ve akışa göre uygula.
    WhatsApp mesajını SEN GÖNDERME (worker gönderir).
 
 ## Deploy / sunucu
+- `mlm-yonetim-new` (panel `/bestmanager`) deploy'u mutlaka `NEXT_PUBLIC_BASE_PATH=/bestmanager` ile derlenmeli;
+  bunu `deploy-live.sh` ayarlıyor. Elle derlerken bu env'i unutma (yoksa basePath `/bestmanager2` olur ve panel bozulur).
 - Kaynak sunucuda `/opt/bestwork-src`; eshop yayını `/var/www/.../happyboon/frontend`.
 - Yerelden GitHub'a push edilemez (kimlik yok); `deploy-now.sh` bunu sunucu üzerinden yapar.
 - Tam deploy (yönetim paneli dahil) gerekirse sunucuda `deploy-live.sh` kullanılır; normalde gerekmez.
