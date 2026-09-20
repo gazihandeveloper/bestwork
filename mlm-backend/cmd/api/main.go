@@ -275,6 +275,7 @@ func main() {
 		adminTickets.Use(adminOnly()...)
 		adminTickets.GET("", ticketHandler.ListAll)
 		adminTickets.POST("/:id/resolve", ticketHandler.Resolve)
+		adminTickets.POST("/:id/claim", ticketHandler.Claim)
 		adminTickets.GET("/:id", ticketHandler.Get)
 		adminTickets.POST("/:id/reply", ticketHandler.Reply)
 

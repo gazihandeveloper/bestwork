@@ -12,5 +12,7 @@ type Ticket struct {
 	Phone     string    `json:"phone"`
 	Message   string    `json:"message"`
 	Status    string    `json:"status"`
+	AssignedTo *int64   `json:"assigned_to"`
+	AssignedName string `json:"assigned_name,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 }

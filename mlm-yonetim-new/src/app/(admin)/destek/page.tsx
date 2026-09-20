@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { listTickets, resolveTicket, getTicket, replyTicket, type Ticket } from "@/lib/api";
+import { listTickets, resolveTicket, getTicket, replyTicket, claimTicket, type Ticket } from "@/lib/api";
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   open: { label: "Açık", cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300" },
   new: { label: "Yeni", cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300" },
+  in_progress: { label: "İşlemde", cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" },
   resolved: { label: "Çözüldü", cls: "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300" },
   closed: { label: "Kapalı", cls: "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300" },
 };
@@ -53,6 +54,20 @@ export default function DestekPage() {
     }
   };
 
+  const claim = async (id: number) => {
+    setBusy(id);
+    setError("");
+    try {
+      const fresh = await claimTicket(id);
+      load();
+      if (selected && selected.id === id) setSelected(fresh);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Talep üstlenilemedi");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const sendReply = async () => {
     if (!selected || !reply.trim()) return;
     setSending(true);
@@ -95,6 +110,7 @@ export default function DestekPage() {
                 <th className="px-3 py-2 font-bold">Ad Soyad</th>
                 <th className="px-3 py-2 font-bold">Telefon</th>
                 <th className="px-3 py-2 font-bold">Mesaj</th>
+                <th className="px-3 py-2 font-bold">Sorumlu</th>
                 <th className="px-3 py-2 font-bold">Durum</th>
                 <th className="px-3 py-2 font-bold">Tarih</th>
                 <th className="px-3 py-2 font-bold"></th>
@@ -116,6 +132,16 @@ export default function DestekPage() {
                     <td className="max-w-[240px] px-3 py-2 text-gray-600 dark:text-gray-400">
                       <span className="line-clamp-1">{t.message.replace(/\n/g, " ")}</span>
                     </td>
+                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                      {t.assigned_name ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                          {t.assigned_name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${st.cls}`}>{st.label}</span>
                     </td>
@@ -123,12 +149,20 @@ export default function DestekPage() {
                       {new Date(t.created_at).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {openRow && (
-                        <button type="button" disabled={busy === t.id} onClick={() => resolve(t.id)}
-                          className="cursor-pointer rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700 disabled:opacity-50">
-                          {busy === t.id ? "..." : "Çözüldü"}
-                        </button>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {openRow && (
+                          <button type="button" disabled={busy === t.id} onClick={() => claim(t.id)}
+                            className="cursor-pointer rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50">
+                            {busy === t.id ? "..." : t.assigned_name ? "Üstlenildi" : "Üstlen"}
+                          </button>
+                        )}
+                        {(t.status === "open" || t.status === "new" || t.status === "in_progress") && (
+                          <button type="button" disabled={busy === t.id} onClick={() => resolve(t.id)}
+                            className="cursor-pointer rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700 disabled:opacity-50">
+                            {busy === t.id ? "..." : "Çözüldü"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -146,9 +180,18 @@ export default function DestekPage() {
               <div>
                 <p className="font-mono text-sm font-bold text-brand-600">{code(selected)}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500">{selected.name} {selected.surname}</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Sorumlu: {selected.assigned_name || "—"}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 {(selected.status === "open" || selected.status === "new") && (
+                  <button type="button" disabled={busy === selected.id} onClick={() => claim(selected.id)}
+                    className="cursor-pointer rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50">
+                    {busy === selected.id ? "..." : "Üstlen"}
+                  </button>
+                )}
+                {(selected.status === "open" || selected.status === "new" || selected.status === "in_progress") && (
                   <button type="button" onClick={() => resolve(selected.id)}
                     className="cursor-pointer rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700">
                     Çözüldü

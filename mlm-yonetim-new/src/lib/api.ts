@@ -65,6 +65,8 @@ export interface Ticket {
   status: string;
   created_at: string;
   member_code?: string | null;
+  assigned_to?: number | null;
+  assigned_name?: string | null;
 }
 
 export async function getTicket(id: number): Promise<Ticket> {
@@ -84,6 +86,11 @@ export async function listTickets(): Promise<Ticket[]> {
 
 export async function resolveTicket(id: number): Promise<void> {
   await request("POST", `/admin/tickets/${id}/resolve`);
+}
+
+export async function claimTicket(id: number): Promise<Ticket> {
+  const data = await request<{ ticket: Ticket }>("POST", `/admin/tickets/${id}/claim`);
+  return data.ticket;
 }
 
 export function getErrorMessage(err: unknown): string {

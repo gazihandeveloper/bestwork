@@ -66,6 +66,26 @@ func (h *TicketHandler) Resolve(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Talep çözüldü"})
 }
 
+// Claim talebi mevcut yönetici/müşteri hizmetleri üzerine alır (üstlenir).
+func (h *TicketHandler) Claim(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz talep ID"})
+		return
+	}
+	uid := c.GetInt64("user_id")
+	if uid == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Oturum bilgisi eksik"})
+		return
+	}
+	t, err := h.tickets.Claim(c.Request.Context(), id, uid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ticket": t})
+}
+
 // Get tek destek talebini döndürür (admin).
 func (h *TicketHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)

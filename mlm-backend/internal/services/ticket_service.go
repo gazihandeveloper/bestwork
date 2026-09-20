@@ -20,7 +20,22 @@ func NewTicketService(db *pgxpool.Pool) *TicketService {
 	return &TicketService{db: db}
 }
 
-const ticketColumns = `t.id, t.user_id, t.name, t.surname, t.phone, t.message, t.status, t.created_at, COALESCE(u.member_code, '') AS member_code`
+const ticketColumns = `t.id, t.user_id, t.name, t.surname, t.phone, t.message, t.status, t.created_at, COALESCE(u.member_code, '') AS member_code, t.assigned_to, COALESCE((SELECT a.name FROM users a WHERE a.id = t.assigned_to), '') AS assigned_name`
+
+// Claim talebi bir yönetici/müşteri hizmetleri üzerine alır (üstlenir).
+// Zaten başkası üstlenmişse hata döner.
+func (s *TicketService) Claim(ctx context.Context, id int64, userID int64) (*models.Ticket, error) {
+	tag, err := s.db.Exec(ctx,
+		`UPDATE tickets SET assigned_to = $2, status = 'in_progress'
+		 WHERE id = $1 AND (assigned_to IS NULL OR assigned_to = $2)`, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("talep üstlenilemedi: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return nil, fmt.Errorf("talep başka bir temsilci tarafından üstlenilmiş")
+	}
+	return s.Get(ctx, id)
+}
 
 // HasOpenTicket kullanıcının açık (open/new) talebi olup olmadığını döndürür.
 func (s *TicketService) HasOpenTicket(ctx context.Context, userID int64) (bool, error) {
@@ -86,7 +101,7 @@ func (s *TicketService) ListByUser(ctx context.Context, userID int64) ([]models.
 	tickets := make([]models.Ticket, 0)
 	for rows.Next() {
 		var t models.Ticket
-		if err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode); err != nil {
+		if err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode, &t.AssignedTo, &t.AssignedName); err != nil {
 			return nil, fmt.Errorf("ticket okunamadı: %w", err)
 		}
 		tickets = append(tickets, t)
@@ -97,7 +112,7 @@ func (s *TicketService) ListByUser(ctx context.Context, userID int64) ([]models.
 func (s *TicketService) Get(ctx context.Context, id int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := s.db.QueryRow(ctx, `SELECT `+ticketColumns+` FROM tickets t LEFT JOIN users u ON u.id = t.user_id WHERE t.id = $1`, id).
-		Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode)
+		Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode, &t.AssignedTo, &t.AssignedName)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +123,7 @@ func (s *TicketService) Get(ctx context.Context, id int64) (*models.Ticket, erro
 func (s *TicketService) GetByUser(ctx context.Context, id int64, userID int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := s.db.QueryRow(ctx, `SELECT `+ticketColumns+` FROM tickets t LEFT JOIN users u ON u.id = t.user_id WHERE t.id = $1 AND t.user_id = $2`, id, userID).
-		Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode)
+		Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode, &t.AssignedTo, &t.AssignedName)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +162,7 @@ func (s *TicketService) ListAll(ctx context.Context) ([]models.Ticket, error) {
 	tickets := make([]models.Ticket, 0)
 	for rows.Next() {
 		var t models.Ticket
-		if err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode); err != nil {
+		if err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.Surname, &t.Phone, &t.Message, &t.Status, &t.CreatedAt, &t.MemberCode, &t.AssignedTo, &t.AssignedName); err != nil {
 			return nil, fmt.Errorf("ticket okunamadı: %w", err)
 		}
 		tickets = append(tickets, t)
