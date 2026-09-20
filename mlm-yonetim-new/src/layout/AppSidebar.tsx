@@ -34,8 +34,8 @@ const navItems: NavItem[] = [
     icon: <CircleUserIcon />,
     name: "Müşteri Hizmetleri",
     subItems: [
-      { name: "Üyeler", path: "/uyeler", pro: false },
       { name: "Destek Talepleri", path: "/destek", pro: false },
+      { name: "Üyeler", path: "/uyeler", pro: false },
       { name: "Kariyerler", path: "/kariyerler", pro: false },
       { name: "Binary Ağaç", path: "/agac", pro: false },
     ],
