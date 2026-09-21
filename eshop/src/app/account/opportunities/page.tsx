@@ -343,7 +343,6 @@ export default function OpportunitiesPage() {
               <tr className="border-b border-gray-100 text-left text-[11px] uppercase tracking-wide text-gray-400">
                 <th className="px-4 py-3 fw-700">Paket</th>
                 <th className="px-4 py-3 fw-700">Gerekli PV</th>
-                <th className="px-4 py-3 fw-700">CV</th>
                 <th className="px-4 py-3 fw-700">Referans</th>
                 <th className="px-4 py-3 fw-700">Binary</th>
                 <th className="px-4 py-3 fw-700">İndirim</th>
@@ -354,7 +353,6 @@ export default function OpportunitiesPage() {
                 <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60">
                   <td className="px-4 py-3 text-gray-900 fw-700">{p.name}</td>
                   <td className="px-4 py-3 text-gray-600">{fmt(p.required_pv)} PV</td>
-                  <td className="px-4 py-3 text-gray-600">{fmt(p.cv)}</td>
                   <td className="px-4 py-3 text-brand-700 fw-700">{pct(p.referral_bonus_rate)}</td>
                   <td className="px-4 py-3 text-blue-600 fw-700">{pct(p.binary_bonus_rate)}</td>
                   <td className="px-4 py-3 text-violet-600 fw-700">{pct(p.discount_rate)}</td>
