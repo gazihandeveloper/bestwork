@@ -26,7 +26,7 @@ const steps = [
 const earnings = [
   { title: 'Referans Primi', desc: 'Sponsor olduğunuz her üyenin sipariş CV\'sinden paket oranınıza göre anında kazanırsınız.', icon: <Users size={20} />, cls: 'bg-green-50 text-green-600' },
   { title: 'Binary Eşleşme', desc: 'Sol ve sağ bacağınızdaki CV\'ler aylık kapanışta eşleşir, binary bonusu cüzdanınıza yatar.', icon: <GitFork size={20} />, cls: 'bg-blue-50 text-blue-600' },
-  { title: 'Liderlik (Matching) Primi', desc: 'Ekibinizin binary kazançlarından 5 nesle kadar %20/%10/%10/%10/%5 pay alırsınız.', icon: <Trophy size={20} />, cls: 'bg-amber-50 text-amber-600' },
+  { title: 'Liderlik (Matching) Primi', desc: 'Ekibinizin binary kazançlarından, kariyer basamağınıza göre 5 nesle kadar %20/%10/%10/%10/%5 pay alırsınız (Jade 1 nesil, Pearl 2, Sapphire 3, Ruby 4, Emerald ve üzeri 5 nesil).', icon: <Trophy size={20} />, cls: 'bg-amber-50 text-amber-600' },
   { title: 'Perakende Kazancı', desc: 'Referans kodunuzla kayıt olan müşterilerin siparişlerinden komisyon kazanırsınız.', icon: <Receipt size={20} />, cls: 'bg-violet-50 text-violet-600' },
 ]
 

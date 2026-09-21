@@ -72,7 +72,7 @@ export default function LeadershipBonusPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">Liderlik Primi</h1>
           <p className="text-sm text-gray-400">
-            Ekibinizin binary kazançlarından 5 nesle kadar aldığınız liderlik primleri.
+            Ekibinizin binary kazançlarından, kariyer basamağınıza göre 5 nesle kadar aldığınız liderlik primleri.
           </p>
         </div>
         <Link
