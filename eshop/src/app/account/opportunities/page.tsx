@@ -188,7 +188,7 @@ const rules = [
   {
     icon: <Scale size={18} />,
     title: 'Aktiflik Şartı',
-    desc: 'Kariyeri korumak için her ay 250 PV kişisel alışveriş ya da hedef pakette 2 alt üye kaydı gerekir; sağlanmazsa rütbe düşer.',
+    desc: 'Yeni bir kariyer basamağına yükselmek için her ay 250 PV kişisel alışveriş ya da hedef pakette 2 alt üye kaydı gerekir.',
   },
   {
     icon: <ShieldCheck size={18} />,
@@ -207,8 +207,8 @@ const rules = [
   },
   {
     icon: <TrendingUp size={18} />,
-    title: 'Ay Sonu Yeniden Hesap',
-    desc: 'Kariyerler her ay sonu yeniden hesaplanır; aktiflik ve bacak şartlarını sağlayanlar rütbesini korur/yükseltir.',
+    title: 'Kariyer Yalnızca Yükselir',
+    desc: 'Kariyerler her ay yeniden değerlendirilir ama DÜŞMEZ; bir kez ulaştığınız kariyer (ör. Diamond) kalıcıdır, yalnızca daha yükseğe çıkabilir.',
   },
   {
     icon: <Sparkles size={18} />,

@@ -13,39 +13,48 @@ import (
 //
 // Sıralama kritiktir: PV bazlı alt basamaklar (Jade, Pearl) önce, downline bazlı
 // üst basamaklar (Safir → Ambassador) sonra işlenir; böylece bir üyenin Safir şartı,
-// altındaki üyenin taze Jade unvanını görür. Kariyer her ay yeniden değerlendirildiği
-// için önce tüm current_rank_id'ler NULL'a çekilir, sonra hak edilen en yüksek basamak
-// atanır. Transaction (DBTX) içinde çalışır.
+// altındaki üyenin taze Jade unvanını görür.
+//
+// ÖNEMLİ: Rütbe DÜŞMEZ. Bir kez ulaşılan kariyer kalıcıdır; mevcut unvanlar korunur
+// ve yalnızca DAHA YÜKSEK bir basamak atanır. Transaction (DBTX) içinde çalışır.
 func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 	ranks, err := GetAllRanks(ctx, q)
 	if err != nil {
 		return 0, fmt.Errorf("seviyeler okunamadı: %w", err)
 	}
 
-	// Her ay yeniden değerlendirme: tüm unvanları sıfırla (aktif olmayanlar unvanını kaybeder).
-	if _, err := q.Exec(ctx, `UPDATE users SET current_rank_id = NULL, updated_at = NOW()`); err != nil {
-		return 0, fmt.Errorf("kariyer sıfırlanamadı: %w", err)
+	// Kariyer basamağını PV eşiğiyle karşılaştırmak için harita.
+	rankPV := make(map[int]float64, len(ranks))
+	for _, r := range ranks {
+		rankPV[r.ID] = r.RequiredLeftPV
 	}
 
-	rows, err := q.Query(ctx, `SELECT id FROM users WHERE is_active = true ORDER BY id`)
+	rows, err := q.Query(ctx, `SELECT id, COALESCE(current_rank_id, 0) FROM users WHERE is_active = true ORDER BY id`)
 	if err != nil {
 		return 0, fmt.Errorf("üyeler listelenemedi: %w", err)
 	}
 	defer rows.Close()
 
 	userIDs := make([]int64, 0)
+	curPV := make(map[int64]float64)
 	for rows.Next() {
 		var id int64
-		if err := rows.Scan(&id); err != nil {
+		var rid int
+		if err := rows.Scan(&id, &rid); err != nil {
 			return 0, fmt.Errorf("üye okunamadı: %w", err)
 		}
 		userIDs = append(userIDs, id)
+		curPV[id] = rankPV[rid]
 	}
 	rows.Close()
 
 	assigned := 0
 	for _, rank := range ranks {
 		for _, uid := range userIDs {
+			// Düşürme yok: mevcut basamak bu basamaktan yüksek/eşitse atla.
+			if rank.RequiredLeftPV <= curPV[uid] {
+				continue
+			}
 			ok, err := userQualifiesForRank(ctx, q, uid, rank)
 			if err != nil {
 				return 0, fmt.Errorf("kariyer kontrolü başarısız (user %d, rank %s): %w", uid, rank.Name, err)
@@ -58,6 +67,7 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 				rank.ID, uid); err != nil {
 				return 0, fmt.Errorf("unvan atanamadı: %w", err)
 			}
+			curPV[uid] = rank.RequiredLeftPV
 			// Kariyer ilerlemesi: ilk kez ulaşılan kariyerler kaydedilir.
 			// RowsAffected=1 ise bu kariyere ÖMÜR BOYU İLK KEZ ulaşıldı →
 			// kariyer bonusu ödenir (tekrar ulaşılsa bile bir daha ödenmez).
@@ -79,7 +89,7 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 	}
 
 	log.WithFields(log.Fields{"users": len(userIDs), "assignments": assigned}).
-		Info("Kariyerler yeniden hesaplandı")
+		Info("Kariyerler yeniden hesaplandı (düşme yok)")
 	return len(userIDs), nil
 }
 
