@@ -117,8 +117,9 @@ const earnings = [
     desc: 'Ekibinizin binary kazançlarından, sponsor hattınız boyunca 5 nesle kadar pay alırsınız.',
     details: [
       'Nesil oranları: %20 · %10 · %10 · %10 · %5 (1. → 5. nesil).',
-      'Şart: yalnızca kariyer sahibi (Jade ve üzeri) üst hat pay alır.',
-      'Kariyersiz nesil pay almaz; bu pay bir üst nesle devredilmez.',
+      'Kariyer basamağı: bir liderin kaç nesle kadar pay alacağını rütbesi belirler (Jade 1 … Emerald ve üzeri 5 nesil).',
+      'Aylık flashout (gelir tavanı) dolan lider, o ay matching primi almaz.',
+      'Şartı sağlamayan neslin payı bir üst nesle devredilmez (şirkete kalır).',
       'Matching, alttaki üyenin kazancından kesilmez; şirket ayrıca öder.',
     ],
   },

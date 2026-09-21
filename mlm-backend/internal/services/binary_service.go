@@ -257,13 +257,19 @@ func logFlashoutViolation(ctx context.Context, q DBTX, memberID int64, period st
 }
 
 // DistributeMatchingBonus binary kazanan üyenin sponsor zincirine 5 nesil
-// boyunca matching (liderlik) bonusu dağıtır. Her nesil yalnızca kariyer sahibi
-// (Jade+) ise pay alır; kariyeri olmayan nesil pay almaz ve payı devredilmez
-// (şirkete kalır).
+// boyunca matching (liderlik) bonusu dağıtır. Nesil oranları %20/%10/%10/%10/%5.
+//
+// Her nesil için alıcı liderin o ay pay alması İKİ şarta bağlıdır (karma):
+//  1. KARİYER: Liderin kariyer basamağı o nesle izin vermeli. Basamak, kendi
+//     rütbesinden küçük/eşit PV eşiği olan rütbe sayısıdır (Jade=1 … Emerald+ =5).
+//  2. FLASHOUT: Liderin o ay aylık gelir tavanı (monthly_binary_limit) dolmamış
+//     olmalı. current_month_binary_earned >= limit ise o ay matching ödenmez.
+//
+// Şartı sağlamayan neslin payı devredilmez (şirkete kalır).
 func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, amount float64) error {
 	currentID := binaryEarnerID
 
-	for _, rate := range matchingRates {
+	for i, rate := range matchingRates {
 		var sponsorID *int64
 		if err := q.QueryRow(ctx, `SELECT sponsor_id FROM users WHERE id = $1`, currentID).Scan(&sponsorID); err != nil {
 			return fmt.Errorf("sponsor okunamadı: %w", err)
@@ -272,13 +278,36 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 			break // sponsor zinciri sona erdi
 		}
 
-		// Liderlik primi yalnızca kariyer sahibi (Jade+) üst hatta ödenir.
-		// Kariyeri olmayan nesil pay almaz; pay DEVREDİLMEZ (şirkete kalır).
-		var hasCareer bool
-		if err := q.QueryRow(ctx, `SELECT (current_rank_id IS NOT NULL) FROM users WHERE id = $1`, *sponsorID).Scan(&hasCareer); err != nil {
+		// Liderin kariyer basamağı (kaç nesle kadar alabilir) + o ayki flashout durumu.
+		var allowed int
+		var earned, limit float64
+		if err := q.QueryRow(ctx, `
+			SELECT
+				COALESCE((SELECT COUNT(*) FROM ranks r2 WHERE r2.required_left_pv <= r.required_left_pv), 0) AS allowed,
+				COALESCE(u.current_month_binary_earned, 0) AS earned,
+				COALESCE(r.monthly_binary_limit, 0) AS lim
+			FROM users u
+			LEFT JOIN ranks r ON r.id = u.current_rank_id
+			WHERE u.id = $1`, *sponsorID).Scan(&allowed, &earned, &limit); err != nil {
 			return fmt.Errorf("sponsor kariyeri okunamadı: %w", err)
 		}
-		if !hasCareer {
+		if allowed > len(matchingRates) {
+			allowed = len(matchingRates)
+		}
+
+		// 1) Kariyer bu nesle izin veriyor mu?
+		if i >= allowed {
+			currentID = *sponsorID
+			continue
+		}
+		// 2) Aylık gelir tavanı (flashout) dolmuş mu?
+		if limit > 0 && earned >= limit {
+			log.WithFields(log.Fields{
+				"earner_id": *sponsorID,
+				"generation": i + 1,
+				"earned":     earned,
+				"limit":      limit,
+			}).Info("Matching atlandı: flashout tavanı dolu")
 			currentID = *sponsorID
 			continue
 		}
@@ -301,6 +330,7 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 			log.WithFields(log.Fields{
 				"earner_id":    *sponsorID,
 				"from_user_id": binaryEarnerID,
+				"generation":   i + 1,
 				"amount":       bonus,
 			}).Info("Matching bonusu ödendi")
 		}
