@@ -38,11 +38,13 @@ func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv
 			nextParentID                     *int64
 			nextPos                          *string
 			pvLeft, pvRight, cvLeft, cvRight float64
+			mPvLeft, mPvRight                float64
 		)
 		err := q.QueryRow(ctx,
-			`SELECT parent_id, position, total_pv_left, total_pv_right, total_cv_left, total_cv_right
+			`SELECT parent_id, position, total_pv_left, total_pv_right, total_cv_left, total_cv_right,
+			        current_month_pv_left, current_month_pv_right
 			 FROM users WHERE id = $1 FOR UPDATE`, currentID).
-			Scan(&nextParentID, &nextPos, &pvLeft, &pvRight, &cvLeft, &cvRight)
+			Scan(&nextParentID, &nextPos, &pvLeft, &pvRight, &cvLeft, &cvRight, &mPvLeft, &mPvRight)
 		if err != nil {
 			return fmt.Errorf("üst hat üyesi okunamadı: %w", err)
 		}
@@ -50,14 +52,17 @@ func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv
 		if pos == "L" {
 			pvLeft += pv
 			cvLeft += cv
+			mPvLeft += pv
 		} else {
 			pvRight += pv
 			cvRight += cv
+			mPvRight += pv
 		}
 
 		if _, err := q.Exec(ctx,
-			`UPDATE users SET total_pv_left = $1, total_pv_right = $2, total_cv_left = $3, total_cv_right = $4, updated_at = NOW() WHERE id = $5`,
-			pvLeft, pvRight, cvLeft, cvRight, currentID); err != nil {
+			`UPDATE users SET total_pv_left = $1, total_pv_right = $2, total_cv_left = $3, total_cv_right = $4,
+			        current_month_pv_left = $5, current_month_pv_right = $6, updated_at = NOW() WHERE id = $7`,
+			pvLeft, pvRight, cvLeft, cvRight, mPvLeft, mPvRight, currentID); err != nil {
 			return fmt.Errorf("üst hat bacakları güncellenemedi: %w", err)
 		}
 
@@ -94,7 +99,7 @@ func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 		monthBinaryEarned float64
 	)
 	err := q.QueryRow(ctx,
-		`SELECT package_id, current_rank_id, total_cv_left, total_cv_right, current_month_binary_earned
+		`SELECT package_id, COALESCE(current_month_rank_id, current_rank_id), total_cv_left, total_cv_right, current_month_binary_earned
 		 FROM users WHERE id = $1 FOR UPDATE`, memberID).
 		Scan(&packageID, &rankID, &cvLeft, &cvRight, &monthBinaryEarned)
 	if err != nil {
@@ -287,7 +292,7 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 				COALESCE(u.current_month_binary_earned, 0) AS earned,
 				COALESCE(r.monthly_binary_limit, 0) AS lim
 			FROM users u
-			LEFT JOIN ranks r ON r.id = u.current_rank_id
+			LEFT JOIN ranks r ON r.id = COALESCE(u.current_month_rank_id, u.current_rank_id)
 			WHERE u.id = $1`, *sponsorID).Scan(&allowed, &earned, &limit); err != nil {
 			return fmt.Errorf("sponsor kariyeri okunamadı: %w", err)
 		}

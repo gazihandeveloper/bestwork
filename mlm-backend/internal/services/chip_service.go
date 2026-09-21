@@ -72,7 +72,7 @@ func (s *ChipService) ResetMonthlyBinaryEarnings() error {
 // aylık kişisel PV sayacını ve aylık Platin kayıt sayacını sıfırlar
 // (ay sonu flashout + aktiflik reseti).
 func resetMonthlyBinaryEarnings(ctx context.Context, q DBTX) error {
-	tag, err := q.Exec(ctx, `UPDATE users SET current_month_binary_earned = 0, current_month_personal_pv = 0, current_month_platinum_count = 0, updated_at = NOW()`)
+	tag, err := q.Exec(ctx, `UPDATE users SET current_month_binary_earned = 0, current_month_personal_pv = 0, current_month_platinum_count = 0, current_month_pv_left = 0, current_month_pv_right = 0, current_month_rank_id = NULL, updated_at = NOW()`)
 	if err != nil {
 		return fmt.Errorf("aylık binary kazanç sıfırlanamadı: %w", err)
 	}

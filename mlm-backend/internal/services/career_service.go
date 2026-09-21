@@ -88,8 +88,31 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 		}
 	}
 
+	// Aylık "tekrar" seviyesi: o ayın bacak PV'sine göre en yüksek seviye.
+	// Kalıcı ünvandan (current_rank_id) bağımsızdır ve düşebilir; flashout ile
+	// matching nesil hakkı bu aylık seviyeye göre uygulanır.
+	if _, err := q.Exec(ctx, `UPDATE users SET current_month_rank_id = NULL WHERE is_active = true`); err != nil {
+		return 0, fmt.Errorf("aylık kariyer sıfırlanamadı: %w", err)
+	}
+	for _, rank := range ranks {
+		for _, uid := range userIDs {
+			ok, err := userQualifiesForRankMonthly(ctx, q, uid, rank)
+			if err != nil {
+				return 0, fmt.Errorf("aylık kariyer kontrolü başarısız (user %d, rank %s): %w", uid, rank.Name, err)
+			}
+			if !ok {
+				continue
+			}
+			if _, err := q.Exec(ctx,
+				`UPDATE users SET current_month_rank_id = $1, updated_at = NOW() WHERE id = $2`,
+				rank.ID, uid); err != nil {
+				return 0, fmt.Errorf("aylık unvan atanamadı: %w", err)
+			}
+		}
+	}
+
 	log.WithFields(log.Fields{"users": len(userIDs), "assignments": assigned}).
-		Info("Kariyerler yeniden hesaplandı (düşme yok)")
+		Info("Kariyerler yeniden hesaplandı (düşme yok) + aylık tekrar seviyesi")
 	return len(userIDs), nil
 }
 
@@ -201,6 +224,75 @@ func countOwnLineageQualifiedInLeg(ctx context.Context, q DBTX, userID int64, le
 		WHERE m.id IN (SELECT id FROM own_lineage)
 		  AND m.id IN (SELECT id FROM leg_subtree)
 		  AND m.current_rank_id = $3`,
+		userID, leg, rankID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// userQualifiesForRankMonthly, aylık "tekrar" seviyesi için o AYIN verisini
+// kullanır: aylık bacak PV'si (current_month_pv_left/right) + aktiflik + alt hat
+// (aylık seviyeler). Kümülatif total_pv_* kullanılmaz.
+func userQualifiesForRankMonthly(ctx context.Context, q DBTX, userID int64, rank models.Rank) (bool, error) {
+	var leftPV, rightPV, monthPV float64
+	if err := q.QueryRow(ctx,
+		`SELECT current_month_pv_left, current_month_pv_right, current_month_personal_pv FROM users WHERE id = $1`,
+		userID).Scan(&leftPV, &rightPV, &monthPV); err != nil {
+		return false, err
+	}
+
+	if leftPV < rank.RequiredLeftPV || rightPV < rank.RequiredRightPV {
+		return false, nil
+	}
+
+	if rank.PersonalActivityPV > 0 && monthPV < rank.PersonalActivityPV {
+		var monthCount int
+		_ = q.QueryRow(ctx, `SELECT current_month_platinum_count FROM users WHERE id = $1`, userID).Scan(&monthCount)
+		if monthCount < activityGoalCount(ctx, q) {
+			return false, nil
+		}
+	}
+
+	if rank.RequiredDownlineCount > 0 && rank.RequiredDownlineRankID != nil {
+		leftCount, err := countOwnLineageMonthlyInLeg(ctx, q, userID, "L", *rank.RequiredDownlineRankID)
+		if err != nil {
+			return false, err
+		}
+		if leftCount < rank.RequiredDownlineCount {
+			return false, nil
+		}
+		rightCount, err := countOwnLineageMonthlyInLeg(ctx, q, userID, "R", *rank.RequiredDownlineRankID)
+		if err != nil {
+			return false, err
+		}
+		if rightCount < rank.RequiredDownlineCount {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+// countOwnLineageMonthlyInLeg, aylık seviyeye (current_month_rank_id) göre sayar.
+func countOwnLineageMonthlyInLeg(ctx context.Context, q DBTX, userID int64, leg string, rankID int) (int, error) {
+	var count int
+	err := q.QueryRow(ctx, `
+		WITH RECURSIVE
+		own_lineage AS (
+			SELECT id FROM users WHERE sponsor_id = $1
+			UNION ALL
+			SELECT u.id FROM users u JOIN own_lineage o ON u.sponsor_id = o.id
+		),
+		leg_subtree AS (
+			SELECT id FROM users WHERE parent_id = $1 AND position = $2
+			UNION ALL
+			SELECT u.id FROM users u JOIN leg_subtree s ON u.parent_id = s.id
+		)
+		SELECT COUNT(*) FROM users m
+		WHERE m.id IN (SELECT id FROM own_lineage)
+		  AND m.id IN (SELECT id FROM leg_subtree)
+		  AND m.current_month_rank_id = $3`,
 		userID, leg, rankID).Scan(&count)
 	if err != nil {
 		return 0, err

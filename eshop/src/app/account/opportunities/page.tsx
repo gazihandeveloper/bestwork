@@ -117,7 +117,8 @@ const earnings = [
     desc: 'Ekibinizin binary kazançlarından, sponsor hattınız boyunca 5 nesle kadar pay alırsınız.',
     details: [
       'Nesil oranları: %20 · %10 · %10 · %10 · %5 (1. → 5. nesil).',
-      'Kariyer basamağı: bir liderin kaç nesle kadar pay alacağını rütbesi belirler (Jade 1 … Emerald ve üzeri 5 nesil).',
+      'Kaç nesle kadar pay alacağın, o ay TEKRARLAYABİLDİĞİN seviyeye göre belirlenir (Jade 1 … Emerald ve üzeri 5 nesil).',
+      'Kalıcı ünvanın düşmez; ama aylık hak, o ay tekrarlanan (en yüksek hak edilen) seviyeden hesaplanır.',
       'Aylık flashout (gelir tavanı) dolan lider, o ay matching primi almaz.',
       'Şartı sağlamayan neslin payı bir üst nesle devredilmez (şirkete kalır).',
       'Matching, alttaki üyenin kazancından kesilmez; şirket ayrıca öder.',
@@ -442,8 +443,9 @@ export default function OpportunitiesPage() {
           )}
 
           <p className="mt-3 text-xs text-gray-400">
-            Flashout; gelir tavanıdır. Rütbenize göre aylık binary kazancı üst sınırı uygulanır; tavanı
-            aşan kazanç o dönem ödenmez ve limit kaydına işlenir.
+            Flashout; gelir tavanıdır. O ay TEKRARLAYABİLDİĞİN seviyenin aylık binary tavanı uygulanır;
+            tavanı aşan kazanç o dönem ödenmez ve limit kaydına işlenir. Kalıcı ünvanın düşmese de tavan,
+            o ay hak edilen (tekrarlanan) seviyeye göre belirlenir.
           </p>
         </div>
       </div>
