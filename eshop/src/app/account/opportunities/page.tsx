@@ -39,6 +39,17 @@ interface RankRow {
   personal_activity_pv: number
 }
 
+interface PackageRow {
+  id: number
+  name: string
+  price: number
+  referral_bonus_rate: number
+  binary_bonus_rate: number
+  discount_rate: number
+  required_pv: number
+  cv: number
+}
+
 const steps = [
   {
     title: '1. Ücretsiz Üye Ol',
@@ -70,7 +81,7 @@ const earnings = [
     desc: 'Doğrudan davet ettiğiniz her üyenin ödenmiş sipariş CV’sinden, paketinizin referans oranı kadar anında kazanırsınız.',
     details: [
       'Kapsam: yalnızca 1. nesil (doğrudan sponsor olduğunuz üyeler).',
-      'Oran pakete göre: Starter/Bronze %15 · Gümüş/Altın %20 · Platin %22.',
+      'Oran paketinize göre değişir (aşağıdaki “Paketler ve Prim Oranlarınız” tablosuna bakın).',
       'Prim, üyenin siparişi ödendiği an cüzdanınıza yansır.',
     ],
   },
@@ -83,7 +94,7 @@ const earnings = [
     desc: 'Sol ve sağ bacaklarınızda biriken CV’ler eşleştiğinde, eşleşen CV tutarı üzerinden paket oranınız kadar kazanırsınız.',
     details: [
       'Eşleşme: min(sol CV, sağ CV) kadar CV eşleşir, eşleşmeyen bakiye bacakta kalır (carry).',
-      'Oran pakete göre: Starter %4 · Bronze %7 · Gümüş %9 · Altın %11 · Platin %13.',
+      'Oran paketinize göre değişir (aşağıdaki tablo).',
       'Eşleşme, sipariş anında ve ay sonu toplu kapanışta çalışır.',
       'Rütbenize göre aylık binary kazanç limiti uygulanır (aşağıdaki tablo).',
     ],
@@ -128,14 +139,6 @@ const earnings = [
   },
 ]
 
-const packages = [
-  { name: 'Starter', price: 250, referral: 15, binary: 4, discount: 15 },
-  { name: 'Bronze', price: 500, referral: 15, binary: 7, discount: 15 },
-  { name: 'Gümüş', price: 1300, referral: 20, binary: 9, discount: 20 },
-  { name: 'Altın', price: 2500, referral: 20, binary: 11, discount: 20 },
-  { name: 'Platin', price: 5000, referral: 22, binary: 13, discount: 25 },
-]
-
 const rules = [
   {
     icon: <Scale size={18} />,
@@ -160,17 +163,19 @@ const rules = [
 ]
 
 const fmt = (v: number) => (Number(v) || 0).toLocaleString('tr-TR')
+const pct = (v: number) => `%${Math.round((Number(v) || 0) * 100)}`
 
 export default function OpportunitiesPage() {
   const [ranks, setRanks] = useState<RankRow[]>([])
+  const [pkgs, setPkgs] = useState<PackageRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    get<RankRow[]>('/eshop/ranks')
-      .then((r) => {
-        if (r.success && Array.isArray(r.data)) setRanks(r.data)
+    Promise.allSettled([get<RankRow[]>('/eshop/ranks'), get<PackageRow[]>('/eshop/packages')])
+      .then(([rr, pr]) => {
+        if (rr.status === 'fulfilled' && rr.value.success && Array.isArray(rr.value.data)) setRanks(rr.value.data)
+        if (pr.status === 'fulfilled' && pr.value.success && Array.isArray(pr.value.data)) setPkgs(pr.value.data)
       })
-      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
@@ -271,20 +276,20 @@ export default function OpportunitiesPage() {
             <thead>
               <tr className="border-b border-gray-100 text-left text-[11px] uppercase tracking-wide text-gray-400">
                 <th className="px-4 py-3 fw-700">Paket</th>
-                <th className="px-4 py-3 fw-700">Fiyat</th>
+                <th className="px-4 py-3 fw-700">Gerekli PV</th>
                 <th className="px-4 py-3 fw-700">Referans Primi</th>
                 <th className="px-4 py-3 fw-700">Binary Primi</th>
                 <th className="px-4 py-3 fw-700">Alışveriş İndirimi</th>
               </tr>
             </thead>
             <tbody>
-              {packages.map((p) => (
-                <tr key={p.name} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60">
+              {pkgs.map((p) => (
+                <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60">
                   <td className="px-4 py-3 text-gray-900 fw-700">{p.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{fmt(p.price)} ₺</td>
-                  <td className="px-4 py-3 text-brand-700 fw-700">%{p.referral}</td>
-                  <td className="px-4 py-3 text-blue-600 fw-700">%{p.binary}</td>
-                  <td className="px-4 py-3 text-violet-600 fw-700">%{p.discount}</td>
+                  <td className="px-4 py-3 text-gray-600">{fmt(p.required_pv)} PV</td>
+                  <td className="px-4 py-3 text-brand-700 fw-700">{pct(p.referral_bonus_rate)}</td>
+                  <td className="px-4 py-3 text-blue-600 fw-700">{pct(p.binary_bonus_rate)}</td>
+                  <td className="px-4 py-3 text-violet-600 fw-700">{pct(p.discount_rate)}</td>
                 </tr>
               ))}
             </tbody>
