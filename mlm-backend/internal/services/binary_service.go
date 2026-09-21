@@ -257,17 +257,13 @@ func logFlashoutViolation(ctx context.Context, q DBTX, memberID int64, period st
 }
 
 // DistributeMatchingBonus binary kazanan üyenin sponsor zincirine 5 nesil
-// boyunca matching (liderlik) bonusu dağıtır. Oranlar nesile göre
-// %20/%10/%10/%10/%5'tir. Bir üyenin kaç nesile kadar pay alacağı KARİYER
-// basamağına bağlıdır (kademeli):
-//
-//	Jade=1 nesil, Pearl=2, Sapphire=3, Ruby=4, Emerald ve üzeri=5 nesil.
-//
-// Kariyersiz üst hat pay almaz (pay devredilmez, şirkete kalır).
+// boyunca matching (liderlik) bonusu dağıtır. Her nesil yalnızca kariyer sahibi
+// (Jade+) ise pay alır; kariyeri olmayan nesil pay almaz ve payı devredilmez
+// (şirkete kalır).
 func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, amount float64) error {
 	currentID := binaryEarnerID
 
-	for i, rate := range matchingRates {
+	for _, rate := range matchingRates {
 		var sponsorID *int64
 		if err := q.QueryRow(ctx, `SELECT sponsor_id FROM users WHERE id = $1`, currentID).Scan(&sponsorID); err != nil {
 			return fmt.Errorf("sponsor okunamadı: %w", err)
@@ -276,25 +272,13 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 			break // sponsor zinciri sona erdi
 		}
 
-		// Kariyer basamağına göre üyenin alabileceği nesil sayısını bul:
-		// kendi rütbesinden küçük/eşit PV eşiği olan rütbe sayısı (en çok 5).
-		var allowed int
-		if err := q.QueryRow(ctx, `
-			SELECT COALESCE((
-				SELECT COUNT(*) FROM ranks r2
-				WHERE r2.required_left_pv <= r.required_left_pv
-			), 0)
-			FROM users u
-			LEFT JOIN ranks r ON r.id = u.current_rank_id
-			WHERE u.id = $1`, *sponsorID).Scan(&allowed); err != nil {
+		// Liderlik primi yalnızca kariyer sahibi (Jade+) üst hatta ödenir.
+		// Kariyeri olmayan nesil pay almaz; pay DEVREDİLMEZ (şirkete kalır).
+		var hasCareer bool
+		if err := q.QueryRow(ctx, `SELECT (current_rank_id IS NOT NULL) FROM users WHERE id = $1`, *sponsorID).Scan(&hasCareer); err != nil {
 			return fmt.Errorf("sponsor kariyeri okunamadı: %w", err)
 		}
-		if allowed > len(matchingRates) {
-			allowed = len(matchingRates)
-		}
-
-		// Bu nesil (i) üyenin kariyeri için açık mı?
-		if i >= allowed {
+		if !hasCareer {
 			currentID = *sponsorID
 			continue
 		}
@@ -317,7 +301,6 @@ func DistributeMatchingBonus(ctx context.Context, q DBTX, binaryEarnerID int64, 
 			log.WithFields(log.Fields{
 				"earner_id":    *sponsorID,
 				"from_user_id": binaryEarnerID,
-				"generation":   i + 1,
 				"amount":       bonus,
 			}).Info("Matching bonusu ödendi")
 		}
