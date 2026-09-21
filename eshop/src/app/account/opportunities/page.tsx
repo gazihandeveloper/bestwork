@@ -1,5 +1,5 @@
 // ============================================
-// BestWork - Kazanç Planı (İş Fırsatları)
+// BestWork - Kazanç Planı (İş Fırsatları) — detaylı
 // ============================================
 'use client'
 
@@ -24,6 +24,10 @@ import {
   ShieldCheck,
   Scale,
   TrendingUp,
+  Wallet,
+  RotateCcw,
+  Layers,
+  Clock,
 } from '@/components/icons'
 import AccountTopMenu from '@/components/AccountTopMenu'
 import { get } from '@/lib/api'
@@ -37,6 +41,7 @@ interface RankRow {
   required_downline_rank_id: number | null
   required_downline_count: number
   personal_activity_pv: number
+  career_bonus_amount: number
 }
 
 interface PackageRow {
@@ -74,15 +79,17 @@ const steps = [
 const earnings = [
   {
     title: 'Referans (Sponsor) Primi',
-    tag: 'Doğrudan sponsorluk',
+    tag: '1. nesil · anında',
     icon: <Users size={20} />,
     cls: 'bg-green-50 text-green-600',
     ring: 'border-green-100',
     desc: 'Doğrudan davet ettiğiniz her üyenin ödenmiş sipariş CV’sinden, paketinizin referans oranı kadar anında kazanırsınız.',
     details: [
-      'Kapsam: yalnızca 1. nesil (doğrudan sponsor olduğunuz üyeler).',
-      'Oran paketinize göre değişir (aşağıdaki “Paketler ve Prim Oranlarınız” tablosuna bakın).',
-      'Prim, üyenin siparişi ödendiği an cüzdanınıza yansır.',
+      'Kapsam: yalnızca doğrudan sponsorunuz olduğunuz üyeler (1. nesil).',
+      'Hesap: siparişin CV tutarı × paketinizin referans oranı.',
+      'Ödeme: üyenin siparişi ödendiği an cüzdana “referral” olarak işlenir.',
+      'Sponsorun paketi yoksa prim ödenmez; aynı sipariş için ikinci kez ödenmez.',
+      'Oran paketinize göre değişir — aşağıdaki “Paketler ve Prim Oranları” tablosuna bakın.',
     ],
   },
   {
@@ -91,12 +98,14 @@ const earnings = [
     icon: <GitFork size={20} />,
     cls: 'bg-blue-50 text-blue-600',
     ring: 'border-blue-100',
-    desc: 'Sol ve sağ bacaklarınızda biriken CV’ler eşleştiğinde, eşleşen CV tutarı üzerinden paket oranınız kadar kazanırsınız.',
+    desc: 'Sol ve sağ bacaklarınızda biriken CV’ler eşleştiğinde, eşleşen CV üzerinden paket oranınız kadar kazanırsınız.',
     details: [
-      'Eşleşme: min(sol CV, sağ CV) kadar CV eşleşir, eşleşmeyen bakiye bacakta kalır (carry).',
-      'Oran paketinize göre değişir (aşağıdaki tablo).',
-      'Eşleşme, sipariş anında ve ay sonu toplu kapanışta çalışır.',
-      'Rütbenize göre aylık binary kazanç limiti uygulanır (aşağıdaki tablo).',
+      'Eşleşme tutarı: min(Sol CV, Sağ CV).',
+      'Hesap: eşleşen CV × paketinizin binary oranı.',
+      'Eşleşen kadar CV her iki bacaktan düşülür; eşleşmeyen bakiye bacakta kalır (carry-over).',
+      'Kapanış: eşleşme hem sipariş anında hem ay sonu toplu kapanışta çalışır.',
+      'Paketiniz yoksa binary ödenmez ve CV tüketilmez.',
+      'Oranınız pakete göre değişir — aşağıdaki tabloya bakın.',
     ],
   },
   {
@@ -108,7 +117,8 @@ const earnings = [
     desc: 'Ekibinizin binary kazançlarından, sponsor hattınız boyunca 5 nesle kadar pay alırsınız.',
     details: [
       'Nesil oranları: %20 · %10 · %10 · %10 · %5 (1. → 5. nesil).',
-      'Yalnızca kariyer sahibi (Jade ve üzeri) üst hat pay alır; kariyersiz nesil pay almaz.',
+      'Şart: yalnızca kariyer sahibi (Jade ve üzeri) üst hat pay alır.',
+      'Kariyersiz nesil pay almaz; bu pay bir üst nesle devredilmez.',
       'Matching, alttaki üyenin kazancından kesilmez; şirket ayrıca öder.',
     ],
   },
@@ -120,9 +130,10 @@ const earnings = [
     ring: 'border-violet-100',
     desc: 'Sizin sponsorluğunuzda üye olan müşterilerin siparişlerinden, paketinizin referans oranı kadar kazanırsınız.',
     details: [
-      'Müşteri sipariş CV’si üzerinden, doğrudan sponsora ödenir.',
-      'Müşteri siparişlerinin PV’si sponsorun birikimli PV’sine eklenir.',
-      'Müşteriler binary ağaca girmez; kazanç perakende kanalından gelir.',
+      'Müşteri sipariş CV’si üzerinden doğrudan sponsora ödenir (referans oranıyla).',
+      'Müşteri siparişlerinin PV’si sponsorun birikimli PV’sine eklenir (paket yükseltir).',
+      'Müşteriler binary ağaca girmez; ayrı “retail” kaleminden kazanç sağlar.',
+      'Perakende siparişlerinde paket alışveriş indirimi uygulanmaz.',
     ],
   },
   {
@@ -133,9 +144,42 @@ const earnings = [
     ring: 'border-rose-100',
     desc: 'Yeni bir kariyer basamağına ilk kez ulaştığınızda tek seferlik kariyer primi kazanırsınız.',
     details: [
-      'Her rütbe için ömür boyu yalnızca ilk ulaşımda ödenir.',
-      'Prim, cüzdanınıza ve prim geçmişinize “career” olarak işlenir.',
+      'Her rütbe için ömür boyu yalnızca ilk kez ulaşımda ödenir.',
+      'Rütbe düşüp yeniden yükselseniz bile aynı rütbenin primi tekrar ödenmez.',
+      'Prim, cüzdana “career” olarak işlenir; prim geçmişinde görünür.',
     ],
+  },
+]
+
+const limitNotes = [
+  'Aylık Binary Limiti: Rütbenize göre belirlenen üst sınır (tablo). Aşan kısım o ay ödenmez.',
+  'Flashout (Gelir Tavanı): Günlük/haftalık gelir tavanı tanımlanabilir; tavan aşılırsa fazla kazanç kesilir ve limit kaydına işlenir.',
+  'Kişisel Aktivite: Her ay 250 PV kişisel alışveriş veya hedef paket seviyesinde 2 alt üye kaydı.',
+  'CV Tüketimi: Eşleşen CV her iki bacaktan düşülür; carry bakiye sonraki döneme taşınır.',
+  'Paket Şartı: Paketiniz yoksa binary ve matching primleri oluşmaz.',
+  'İade/İptal: Sipariş iptal edilirse o siparişten doğan primler geri alınır.',
+]
+
+const lifecycle = [
+  {
+    icon: <Layers size={18} />,
+    title: 'Yerleşim Havuzu',
+    desc: 'Üye olunca otomatik ağaca yerleşmez. Ödenmiş ilk sipariş sonrası yerleşim havuzuna girer; yerleşince birikmiş PV/CV üst hatta dağıtılır.',
+  },
+  {
+    icon: <Network size={18} />,
+    title: 'Sponsor Değişimi',
+    desc: 'Sponsor değiştirilirse üye alt ağacı yoksa ağaçtan çıkar ve yerleşim havuzuna geri döner.',
+  },
+  {
+    icon: <RotateCcw size={18} />,
+    title: 'Respawn (Yeniden Üyelik)',
+    desc: 'En az 1 yıllık üyelik ve son 1 yılda ürün alımı/üye kaydı yoksa yeni sponsor ve yeni üye numarasıyla sıfırdan başvuru hakkı doğar.',
+  },
+  {
+    icon: <Wallet size={18} />,
+    title: 'Cüzdan ve Çekim',
+    desc: 'Tüm primler TL olarak cüzdana işlenir. Çekim talebi onaylandığında bakiyeden düşülür; minimum çekim 750 ₺’dir.',
   },
 ]
 
@@ -143,23 +187,43 @@ const rules = [
   {
     icon: <Scale size={18} />,
     title: 'Aktiflik Şartı',
-    desc: 'Her ay kariyerinizi korumak için 250 PV kişisel alışveriş ya da hedef paket seviyesinde 2 alt üye kaydı gerekir.',
+    desc: 'Kariyeri korumak için her ay 250 PV kişisel alışveriş ya da hedef pakette 2 alt üye kaydı gerekir; sağlanmazsa rütbe düşer.',
   },
   {
     icon: <ShieldCheck size={18} />,
     title: 'Aylık Binary Limiti',
-    desc: 'Rütbenize göre belirlenen aylık binary kazancı üst sınırı vardır; sınırı aşan kazanç o ay ödenmez.',
+    desc: 'Rütbenize göre aylık binary kazancı üst sınırı uygulanır; sınırı aşan kazanç o ay ödenmez.',
+  },
+  {
+    icon: <Clock size={18} />,
+    title: 'Flashout',
+    desc: 'Tanımlandıysa günlük/haftalık gelir tavanı uygulanır; tavanı aşan tutar kesilir.',
   },
   {
     icon: <Percent size={18} />,
     title: 'Paket İndirimi',
-    desc: 'Paket sahibi üyeler siparişlerinde paket indiriminden yararlanır; perakende (müşteri) siparişlerinde indirim uygulanmaz.',
+    desc: 'Paket sahibi üyeler siparişlerinde indirim kazanır; perakende (müşteri) siparişlerinde indirim yoktur.',
   },
   {
     icon: <TrendingUp size={18} />,
-    title: 'Cüzdan ve Çekim',
-    desc: 'Tüm primler TL olarak cüzdanınıza işlenir; minimum çekim tutarı 750 TL’dir.',
+    title: 'Ay Sonu Yeniden Hesap',
+    desc: 'Kariyerler her ay sonu yeniden hesaplanır; aktiflik ve bacak şartlarını sağlayanlar rütbesini korur/yükseltir.',
   },
+  {
+    icon: <Sparkles size={18} />,
+    title: 'Şeffaf Prim Geçmişi',
+    desc: 'Tüm primler (referral, binary, matching, retail, career) cüzdan ve prim detayları sayfasında listelenir.',
+  },
+]
+
+const glossary = [
+  { k: 'PV', v: 'Puan (kişisel hacim). Siparişlerden kazanılır; bacak ve paket hesaplarında kullanılır.' },
+  { k: 'CV', v: 'Komisyon hacmi. Prim hesaplarında esas alınır (1 PV = 1 CV).' },
+  { k: 'Bacak', v: 'Binary ağacınızdaki sol ve sağ kollar. PV/CV bacaklarda birikir.' },
+  { k: 'Eşleşme', v: 'Sol ve sağ bacaktaki CV’lerin min() ile karşılıklı düşülmesi.' },
+  { k: 'Carry', v: 'Eşleşmeyen bakiye. Bacakta kalır ve sonraki dönemde eşleşir.' },
+  { k: 'Flashout', v: 'Gelir tavanı. Tanımlı limiti aşan kazanç ödenmez.' },
+  { k: 'Nesil', v: 'Sponsor zincirinde yukarı doğru kuşak (1. nesil = doğrudan sponsorunuz).' },
 ]
 
 const fmt = (v: number) => (Number(v) || 0).toLocaleString('tr-TR')
@@ -211,12 +275,12 @@ export default function OpportunitiesPage() {
           <Sparkles size={26} />
         </span>
         <h2 className="text-3xl font-extrabold">Kazanç Planı</h2>
-        <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-emerald-200">
-          Bestwork; e-ticaret ile ağ pazarlamayı birleştirir. Alışveriş yapın, üye davet edin ve
-          beş ayrı kazanç kalemiyle gelirinizi büyütün: referans, binary, liderlik, perakende ve kariyer.
+        <p className="mx-auto mt-2 max-w-3xl text-sm leading-relaxed text-emerald-200">
+          Bestwork; e-ticaret ile ağ pazarlamayı birleştirir. Alışveriş yapın, üye davet edin ve beş
+          ayrı kazanç kalemiyle gelirinizi büyütün: referans, binary, liderlik, perakende ve kariyer.
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
-          {['Anında prim', '5 nesil liderlik', '12 kariyer basamağı', '₺ cüzdan'].map((t) => (
+          {['Anında prim', '5 nesil liderlik', '12 kariyer basamağı', 'Carry-over', '₺ cüzdan', 'min. 750 ₺ çekim'].map((t) => (
             <span key={t} className="rounded-full bg-white/10 px-3 py-1 text-emerald-100">{t}</span>
           ))}
         </div>
@@ -269,17 +333,18 @@ export default function OpportunitiesPage() {
       {/* Paketler */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-gray-900">
-          <Package size={20} className="text-brand-600" /> Paketler ve Prim Oranlarınız
+          <Package size={20} className="text-brand-600" /> Paketler ve Prim Oranları
         </h3>
         <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <table className="w-full min-w-[560px] text-sm">
+          <table className="w-full min-w-[680px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left text-[11px] uppercase tracking-wide text-gray-400">
                 <th className="px-4 py-3 fw-700">Paket</th>
                 <th className="px-4 py-3 fw-700">Gerekli PV</th>
-                <th className="px-4 py-3 fw-700">Referans Primi</th>
-                <th className="px-4 py-3 fw-700">Binary Primi</th>
-                <th className="px-4 py-3 fw-700">Alışveriş İndirimi</th>
+                <th className="px-4 py-3 fw-700">CV</th>
+                <th className="px-4 py-3 fw-700">Referans</th>
+                <th className="px-4 py-3 fw-700">Binary</th>
+                <th className="px-4 py-3 fw-700">İndirim</th>
               </tr>
             </thead>
             <tbody>
@@ -287,6 +352,7 @@ export default function OpportunitiesPage() {
                 <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60">
                   <td className="px-4 py-3 text-gray-900 fw-700">{p.name}</td>
                   <td className="px-4 py-3 text-gray-600">{fmt(p.required_pv)} PV</td>
+                  <td className="px-4 py-3 text-gray-600">{fmt(p.cv)}</td>
                   <td className="px-4 py-3 text-brand-700 fw-700">{pct(p.referral_bonus_rate)}</td>
                   <td className="px-4 py-3 text-blue-600 fw-700">{pct(p.binary_bonus_rate)}</td>
                   <td className="px-4 py-3 text-violet-600 fw-700">{pct(p.discount_rate)}</td>
@@ -297,13 +363,14 @@ export default function OpportunitiesPage() {
         </div>
         <p className="mt-2 text-xs text-gray-400">
           Paketiniz, birikimli PV’niz arttıkça otomatik yükselir. Referans oranı perakende (müşteri) kazancında da geçerlidir.
+          Perakende oranı (matching etkisi) paket bazında ayrıca tanımlanabilir.
         </p>
       </div>
 
       {/* Kariyer seviyeleri */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-gray-900">
-          <Trophy size={20} className="text-amber-500" /> Kariyer Seviyeleri ve Sınırlar
+          <Trophy size={20} className="text-amber-500" /> Kariyer Seviyeleri ve Eşikler
         </h3>
         {loading ? (
           <div className="py-10 text-center">
@@ -313,7 +380,7 @@ export default function OpportunitiesPage() {
           <p className="text-sm text-gray-400">Rütbe tanımı bulunamadı.</p>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <table className="w-full min-w-[760px] text-sm">
+            <table className="w-full min-w-[860px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 text-left text-[11px] uppercase tracking-wide text-gray-400">
                   <th className="px-4 py-3 fw-700">Kariyer</th>
@@ -321,6 +388,7 @@ export default function OpportunitiesPage() {
                   <th className="px-4 py-3 fw-700">Alt Hat Şartı</th>
                   <th className="px-4 py-3 fw-700">Kişisel Aktivite</th>
                   <th className="px-4 py-3 fw-700">Aylık Binary Limiti</th>
+                  <th className="px-4 py-3 fw-700">Kariyer Primi</th>
                 </tr>
               </thead>
               <tbody>
@@ -338,6 +406,7 @@ export default function OpportunitiesPage() {
                     <td className="px-4 py-3 text-gray-600">{downlineText(r)}</td>
                     <td className="px-4 py-3 text-gray-600">{fmt(r.personal_activity_pv)} PV</td>
                     <td className="px-4 py-3 text-brand-700 fw-700">{fmt(r.monthly_binary_limit)} ₺</td>
+                    <td className="px-4 py-3 text-rose-600 fw-600">{r.career_bonus_amount > 0 ? 'Tek seferlik' : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -345,26 +414,70 @@ export default function OpportunitiesPage() {
           </div>
         )}
         <p className="mt-2 text-xs text-gray-400">
-          Sol/Sağ PV sütunları bacaklarınızdaki toplam PV’dir. Alt hat şartı, her bacakta ayrı ayrı
-          belirtilen rütbeye ulaşan üye sayısıdır.
+          Sol/Sağ PV: bacaklarınızdaki toplam PV. Alt Hat Şartı: her bacakta ayrı ayrı belirtilen rütbeye
+          ulaşan üye sayısı. Kişisel Aktivite: o ay kendi alışverişinizden gereken PV.
         </p>
       </div>
 
-      {/* Kurallar */}
+      {/* Limitler / Flashout */}
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-gray-900">
-          <Network size={20} className="text-brand-600" /> Bilmeniz Gerekenler
+          <ShieldCheck size={20} className="text-brand-600" /> Limitler, Flashout ve Kurallar
+        </h3>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            {limitNotes.map((t) => (
+              <li key={t} className="flex items-start gap-2 text-[13px] text-gray-600">
+                <CircleCheck size={15} className="mt-0.5 shrink-0 text-brand-500" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Yaşam döngüsü */}
+      <div>
+        <h3 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-gray-900">
+          <Network size={20} className="text-brand-600" /> Yerleşim, Havuz ve Üyelik Yaşam Döngüsü
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {rules.map((r) => (
+          {lifecycle.map((r) => (
             <div key={r.title} className="flex gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-600">
-                {r.icon}
-              </span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-600">{r.icon}</span>
               <div>
                 <h4 className="font-extrabold text-gray-900">{r.title}</h4>
                 <p className="mt-0.5 text-sm text-gray-500">{r.desc}</p>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Kurallar (kısa) */}
+      <div>
+        <h3 className="mb-3 text-lg font-extrabold text-gray-900">Öne Çıkan Kurallar</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {rules.map((r) => (
+            <div key={r.title} className="flex gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-600">{r.icon}</span>
+              <div>
+                <h4 className="font-extrabold text-gray-900">{r.title}</h4>
+                <p className="mt-0.5 text-sm text-gray-500">{r.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sözlük */}
+      <div>
+        <h3 className="mb-3 text-lg font-extrabold text-gray-900">Terimler Sözlüğü</h3>
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+          {glossary.map((g) => (
+            <div key={g.k} className="rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+              <p className="text-sm font-extrabold text-gray-900">{g.k}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{g.v}</p>
             </div>
           ))}
         </div>
