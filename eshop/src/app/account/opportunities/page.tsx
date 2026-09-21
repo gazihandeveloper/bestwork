@@ -232,22 +232,13 @@ const pct = (v: number) => `%${Math.round((Number(v) || 0) * 100)}`
 export default function OpportunitiesPage() {
   const [ranks, setRanks] = useState<RankRow[]>([])
   const [pkgs, setPkgs] = useState<PackageRow[]>([])
-  const [settings, setSettings] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.allSettled([
-      get<RankRow[]>('/eshop/ranks'),
-      get<PackageRow[]>('/eshop/packages'),
-      get<{ settings: Record<string, string> }>('/settings'),
-    ])
-      .then(([rr, pr, sr]) => {
+    Promise.allSettled([get<RankRow[]>('/eshop/ranks'), get<PackageRow[]>('/eshop/packages')])
+      .then(([rr, pr]) => {
         if (rr.status === 'fulfilled' && rr.value.success && Array.isArray(rr.value.data)) setRanks(rr.value.data)
         if (pr.status === 'fulfilled' && pr.value.success && Array.isArray(pr.value.data)) setPkgs(pr.value.data)
-        if (sr.status === 'fulfilled') {
-          const s = (sr.value as unknown as { settings?: Record<string, string> }).settings
-          if (s) setSettings(s)
-        }
       })
       .finally(() => setLoading(false))
   }, [])
@@ -263,10 +254,6 @@ export default function OpportunitiesPage() {
     const nm = rankNames[r.required_downline_rank_id] || `#${r.required_downline_rank_id}`
     return `${r.required_downline_count}× ${nm}`
   }
-
-  const num = (v?: string) => Number(v || 0)
-  const flashDaily = num(settings.flashout_daily_limit)
-  const flashWeekly = num(settings.flashout_weekly_limit)
 
   return (
     <div className="space-y-4">
@@ -437,24 +424,9 @@ export default function OpportunitiesPage() {
             <ShieldCheck size={18} className="text-brand-600" /> Flashout (Gelir Tavanı) Limitleri
           </h4>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
-              <p className="text-[11px] fw-700 text-gray-400 uppercase">Günlük Kazanç Tavanı</p>
-              <p className="mt-0.5 text-lg font-extrabold text-brand-700">
-                {flashDaily > 0 ? `${fmt(flashDaily)} ₺` : 'Limit yok'}
-              </p>
-            </div>
-            <div className="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
-              <p className="text-[11px] fw-700 text-gray-400 uppercase">Haftalık Kazanç Tavanı</p>
-              <p className="mt-0.5 text-lg font-extrabold text-brand-700">
-                {flashWeekly > 0 ? `${fmt(flashWeekly)} ₺` : 'Limit yok'}
-              </p>
-            </div>
-          </div>
-
           {ranks.length > 0 && (
             <>
-              <p className="mt-4 mb-2 text-[11px] fw-700 text-gray-400 uppercase">
+              <p className="mb-2 text-[11px] fw-700 text-gray-400 uppercase">
                 Rütbeye Göre Aylık Binary Tavanı
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -469,8 +441,8 @@ export default function OpportunitiesPage() {
           )}
 
           <p className="mt-3 text-xs text-gray-400">
-            Flashout; günlük/haftalık/aylık gelir tavanıdır. Tavanı aşan kazanç o dönem ödenmez ve limit
-            kaydına işlenir. Günlük/haftalık tavan tanımlı değilse yalnızca rütbenizin aylık binary tavanı geçerlidir.
+            Flashout; gelir tavanıdır. Rütbenize göre aylık binary kazancı üst sınırı uygulanır; tavanı
+            aşan kazanç o dönem ödenmez ve limit kaydına işlenir.
           </p>
         </div>
       </div>
