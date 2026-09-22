@@ -52,6 +52,8 @@ export default function CommissionsPage() {
   const [items, setItems] = useState<CommissionItem[]>([])
   const [total, setTotal] = useState(0)
   const [type, setType] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -77,6 +79,8 @@ export default function CommissionsPage() {
     setLoading(true)
     const q = new URLSearchParams({ limit: String(limit), offset: String(page * limit) })
     if (type) q.set('type', type)
+    if (from) q.set('from', from)
+    if (to) q.set('to', to)
     rawGet<{ commissions?: CommissionItem[]; total?: number }>(`/commissions?${q.toString()}`)
       .then((r) => {
         if (!alive) return
@@ -94,7 +98,7 @@ export default function CommissionsPage() {
       alive = false
     }
      
-  }, [type, page])
+  }, [type, page, from, to])
 
   const sum =
     Number(totals?.total_referral_earnings) +
@@ -164,6 +168,44 @@ export default function CommissionsPage() {
             {t.label}
           </button>
         ))}
+
+        <label className="ml-1 inline-flex items-center gap-1 text-xs font-bold text-gray-400">
+          Tarih:
+          <input
+            type="date"
+            value={from}
+            max={to || undefined}
+            onChange={(e) => {
+              setFrom(e.target.value)
+              setPage(0)
+            }}
+            className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
+          />
+          <span className="text-gray-300">–</span>
+          <input
+            type="date"
+            value={to}
+            min={from || undefined}
+            onChange={(e) => {
+              setTo(e.target.value)
+              setPage(0)
+            }}
+            className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
+          />
+        </label>
+        {(from || to) && (
+          <button
+            type="button"
+            onClick={() => {
+              setFrom('')
+              setTo('')
+              setPage(0)
+            }}
+            className="cursor-pointer rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            Tarihi Temizle
+          </button>
+        )}
       </div>
 
       {error && (

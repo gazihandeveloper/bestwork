@@ -19,9 +19,10 @@ func NewCommissionService(db *pgxpool.Pool) *CommissionService {
 	return &CommissionService{db: db}
 }
 
-// ListUserCommissions kullanıcının komisyon geçmişini tip/durum filtreleri ve
-// sayfalama ile döndürür. Toplam kayıt sayısını da verir.
-func (s *CommissionService) ListUserCommissions(ctx context.Context, userID int64, commissionType, status string, limit, offset int) ([]models.Commission, int64, error) {
+// ListUserCommissions kullanıcının komisyon geçmişini tip/durum ve tarih
+// aralığı filtreleri ve sayfalama ile döndürür. Toplam kayıt sayısını da verir.
+// from/to "YYYY-MM-DD" biçiminde opsiyoneldir; verilirse created_at süzülür.
+func (s *CommissionService) ListUserCommissions(ctx context.Context, userID int64, commissionType, status, from, to string, limit, offset int) ([]models.Commission, int64, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
@@ -39,6 +40,14 @@ func (s *CommissionService) ListUserCommissions(ctx context.Context, userID int6
 	if status != "" {
 		args = append(args, status)
 		where += fmt.Sprintf(` AND status = $%d`, len(args))
+	}
+	if from != "" {
+		args = append(args, from)
+		where += fmt.Sprintf(` AND created_at >= $%d::date`, len(args))
+	}
+	if to != "" {
+		args = append(args, to)
+		where += fmt.Sprintf(` AND created_at < ($%d::date + INTERVAL '1 day')`, len(args))
 	}
 
 	var total int64

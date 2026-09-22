@@ -48,7 +48,10 @@ func (h *CommissionHandler) List(c *gin.Context) {
 		return
 	}
 
-	commissions, total, err := h.commissions.ListUserCommissions(c.Request.Context(), userID, commissionType, status, limit, offset)
+	from := c.Query("from")
+	to := c.Query("to")
+
+	commissions, total, err := h.commissions.ListUserCommissions(c.Request.Context(), userID, commissionType, status, from, to, limit, offset)
 	if err != nil {
 		log.WithError(err).Error("Komisyon geçmişi getirilemedi")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Komisyon geçmişi getirilemedi"})
