@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
-import { BoxIcon, ChevronDownIcon, CircleUserIcon, CubeIcon, DollarSignIcon, GearIcon, HouseIcon } from "@/components/icons";
+import { BoxIcon, CalendarDaysIcon, ChevronDownIcon, CircleUserIcon, CubeIcon, DollarSignIcon, GearIcon, HouseIcon } from "@/components/icons";
 
 type NavItem = {
   name: string;
@@ -48,8 +48,12 @@ const navItems: NavItem[] = [
       { name: "Prim", path: "/prim", pro: false },
       { name: "Kariyer Bonusu", path: "/kariyer-bonusu", pro: false },
       { name: "Flash-Out", path: "/flashout", pro: false },
-      { name: "Raporlar", path: "/raporlar", pro: false },
     ],
+  },
+  {
+    icon: <CalendarDaysIcon />,
+    name: "Raporlar",
+    path: "/raporlar",
   },
   {
     icon: <GearIcon />,
