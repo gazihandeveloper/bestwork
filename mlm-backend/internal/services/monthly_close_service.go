@@ -78,6 +78,12 @@ func (s *MonthlyCloseService) processClose(ctx context.Context, q DBTX) error {
 		}
 	}
 
+	// 3) Flashout flush: aylık tavanı aşan üyelerin zayıf kol CV'lerini sıfırla
+	//    (tavan üstü zayıf kol puanı sonraki aya devretmez).
+	if err := flushWeakLegCV(ctx, q); err != nil {
+		return err
+	}
+
 	log.WithField("users_processed", len(userIDs)).Info("Aylık kapanış: kariyer + binary eşleşme tamamlandı")
 	return nil
 }

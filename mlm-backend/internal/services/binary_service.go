@@ -13,6 +13,26 @@ import (
 // matchingRates 5 nesil matching bonusu oranlarıdır (%20, %10, %10, %10, %5).
 var matchingRates = []float64{0.20, 0.10, 0.10, 0.10, 0.05}
 
+// defaultMonthlyFlashoutLimit zayıf kol (kısa kol) eşleşme primi için aylık
+// sabit ödeme tavanıdır (TL). Bu tutara ulaşıldığında ilgili ay için ödeme
+// kesilir ve tavana karşılık gelen cironun üzerinde kalan zayıf kol CV'si
+// dönem sonunda flush edilir (şirkete kalır, sonraki aya devretmez).
+// Ayarlar tablosundaki "flashout_monthly_limit" anahtarı ile geçersiz
+// kılınabilir; tanımlı değilse bu sabit kullanılır.
+const defaultMonthlyFlashoutLimit = 3_500_000.0
+
+// monthlyFlashoutLimit aylık flashout tavanını settings tablosundan okur;
+// anahtar yoksa/geçersizse sabit varsayılanı (3.500.000 TL) döndürür.
+func monthlyFlashoutLimit(ctx context.Context, q DBTX) float64 {
+	var raw string
+	if err := q.QueryRow(ctx, `SELECT value FROM settings WHERE key = 'flashout_monthly_limit'`).Scan(&raw); err == nil {
+		if v, err := strconv.ParseFloat(raw, 64); err == nil && v > 0 {
+			return v
+		}
+	}
+	return defaultMonthlyFlashoutLimit
+}
+
 // DistributePVAndCVToUpline kullanıcının parent'ından başlayarak köke kadar
 // tüm üst hattaki üyelerin ilgili bacaklarına PV/CV ekler ve her ekleme için
 // binary_transactions tablosuna hareket kaydı yazar.
@@ -94,14 +114,13 @@ func DistributePVAndCVToUpline(ctx context.Context, q DBTX, userID int64, pv, cv
 func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 	var (
 		packageID         *int
-		rankID            *int
 		cvLeft, cvRight   float64
 		monthBinaryEarned float64
 	)
 	err := q.QueryRow(ctx,
-		`SELECT package_id, COALESCE(current_month_rank_id, current_rank_id), total_cv_left, total_cv_right, current_month_binary_earned
+		`SELECT package_id, total_cv_left, total_cv_right, current_month_binary_earned
 		 FROM users WHERE id = $1 FOR UPDATE`, memberID).
-		Scan(&packageID, &rankID, &cvLeft, &cvRight, &monthBinaryEarned)
+		Scan(&packageID, &cvLeft, &cvRight, &monthBinaryEarned)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrUserNotFound
@@ -132,18 +151,15 @@ func MatchBinary(ctx context.Context, q DBTX, memberID int64) error {
 
 	binaryBonus := round2(float64(matched) * rate)
 
-	// Flashout limiti: güncel rütbenin aylık limiti
-	if rankID != nil {
-		var limit float64
-		if err := q.QueryRow(ctx, `SELECT monthly_binary_limit FROM ranks WHERE id = $1`, *rankID).Scan(&limit); err != nil {
-			return fmt.Errorf("rütbe okunamadı: %w", err)
+	// Flashout (aylık sabit tavan): zayıf kol eşleşme priminde aylık üst sınır
+	// 3.500.000 TL'dir. Bu tutara ulaşıldığında ilgili ay için ödeme kesilir;
+	// tavana karşılık gelen cironun üzerindeki zayıf kol CV'si dönem sonunda
+	// flush edilir (bkz. flushWeakLegCV).
+	if remaining := monthlyFlashoutLimit(ctx, q) - monthBinaryEarned; binaryBonus > remaining {
+		if remaining < 0 {
+			remaining = 0
 		}
-		if limit > 0 {
-			remaining := limit - monthBinaryEarned
-			if binaryBonus > remaining {
-				binaryBonus = remaining
-			}
-		}
+		binaryBonus = remaining
 	}
 
 	// Flashout/cap: settings'ten günlük ve haftalık üst kazanç limitleri (0 = kapalı).
@@ -259,6 +275,27 @@ func logFlashoutViolation(ctx context.Context, q DBTX, memberID int64, period st
 		memberID, period, limit, earned, capped); err != nil {
 		log.WithError(err).WithField("member_id", memberID).Warn("Flashout ihlali kaydedilemedi")
 	}
+}
+
+// flushWeakLegCV aylık flashout tavanına ulaşan üyelerin zayıf kol (kısa kol)
+// ciro puanlarını (CV) dönem sonunda sıfırlar. Tavan dolduğu için ödenemeyen
+// zayıf kol CV'si böylece şirkete kalır ve sonraki aya devretmez.
+func flushWeakLegCV(ctx context.Context, q DBTX) error {
+	limit := monthlyFlashoutLimit(ctx, q)
+	tag, err := q.Exec(ctx, `
+		UPDATE users
+		SET total_cv_left  = CASE WHEN total_cv_left <= total_cv_right THEN 0 ELSE total_cv_left END,
+		    total_cv_right = CASE WHEN total_cv_right < total_cv_left THEN 0 ELSE total_cv_right END,
+		    updated_at = NOW()
+		WHERE is_active = true AND current_month_binary_earned >= $1`, limit)
+	if err != nil {
+		return fmt.Errorf("zayıf kol CV flush başarısız: %w", err)
+	}
+	log.WithFields(log.Fields{
+		"rows":  tag.RowsAffected(),
+		"limit": limit,
+	}).Info("Flashout: aylık tavanı aşan zayıf kol CV'leri flush edildi")
+	return nil
 }
 
 // DistributeMatchingBonus binary kazanan üyenin sponsor zincirine 5 nesil
