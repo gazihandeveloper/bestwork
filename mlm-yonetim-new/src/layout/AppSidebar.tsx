@@ -287,7 +287,7 @@ const AppSidebar: React.FC = () => {
                   ®
                 </span>
               </span>
-              <span className="mt-1.5 text-[12px] font-bold tracking-[0.18em] text-gray-700 dark:text-gray-300">
+              <span className="mt-1.5 -translate-x-2 text-[12px] font-bold tracking-[0.18em] text-gray-700 dark:text-gray-300">
                 YÖNETİM MERKEZİ
               </span>
             </span>
