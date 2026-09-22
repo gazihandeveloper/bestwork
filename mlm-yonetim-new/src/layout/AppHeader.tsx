@@ -71,7 +71,7 @@ const AppHeader: React.FC = () => {
                   ®
                 </span>
               </span>
-              <span className="mt-1 -translate-x-4 text-[10px] font-bold tracking-[0.18em] text-gray-700 dark:text-gray-300">
+              <span className="mt-1 -translate-x-2 text-[10px] font-bold tracking-[0.18em] text-gray-700 dark:text-gray-300">
                 YÖNETİM MERKEZİ
               </span>
             </span>
