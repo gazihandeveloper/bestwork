@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
       { name: "Çekim Talepleri", path: "/cekimler", pro: false },
       { name: "Prim", path: "/prim", pro: false },
       { name: "Kariyer Bonusu", path: "/kariyer-bonusu", pro: false },
-      { name: "Flashout", path: "/flashout", pro: false },
+      { name: "Flash-Out", path: "/flashout", pro: false },
     ],
   },
   {
