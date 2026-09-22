@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { BoxIcon, CalendarDaysIcon, ChevronDownIcon, CircleUserIcon, CubeIcon, DollarSignIcon, GearIcon, HouseIcon } from "@/components/icons";
+import NetworkIcon from "lucide-react/dist/esm/icons/network.mjs";
 
 type NavItem = {
   name: string;
@@ -54,6 +55,11 @@ const navItems: NavItem[] = [
     icon: <CalendarDaysIcon />,
     name: "Raporlar",
     path: "/raporlar",
+  },
+  {
+    icon: <NetworkIcon />,
+    name: "Ağaç Yönetimi",
+    path: "/agac",
   },
   {
     icon: <GearIcon />,
