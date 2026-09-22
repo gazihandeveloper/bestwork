@@ -59,7 +59,7 @@ export default function FlashoutPage() {
   return (
     <div>
       <AdminHeader
-        title="Flashout (Tavan)"
+        title="Flash-Out"
         subtitle="Zayıf kol (kısa kol) eşleşme priminde aylık maksimum ödeme tavanını belirleyin."
       />
 
