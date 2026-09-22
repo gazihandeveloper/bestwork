@@ -116,12 +116,51 @@ export default function CommissionsPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-gray-900">Prim Detayları</h1>
-        <Link
-          href="/account"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
-        >
-          <House size={16} /> Anasayfa
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex items-center gap-1 text-xs font-bold text-gray-400">
+            Tarih:
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => {
+                setFrom(e.target.value)
+                setPage(0)
+              }}
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
+            />
+            <span className="text-gray-300">–</span>
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => {
+                setTo(e.target.value)
+                setPage(0)
+              }}
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
+            />
+          </label>
+          {(from || to) && (
+            <button
+              type="button"
+              onClick={() => {
+                setFrom('')
+                setTo('')
+                setPage(0)
+              }}
+              className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
+            >
+              Tarihi Temizle
+            </button>
+          )}
+          <Link
+            href="/account"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+          >
+            <House size={16} /> Anasayfa
+          </Link>
+        </div>
       </div>
 
       {/* Özet */}
@@ -168,44 +207,6 @@ export default function CommissionsPage() {
             {t.label}
           </button>
         ))}
-
-        <label className="ml-1 inline-flex items-center gap-1 text-xs font-bold text-gray-400">
-          Tarih:
-          <input
-            type="date"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => {
-              setFrom(e.target.value)
-              setPage(0)
-            }}
-            className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
-          />
-          <span className="text-gray-300">–</span>
-          <input
-            type="date"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => {
-              setTo(e.target.value)
-              setPage(0)
-            }}
-            className="cursor-pointer rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700 focus:border-brand-500 focus:outline-none"
-          />
-        </label>
-        {(from || to) && (
-          <button
-            type="button"
-            onClick={() => {
-              setFrom('')
-              setTo('')
-              setPage(0)
-            }}
-            className="cursor-pointer rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            Tarihi Temizle
-          </button>
-        )}
       </div>
 
       {error && (
