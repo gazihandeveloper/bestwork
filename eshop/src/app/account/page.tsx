@@ -549,7 +549,7 @@ export default function AccountDashboardPage() {
 
             {/* İçerik */}
             <div className="flex flex-col items-center gap-1.5 p-4 pt-3 text-center">
-              <h2 className="text-xl leading-snug font-extrabold text-gray-900 uppercase">{fullName}</h2>
+              <h2 className="text-xl leading-snug font-extrabold text-gray-900">Merhaba, {fullName}</h2>
 
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-0.5 text-xs font-bold">

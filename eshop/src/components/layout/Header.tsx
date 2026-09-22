@@ -160,8 +160,8 @@ export function Header() {
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50 hover:text-brand-500 lg:w-auto lg:justify-start lg:px-2.5"
               >
                 <User size={22} className="lg:hidden" />
-                <span className="hidden text-[13px] leading-none font-bold tracking-wide uppercase lg:block">
-                  {user?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Hesap'}
+                <span className="hidden text-[13px] leading-none font-bold tracking-wide lg:block">
+                  Merhaba, {user?.fullName || user?.email?.split('@')[0] || 'Hesap'}
                 </span>
               </Link>
             ) : (
