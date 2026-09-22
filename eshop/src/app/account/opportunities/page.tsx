@@ -154,8 +154,7 @@ const earnings = [
 ]
 
 const limitNotes = [
-  'Aylık Binary Limiti: Rütbenize göre belirlenen üst sınır (tablo). Aşan kısım o ay ödenmez.',
-  'Flashout (Gelir Tavanı): Günlük/haftalık gelir tavanı tanımlanabilir; tavan aşılırsa fazla kazanç kesilir ve limit kaydına işlenir.',
+  'Flashout (Gelir Tavanı): Tüm kariyerler için ortak aylık maksimum ödeme tavanı 3.500.000 ₺’dir. Tavanı aşan zayıf kol puanları dönem sonunda sıfırlanır (şirkete kalır).',
   'Kişisel Aktivite: Her ay 250 PV kişisel alışveriş veya hedef paket seviyesinde 2 alt üye kaydı.',
   'CV Tüketimi: Eşleşen CV her iki bacaktan düşülür; carry bakiye sonraki döneme taşınır.',
   'Paket Şartı: Paketiniz yoksa binary ve matching primleri oluşmaz.',
@@ -193,13 +192,13 @@ const rules = [
   },
   {
     icon: <ShieldCheck size={18} />,
-    title: 'Aylık Binary Limiti',
-    desc: 'Rütbenize göre aylık binary kazancı üst sınırı uygulanır; sınırı aşan kazanç o ay ödenmez.',
+    title: 'Aylık Flashout Tavanı',
+    desc: 'Kariyerden bağımsız olarak zayıf kol eşleşme priminde aylık maksimum ödeme tavanı 3.500.000 ₺’dir; tavanı aşan kazanç o ay ödenmez.',
   },
   {
     icon: <Clock size={18} />,
-    title: 'Flashout',
-    desc: 'Tanımlandıysa günlük/haftalık gelir tavanı uygulanır; tavanı aşan tutar kesilir.',
+    title: 'Flush (Sıfırlanma)',
+    desc: 'Aylık tavan dolduğunda tavana karşılık gelen cironun üzerindeki zayıf kol puanları dönem sonunda sıfırlanır ve sonraki aya devretmez.',
   },
   {
     icon: <Percent size={18} />,
@@ -224,7 +223,7 @@ const glossary = [
   { k: 'Bacak', v: 'Binary ağacınızdaki sol ve sağ kollar. PV/CV bacaklarda birikir.' },
   { k: 'Eşleşme', v: 'Sol ve sağ bacaktaki CV’lerin min() ile karşılıklı düşülmesi.' },
   { k: 'Carry', v: 'Eşleşmeyen bakiye. Bacakta kalır ve sonraki dönemde eşleşir.' },
-  { k: 'Flashout', v: 'Gelir tavanı. Tanımlı limiti aşan kazanç ödenmez.' },
+  { k: 'Flashout', v: 'Gelir tavanı. Tüm kariyerler için ortak aylık 3.500.000 ₺; aşan kazanç ödenmez, üstü puan flush edilir.' },
   { k: 'Nesil', v: 'Sponsor zincirinde yukarı doğru kuşak (1. nesil = doğrudan sponsorunuz).' },
 ]
 
@@ -387,7 +386,6 @@ export default function OpportunitiesPage() {
                   <th className="px-4 py-3 fw-700">Sol / Sağ PV</th>
                   <th className="px-4 py-3 fw-700">Alt Hat Şartı</th>
                   <th className="px-4 py-3 fw-700">Kişisel Aktivite</th>
-                  <th className="px-4 py-3 fw-700">Aylık Binary Limiti</th>
                   <th className="px-4 py-3 fw-700">Kariyer Primi</th>
                 </tr>
               </thead>
@@ -405,7 +403,6 @@ export default function OpportunitiesPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{downlineText(r)}</td>
                     <td className="px-4 py-3 text-gray-600">{fmt(r.personal_activity_pv)} PV</td>
-                    <td className="px-4 py-3 text-brand-700 fw-700">{fmt(r.monthly_binary_limit)} ₺</td>
                     <td className="px-4 py-3 text-rose-600 fw-600">{r.career_bonus_amount > 0 ? 'Tek seferlik' : '—'}</td>
                   </tr>
                 ))}
@@ -418,32 +415,21 @@ export default function OpportunitiesPage() {
           ulaşan üye sayısı. Kişisel Aktivite: o ay kendi alışverişinizden gereken PV.
         </p>
 
-        {/* Flashout (gelir tavanı) listesi */}
+        {/* Flashout (gelir tavanı) */}
         <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h4 className="mb-3 flex items-center gap-2 text-base font-extrabold text-gray-900">
-            <ShieldCheck size={18} className="text-brand-600" /> Flashout (Gelir Tavanı) Limitleri
+            <ShieldCheck size={18} className="text-brand-600" /> Flashout (Gelir Tavanı)
           </h4>
 
-          {ranks.length > 0 && (
-            <>
-              <p className="mb-2 text-[11px] fw-700 text-gray-400 uppercase">
-                Rütbeye Göre Aylık Binary Tavanı
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {ranks.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
-                    <span className="text-[13px] fw-700 text-gray-700">{r.name.toUpperCase()}</span>
-                    <span className="text-[13px] fw-700 text-brand-700">{fmt(r.monthly_binary_limit)} ₺</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <div className="flex items-center justify-between rounded-lg border border-brand-100 bg-brand-50/50 px-4 py-3">
+            <span className="text-[13px] fw-700 text-gray-700">Aylık Maksimum Ödeme Tavanı (tüm kariyerler)</span>
+            <span className="text-[15px] fw-800 text-brand-700">3.500.000 ₺</span>
+          </div>
 
           <p className="mt-3 text-xs text-gray-400">
-            Flashout; gelir tavanıdır. O ay TEKRARLAYABİLDİĞİN seviyenin aylık binary tavanı uygulanır;
-            tavanı aşan kazanç o dönem ödenmez ve limit kaydına işlenir. Kalıcı ünvanın düşmese de tavan,
-            o ay hak edilen (tekrarlanan) seviyeye göre belirlenir.
+            Tüm kariyer seviyeleri için ortak tek tavandır. Zayıf koldan aylık hak edilen toplam prim
+            3.500.000 ₺'ye ulaştığında o ay ödeme kesilir; tavana karşılık gelen cironun üzerinde kalan zayıf kol
+            puanları dönem sonunda sıfırlanır (şirkete kalır) ve sonraki aya devretmez.
           </p>
         </div>
       </div>

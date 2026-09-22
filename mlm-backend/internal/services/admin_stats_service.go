@@ -110,7 +110,9 @@ func (s *AdminStatsService) SimulateBonus(ctx context.Context, memberCount int64
 }
 
 // Flashout flashout/cap kurallarını settings tablosundan döndürür
-// (flashout_daily_limit, flashout_weekly_limit; 0 = limit yok).
+// (flashout_monthly_limit, flashout_daily_limit, flashout_weekly_limit;
+// 0 = limit yok). monthly_limit tanımlı değilse sabit varsayılan
+// (3.500.000 TL) döner.
 func (s *AdminStatsService) Flashout(ctx context.Context) (map[string]any, error) {
 	daily, err := s.settingFloat(ctx, "flashout_daily_limit")
 	if err != nil {
@@ -120,23 +122,32 @@ func (s *AdminStatsService) Flashout(ctx context.Context) (map[string]any, error
 	if err != nil {
 		return nil, err
 	}
+	monthly, err := s.settingFloat(ctx, "flashout_monthly_limit")
+	if err != nil {
+		return nil, err
+	}
+	if monthly <= 0 {
+		monthly = defaultMonthlyFlashoutLimit
+	}
 	return map[string]any{
-		"daily_limit":  daily,
-		"weekly_limit": weekly,
+		"monthly_limit": monthly,
+		"daily_limit":   daily,
+		"weekly_limit":  weekly,
 	}, nil
 }
 
 // SetFlashout flashout/cap kurallarını settings tablosuna yazar.
-func (s *AdminStatsService) SetFlashout(ctx context.Context, daily, weekly float64) error {
-	if daily < 0 || weekly < 0 {
+func (s *AdminStatsService) SetFlashout(ctx context.Context, monthly, daily, weekly float64) error {
+	if monthly < 0 || daily < 0 || weekly < 0 {
 		return fmt.Errorf("limitler negatif olamaz")
 	}
 	if _, err := s.db.Exec(ctx, `
 		INSERT INTO settings (key, value, updated_at) VALUES
-			('flashout_daily_limit', $1, NOW()),
-			('flashout_weekly_limit', $2, NOW())
+			('flashout_monthly_limit', $1, NOW()),
+			('flashout_daily_limit', $2, NOW()),
+			('flashout_weekly_limit', $3, NOW())
 		ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-		strconv.FormatFloat(daily, 'f', 2, 64), strconv.FormatFloat(weekly, 'f', 2, 64)); err != nil {
+		strconv.FormatFloat(monthly, 'f', 2, 64), strconv.FormatFloat(daily, 'f', 2, 64), strconv.FormatFloat(weekly, 'f', 2, 64)); err != nil {
 		return fmt.Errorf("flashout kuralları kaydedilemedi: %w", err)
 	}
 	return nil

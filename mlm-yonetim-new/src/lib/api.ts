@@ -192,6 +192,22 @@ export async function updateSettings(settings: Record<string, string>): Promise<
   await request("PUT", "/admin/settings", { settings });
 }
 
+// ── Flashout (zayıf kol / binary aylık tavan) ──────────────────────────────
+export interface FlashoutRules {
+  monthly_limit: number;
+  daily_limit: number;
+  weekly_limit: number;
+}
+
+export async function getFlashout(): Promise<FlashoutRules> {
+  const data = await request<{ flashout: FlashoutRules }>("GET", "/admin/flashout");
+  return data.flashout;
+}
+
+export async function setFlashout(rules: FlashoutRules): Promise<void> {
+  await request("PUT", "/admin/flashout", rules);
+}
+
 // ── Kategoriler ───────────────────────────────────────────────────────────
 export async function listCategories(all = false): Promise<Category[]> {
   const data = await request<{ categories: Category[] }>(

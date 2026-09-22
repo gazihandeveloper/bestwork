@@ -298,19 +298,20 @@ func (h *AdminHandler) GetFlashout(c *gin.Context) {
 // SetFlashout flashout/cap kurallarını kaydeder (admin, denetim loglu).
 func (h *AdminHandler) SetFlashout(c *gin.Context) {
 	var req struct {
-		DailyLimit  float64 `json:"daily_limit"`
-		WeeklyLimit float64 `json:"weekly_limit"`
+		MonthlyLimit float64 `json:"monthly_limit"`
+		DailyLimit   float64 `json:"daily_limit"`
+		WeeklyLimit  float64 `json:"weekly_limit"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
 		return
 	}
-	if err := h.stats.SetFlashout(c.Request.Context(), req.DailyLimit, req.WeeklyLimit); err != nil {
+	if err := h.stats.SetFlashout(c.Request.Context(), req.MonthlyLimit, req.DailyLimit, req.WeeklyLimit); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	h.audit.Log(c.Request.Context(), c.GetInt64("user_id"), "flashout_update", "settings", nil, "",
-		map[string]any{"daily_limit": req.DailyLimit, "weekly_limit": req.WeeklyLimit})
+		map[string]any{"monthly_limit": req.MonthlyLimit, "daily_limit": req.DailyLimit, "weekly_limit": req.WeeklyLimit})
 	c.JSON(http.StatusOK, gin.H{"message": "Flashout kuralları güncellendi"})
 }
 
