@@ -57,7 +57,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link href="/" className="lg:hidden">
-            <span className="flex -translate-x-2 flex-col items-center text-center leading-none">
+            <span className="flex -translate-x-4 flex-col items-center text-center leading-none">
               {/* Marka logosu — e-ticaret sitesindeki logo ile aynı (Helvetica + ince kontur), ® Georgia serif */}
               <span
                 className="text-[22px] font-extrabold tracking-tight text-[#101828] dark:text-white"
