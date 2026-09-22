@@ -67,7 +67,7 @@ export default function FlashoutPage() {
       {error && <AdminAlert kind="error">{error}</AdminAlert>}
 
       <AdminCard
-        title="Ödeme Tavanı (Flashout)"
+        title="Ödeme Tavanı (Flash-Out)"
         subtitle="Tüm kariyerler için ortak tavan. Aylık tavanı aşan zayıf kol puanları dönem sonunda sıfırlanır (şirkete kalır)."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
