@@ -275,6 +275,82 @@ export async function deleteTax(id: number): Promise<void> {
   await request("DELETE", `/admin/taxes/${id}`);
 }
 
+// ── Kazanç Planı / Network Ayarları ───────────────────────────────────────
+export interface EarningPlanRate {
+  rank_id: number;
+  depth: number;
+  rate: number;
+}
+
+export interface EarningPlan {
+  id: number;
+  code: string;
+  title: string;
+  description: string | null;
+  payout_type: string;
+  max_rate: number;
+  scope: string;
+  period: string;
+  activity_mode: string;
+  check_matching: boolean;
+  depth: number;
+  sort_order: number;
+  is_active: boolean;
+  rates?: EarningPlanRate[];
+}
+
+export interface EarningPlanInput {
+  code: string;
+  title: string;
+  description?: string | null;
+  payout_type: string;
+  max_rate: number;
+  scope: string;
+  period: string;
+  activity_mode: string;
+  check_matching: boolean;
+  depth: number;
+  sort_order?: number;
+  is_active?: boolean;
+  rates: EarningPlanRate[];
+}
+
+export async function listEarningPlans(): Promise<EarningPlan[]> {
+  const data = await request<{ plans: EarningPlan[] }>("GET", "/admin/earning-plans");
+  return data.plans ?? [];
+}
+
+export async function createEarningPlan(input: EarningPlanInput): Promise<EarningPlan> {
+  const data = await request<{ plan: EarningPlan }>("POST", "/admin/earning-plans", input);
+  return data.plan;
+}
+
+export async function updateEarningPlan(id: number, input: EarningPlanInput): Promise<EarningPlan> {
+  const data = await request<{ plan: EarningPlan }>("PUT", `/admin/earning-plans/${id}`, input);
+  return data.plan;
+}
+
+export async function deleteEarningPlan(id: number): Promise<void> {
+  await request("DELETE", `/admin/earning-plans/${id}`);
+}
+
+export interface Rank {
+  id: number;
+  name: string;
+  required_left_pv: number;
+  required_right_pv: number;
+  monthly_binary_limit: number;
+  required_downline_rank_id: number | null;
+  required_downline_count: number;
+  personal_activity_pv: number;
+  career_bonus_amount: number;
+}
+
+export async function listRanks(): Promise<Rank[]> {
+  const data = await request<{ ranks: Rank[] }>("GET", "/ranks");
+  return data.ranks ?? [];
+}
+
 // ── Ürünler ───────────────────────────────────────────────────────────────
 export async function listProducts(): Promise<Product[]> {
   const data = await request<{ products: Product[] }>("GET", "/products?limit=200");
