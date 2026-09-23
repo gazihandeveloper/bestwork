@@ -129,7 +129,7 @@ func (s *ProductService) ListProducts(ctx context.Context, q string) ([]models.P
 	products := make([]models.Product, 0)
 	for rows.Next() {
 		var p models.Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt, &p.TaxRate); err != nil {
 			return nil, fmt.Errorf("ürün okunamadı: %w", err)
 		}
 		products = append(products, p)
