@@ -4,7 +4,7 @@ import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
 import Link from "next/link";
 import React, { useState ,useEffect,useRef} from "react";
-import { BarsIcon, EllipsisIcon, MagnifyingGlassIcon, XmarkIcon } from "@/components/icons";
+import { Menu, X, EllipsisVertical, Search } from "lucide-react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -49,9 +49,9 @@ const AppHeader: React.FC = () => {
             aria-label="Toggle Sidebar"
           >
             {isMobileOpen ? (
-              <XmarkIcon />
+              <X size={18} strokeWidth={1.75} />
             ) : (
-              <BarsIcon size={16} />
+              <Menu size={18} strokeWidth={1.75} />
             )}
             {/* Cross Icon */}
           </button>
@@ -81,14 +81,14 @@ const AppHeader: React.FC = () => {
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
           >
-            <EllipsisIcon />
+            <EllipsisVertical size={20} strokeWidth={1.75} />
           </button>
 
           <div className="hidden lg:block">
             <form>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
-                  <MagnifyingGlassIcon className="fill-gray-500 dark:fill-gray-400" size={20} />
+                  <Search className="text-gray-500 dark:text-gray-400" size={20} strokeWidth={1.75} />
                 </span>
                 <input
                   ref={inputRef}

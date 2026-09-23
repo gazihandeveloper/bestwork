@@ -4,7 +4,7 @@ import { getMe } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { ChevronDownIcon, CircleExclamationIcon, CircleUserIcon, GearIcon, RightFromBracketIcon } from "@/components/icons";
+import { ChevronDown, CircleUserRound, Settings, CircleAlert, LogOut } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mahmutgazihanarslan.com.tr/api";
 
@@ -70,7 +70,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
 
         <span className="block mr-1 font-medium text-theme-sm">{firstName}</span>
 
-        <ChevronDownIcon size={20} />
+        <ChevronDown size={20} strokeWidth={1.75} />
       </button>
 
       <Dropdown
@@ -95,7 +95,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              <CircleUserIcon className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300" />
+              <CircleUserRound className="text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" size={20} strokeWidth={1.75} />
               Profili Düzenle
             </DropdownItem>
           </li>
@@ -106,7 +106,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              <GearIcon className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300" />
+              <Settings className="text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" size={20} strokeWidth={1.75} />
               Hesap Ayarları
             </DropdownItem>
           </li>
@@ -117,7 +117,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              <CircleExclamationIcon className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300" />
+              <CircleAlert className="text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" size={20} strokeWidth={1.75} />
               Destek
             </DropdownItem>
           </li>
@@ -126,7 +126,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           onClick={() => void handleSignOut()}
           className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300 w-full text-left"
         >
-          <RightFromBracketIcon className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300" />
+          <LogOut className="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" size={20} strokeWidth={1.75} />
           Çıkış Yap
         </button>
       </Dropdown>
