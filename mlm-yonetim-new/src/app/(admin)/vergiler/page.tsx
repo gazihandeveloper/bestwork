@@ -20,9 +20,12 @@ import {
   createTax,
   updateTax,
   deleteTax,
+  listCategories,
+  updateCategory,
   getErrorMessage,
   type Tax,
   type TaxInput,
+  type Category,
 } from "@/lib/api";
 
 const STATUS: Record<string, { label: string; color: "green" | "gray" | "amber" }> = {
@@ -35,6 +38,8 @@ const emptyForm: TaxInput = { title: "", rate: 20, sort_order: 1, status: "activ
 
 export default function TaxesPage() {
   const [items, setItems] = useState<Tax[] | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCats, setSelectedCats] = useState<Set<number>>(new Set());
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -49,14 +54,21 @@ export default function TaxesPage() {
       .then(setItems)
       .catch((err) => setError(getErrorMessage(err)));
   };
+  const loadCategories = () => {
+    listCategories(true)
+      .then(setCategories)
+      .catch(() => {});
+  };
 
   useEffect(() => {
     load();
+    loadCategories();
   }, []);
 
   const openNew = () => {
     setEditingId(null);
     setForm({ ...emptyForm, sort_order: (items?.length ?? 0) + 1 });
+    setSelectedCats(new Set());
     setError("");
     setFormOpen(true);
   };
@@ -64,8 +76,36 @@ export default function TaxesPage() {
   const openEdit = (t: Tax) => {
     setEditingId(t.id);
     setForm({ title: t.title, rate: t.rate, sort_order: t.sort_order, status: t.status });
+    setSelectedCats(new Set(categories.filter((c) => c.tax_id === t.id).map((c) => c.id)));
     setError("");
     setFormOpen(true);
+  };
+
+  const toggleCat = (id: number) => {
+    setSelectedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Seçilen kategorileri bu vergiye bağlar; çıkarılanların vergisini kaldırır.
+  const syncCategories = async (taxId: number) => {
+    for (const c of categories) {
+      const shouldHave = selectedCats.has(c.id);
+      const hasThis = c.tax_id === taxId;
+      if (shouldHave === hasThis) continue;
+      await updateCategory(c.id, {
+        name: c.name,
+        slug: c.slug || undefined,
+        icon: c.icon,
+        description: c.description || undefined,
+        sort_order: c.sort_order,
+        is_active: c.is_active,
+        tax_id: shouldHave ? taxId : null,
+      });
+    }
   };
 
   const save = async () => {
@@ -76,11 +116,18 @@ export default function TaxesPage() {
     setSaving(true);
     setError("");
     try {
-      if (editingId) await updateTax(editingId, form);
-      else await createTax(form);
+      let taxId = editingId;
+      if (editingId) {
+        await updateTax(editingId, form);
+      } else {
+        const created = await createTax(form);
+        taxId = created.id;
+      }
+      if (taxId) await syncCategories(taxId);
       setNotice(editingId ? "Vergi güncellendi." : "Vergi eklendi.");
       setFormOpen(false);
       load();
+      loadCategories();
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -165,6 +212,32 @@ export default function TaxesPage() {
                   <option value="pending">Bekliyor</option>
                 </select>
               </div>
+            </div>
+            <div className="mt-5">
+              <label className={labelCls}>Bu vergiyi uygula (kategoriler)</label>
+              {categories.length === 0 ? (
+                <p className="mt-1 text-sm text-gray-400">Henüz kategori yok.</p>
+              ) : (
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {categories.map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-800"
+                    >
+                      <input
+                        type="checkbox"
+                        className="size-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                        checked={selectedCats.has(c.id)}
+                        onChange={() => toggleCat(c.id)}
+                      />
+                      <span className="text-gray-700 dark:text-gray-300">{c.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p className="mt-1 text-xs text-gray-400">
+                Seçilen kategorilerdeki ürünlerin siparişinde bu KDV oranı otomatik uygulanır.
+              </p>
             </div>
             <div className="mt-5 flex gap-2">
               <AdminBtn onClick={save} disabled={saving}>
