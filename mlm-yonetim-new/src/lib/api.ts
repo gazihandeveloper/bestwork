@@ -351,6 +351,22 @@ export async function listRanks(): Promise<Rank[]> {
   return data.ranks ?? [];
 }
 
+export interface RankInput {
+  name: string;
+  required_left_pv: number;
+  required_right_pv: number;
+  monthly_binary_limit: number;
+  required_downline_rank_id: number | null;
+  required_downline_count: number;
+  personal_activity_pv: number;
+  career_bonus_amount: number;
+}
+
+export async function updateRank(id: number, input: RankInput): Promise<Rank> {
+  const data = await request<{ rank: Rank }>("PUT", `/admin/ranks/${id}`, input);
+  return data.rank;
+}
+
 // ── Ürünler ───────────────────────────────────────────────────────────────
 export async function listProducts(): Promise<Product[]> {
   const data = await request<{ products: Product[] }>("GET", "/products?limit=200");

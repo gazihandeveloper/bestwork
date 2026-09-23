@@ -118,13 +118,9 @@ func RecomputeAllCareers(ctx context.Context, q DBTX) (int, error) {
 
 // payCareerBonus ömür boyu ilk kez ulaşılan kariyerin bonusunu üyenin
 // cüzdanına anında işler ve commission kaydı (type='career') oluşturur.
-// career_bonus_amount DOLAR cinsindendir; güncel TCMB kuruyla TL'ye çevrilir.
-func payCareerBonus(ctx context.Context, q DBTX, userID int64, rankID int, rankName string, amountUSD float64) error {
-	rate, err := GetUSDTRY(ctx, q)
-	if err != nil {
-		return fmt.Errorf("güncel kur alınamadı: %w", err)
-	}
-	amountTL := round2(amountUSD * rate)
+// career_bonus_amount TL cinsindendir; panelden seviye başına belirlenir.
+func payCareerBonus(ctx context.Context, q DBTX, userID int64, rankID int, rankName string, amountTL float64) error {
+	amountTL = round2(amountTL)
 
 	// Cüzdan: yoksa oluştur (register hesaplarında zaten vardır), varsa artır.
 	if _, err := q.Exec(ctx,
@@ -146,11 +142,9 @@ func payCareerBonus(ctx context.Context, q DBTX, userID int64, rankID int, rankN
 	}
 
 	log.WithFields(log.Fields{
-		"user_id":  userID,
-		"rank_id":  rankID,
-		"rank":     rankName,
-		"amount_usd": amountUSD,
-		"rate":     rate,
+		"user_id":   userID,
+		"rank_id":   rankID,
+		"rank":      rankName,
 		"amount_tl": amountTL,
 	}).Info("Kariyer bonusu ödendi (ilk kez ulaşılan kariyer)")
 	return nil
