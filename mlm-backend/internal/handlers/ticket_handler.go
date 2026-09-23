@@ -14,11 +14,30 @@ import (
 // TicketHandler iletişim endpoint'lerini yönetir.
 type TicketHandler struct {
 	tickets *services.TicketService
+	users   *services.UserService
 }
 
 // NewTicketHandler yeni bir TicketHandler örneği döndürür.
-func NewTicketHandler(tickets *services.TicketService) *TicketHandler {
-	return &TicketHandler{tickets: tickets}
+func NewTicketHandler(tickets *services.TicketService, users *services.UserService) *TicketHandler {
+	return &TicketHandler{tickets: tickets, users: users}
+}
+
+// resolveUser giriş yapılmamış talepleri telefon ya da ad-soyad ile bir üyeye
+// bağlar; böylece talep üyenin hesabında görünür ve üye kodu dolu gelir.
+func (h *TicketHandler) resolveUser(c *gin.Context, name, surname, phone string) *int64 {
+	ctx := c.Request.Context()
+	if p := strings.TrimSpace(phone); p != "" && p != "-" {
+		if u, err := h.users.GetUserByPhone(ctx, p); err == nil && u != nil {
+			return &u.ID
+		}
+	}
+	full := strings.TrimSpace(strings.TrimSpace(name) + " " + strings.TrimSpace(surname))
+	if full != "" {
+		if u, err := h.users.GetUserByName(ctx, full); err == nil && u != nil {
+			return &u.ID
+		}
+	}
+	return nil
 }
 
 // TicketRequest ticket oluşturma JSON gövdesidir.
@@ -40,6 +59,10 @@ func (h *TicketHandler) Create(c *gin.Context) {
 	var userID *int64
 	if uid := c.GetInt64("user_id"); uid != 0 {
 		userID = &uid
+	}
+	// Giriş yoksa telefon/ad-soyad ile üyeye bağla (talep üyenin hesabında görünsün).
+	if userID == nil {
+		userID = h.resolveUser(c, req.Name, req.Surname, req.Phone)
 	}
 
 	t, err := h.tickets.CreateTicket(c.Request.Context(), userID, req.Name, req.Surname, req.Phone, req.Message)

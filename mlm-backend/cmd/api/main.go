@@ -102,7 +102,7 @@ func main() {
 	heroSlideHandler := handlers.NewHeroSlideHandler(heroSlideService)
 	benefitHandler := handlers.NewBenefitHandler(benefitService)
 	settingHandler := handlers.NewSettingHandler(settingService)
-	ticketHandler := handlers.NewTicketHandler(ticketService)
+	ticketHandler := handlers.NewTicketHandler(ticketService, userService)
 	rankHandler := handlers.NewRankHandler()
 
 	// Ortak admin yetki zinciri

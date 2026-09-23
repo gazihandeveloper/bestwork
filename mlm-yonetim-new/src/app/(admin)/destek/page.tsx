@@ -83,7 +83,8 @@ export default function DestekPage() {
     }
   };
 
-  const code = (t: Ticket) => `BW-${t.member_code || "U" + t.user_id}-${t.id}`;
+  const code = (t: Ticket) =>
+    `BW-${t.member_code || (t.user_id ? "U" + t.user_id : "Misafir")}-${t.id}`;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
