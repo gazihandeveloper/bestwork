@@ -53,11 +53,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <NetworkIcon />,
-    name: "Network Ayarları",
-    path: "/network-ayarlari",
-  },
-  {
     icon: <CalendarDaysIcon />,
     name: "Raporlar",
     path: "/raporlar",
