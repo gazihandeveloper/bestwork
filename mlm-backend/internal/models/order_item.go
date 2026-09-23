@@ -9,4 +9,7 @@ type OrderItem struct {
 	Price     float64 `json:"price"`
 	PV        float64   `json:"pv"`
 	CV        float64   `json:"cv"`
+	TaxID     *int64    `json:"tax_id"`
+	TaxRate   float64   `json:"tax_rate"`
+	TaxAmount float64   `json:"tax_amount"`
 }

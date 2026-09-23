@@ -51,6 +51,7 @@ export interface Product {
   reviewCount: number
   isActive: boolean
   isFeatured: boolean
+  tax_rate?: number
   seoTitle?: string
   seoDescription?: string
   createdAt: string

@@ -32,12 +32,12 @@ func NewCategoryService(db *pgxpool.Pool) *CategoryService {
 	return &CategoryService{db: db}
 }
 
-const categoryColumns = `id, name, slug, icon, description, sort_order, is_active, created_at`
+const categoryColumns = `id, name, slug, icon, description, sort_order, is_active, created_at, tax_id, COALESCE((SELECT title FROM taxes WHERE taxes.id = categories.tax_id), '') AS tax_title, COALESCE((SELECT rate FROM taxes WHERE taxes.id = categories.tax_id), 0) AS tax_rate`
 
 // scanCategory tek satırı models.Category'a dönüştürür.
 func scanCategory(row pgx.Row) (*models.Category, error) {
 	var c models.Category
-	if err := row.Scan(&c.ID, &c.Name, &c.Slug, &c.Icon, &c.Description, &c.SortOrder, &c.IsActive, &c.CreatedAt); err != nil {
+	if err := row.Scan(&c.ID, &c.Name, &c.Slug, &c.Icon, &c.Description, &c.SortOrder, &c.IsActive, &c.CreatedAt, &c.TaxID, &c.TaxTitle, &c.TaxRate); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrCategoryNotFound
 		}
@@ -63,7 +63,7 @@ func (s *CategoryService) List(ctx context.Context, all bool) ([]models.Category
 	categories := make([]models.Category, 0)
 	for rows.Next() {
 		var c models.Category
-		if err := rows.Scan(&c.ID, &c.Name, &c.Slug, &c.Icon, &c.Description, &c.SortOrder, &c.IsActive, &c.CreatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.Slug, &c.Icon, &c.Description, &c.SortOrder, &c.IsActive, &c.CreatedAt, &c.TaxID, &c.TaxTitle, &c.TaxRate); err != nil {
 			return nil, fmt.Errorf("kategori okunamadı: %w", err)
 		}
 		categories = append(categories, c)
@@ -78,7 +78,7 @@ func (s *CategoryService) GetByID(ctx context.Context, id int64) (*models.Catego
 
 // Create yeni kategori ekler. Slug verilmezse ad üzerinden türetilir; sonuç boşsa
 // veya benzersizlik çakışması olursa rastgele sonek eklenir (slug UNIQUE constraint).
-func (s *CategoryService) Create(ctx context.Context, name, slug, icon, description string, sortOrder int, isActive bool) (*models.Category, error) {
+func (s *CategoryService) Create(ctx context.Context, name, slug, icon, description string, sortOrder int, isActive bool, taxID *int64) (*models.Category, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return nil, errors.New("kategori adı zorunludur")
@@ -105,14 +105,15 @@ func (s *CategoryService) Create(ctx context.Context, name, slug, icon, descript
 		Description: desc,
 		SortOrder:   sortOrder,
 		IsActive:    isActive,
+		TaxID:       taxID,
 	}
 
 	// Slug çakışmasında rastgele sonek ekleyerek yeniden dener.
 	for attempt := 0; attempt < 5; attempt++ {
 		err := s.db.QueryRow(ctx,
-			`INSERT INTO categories (name, slug, icon, description, sort_order, is_active)
-			 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
-			c.Name, c.Slug, c.Icon, c.Description, c.SortOrder, c.IsActive).
+			`INSERT INTO categories (name, slug, icon, description, sort_order, is_active, tax_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
+			c.Name, c.Slug, c.Icon, c.Description, c.SortOrder, c.IsActive, c.TaxID).
 			Scan(&c.ID, &c.CreatedAt)
 		if err == nil {
 			return c, nil
@@ -149,8 +150,8 @@ func (s *CategoryService) Update(ctx context.Context, c *models.Category) error 
 	}
 
 	tag, err := s.db.Exec(ctx,
-		`UPDATE categories SET name = $1, slug = $2, icon = $3, description = $4, sort_order = $5, is_active = $6 WHERE id = $7`,
-		c.Name, c.Slug, c.Icon, c.Description, c.SortOrder, c.IsActive, c.ID)
+		`UPDATE categories SET name = $1, slug = $2, icon = $3, description = $4, sort_order = $5, is_active = $6, tax_id = $7 WHERE id = $8`,
+		c.Name, c.Slug, c.Icon, c.Description, c.SortOrder, c.IsActive, c.TaxID, c.ID)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {

@@ -54,6 +54,7 @@ func main() {
 
 	productService := services.NewProductService(database.GetDB())
 	categoryService := services.NewCategoryService(database.GetDB())
+	taxService := services.NewTaxService(database.GetDB())
 	orderService := services.NewOrderService(database.GetDB())
 	pendingPoolService := services.NewPendingPoolService(database.GetDB())
 	walletService := services.NewWalletService(database.GetDB())
@@ -78,6 +79,7 @@ func main() {
 	jobService := services.NewJobService(database.GetDB())
 	productHandler := handlers.NewProductHandler(productService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	taxHandler := handlers.NewTaxHandler(taxService)
 	announcementService := services.NewAnnouncementService(database.GetDB())
 	announcementHandler := handlers.NewAnnouncementHandler(announcementService)
 	orderHandler := handlers.NewOrderHandler(orderService)
@@ -243,6 +245,13 @@ func main() {
 		adminCategories.POST("", categoryHandler.Create)
 		adminCategories.PUT("/:id", categoryHandler.Update)
 		adminCategories.DELETE("/:id", categoryHandler.Delete)
+
+		adminTaxes := api.Group("/admin/taxes")
+		adminTaxes.Use(adminOnly()...)
+		adminTaxes.GET("", taxHandler.List)
+		adminTaxes.POST("", taxHandler.Create)
+		adminTaxes.PUT("/:id", taxHandler.Update)
+		adminTaxes.DELETE("/:id", taxHandler.Delete)
 
 		adminAnnouncements := api.Group("/admin/announcements")
 		adminAnnouncements.Use(adminOnly()...)

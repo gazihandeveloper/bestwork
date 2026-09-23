@@ -174,6 +174,13 @@ export default function CartPage() {
     0
   )
   const totalDiscount = Math.max(0, saleTotal - payable)
+  // KDV (fiyatlar KDV hariç; kategori vergisine göre hesaplanır)
+  const totalTax = cartItemsArr.reduce((sum, it) => {
+    const unit = Number(it.unit_price || it.price || 0)
+    const rate = Number(it.product?.tax_rate || 0)
+    return sum + unit * (Number(it.quantity) || 0) * (rate / 100)
+  }, 0)
+  const grandTotal = payable + totalTax
 
   if (loading) {
     return (
@@ -355,7 +362,7 @@ export default function CartPage() {
 
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Toplam Satış Tutarı</span>
+                  <span className="text-gray-500">Toplam (KDV Hariç)</span>
                   <span className="fw-700 text-gray-800">{tl(saleTotal)}</span>
                 </div>
                 {totalDiscount > 0 && (
@@ -364,6 +371,12 @@ export default function CartPage() {
                       <Tag size={14} className="text-green-600" /> Toplam İndiriminiz
                     </span>
                     <span className="fw-700 text-green-600">− {tl(totalDiscount)}</span>
+                  </div>
+                )}
+                {totalTax > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">KDV</span>
+                    <span className="fw-700 text-gray-800">{tl(totalTax)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -378,7 +391,7 @@ export default function CartPage() {
 
               <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3.5">
                 <span className="text-sm fw-800 text-gray-800">Ödenecek Tutar</span>
-                <span className="text-2xl fw-800 text-brand-600">{tl(payable)}</span>
+                <span className="text-2xl fw-800 text-brand-600">{tl(grandTotal)}</span>
               </div>
 
               <Link href="/checkout" className="mt-5 block">

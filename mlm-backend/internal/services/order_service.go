@@ -42,7 +42,7 @@ func NewOrderService(db *pgxpool.Pool) *OrderService {
 	return &OrderService{db: db}
 }
 
-const orderColumns = `id, user_id, total_amount, total_pv, total_cv, shipping_fee, status, payment_method, created_at`
+const orderColumns = `id, user_id, total_amount, total_pv, total_cv, total_tax, shipping_fee, status, payment_method, created_at`
 
 // calcShipping siparişin kargo ücretini hesaplar (settings kaynaklı):
 //   - shipping_fee: sabit kargo ücreti (₺); 0 ise kargo alınmaz.
@@ -120,11 +120,14 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 		price     float64
 		pv        float64
 		cv        float64
+		taxID     *int64
+		taxRate   float64
+		taxAmount float64
 	}
 	itemRows := make([]itemRow, 0, len(items))
 
 	var totalAmountCents int64
-	var totalPV, totalCV float64
+	var totalPV, totalCV, totalTax float64
 
 	for _, item := range items {
 		if item.Quantity <= 0 {
@@ -133,8 +136,8 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 
 		var p models.Product
 		err := tx.QueryRow(ctx,
-			`SELECT id, name, price, pv, cv, stock, description FROM products WHERE id = $1 FOR UPDATE`, item.ProductID).
-			Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description)
+			`SELECT id, name, price, pv, cv, stock, description, category_id FROM products WHERE id = $1 FOR UPDATE`, item.ProductID).
+			Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.CategoryID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: ID %d", ErrProductNotFound, item.ProductID)
 		}
@@ -163,35 +166,62 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 			pv = round2(pv * (1 - discountRate))
 			cv = round2(cv * (1 - discountRate))
 		}
+		// Vergi: ürünün kategorisine atanmış AKTİF KDV oranı (fiyat KDV hariç).
+		var taxID *int64
+		taxRate := 0.0
+		taxAmount := 0.0
+		lineTotal := centsToMoney(unitPriceCents * qty)
+		if p.CategoryID != nil {
+			var tid *int64
+			var trate *float64
+			terr := tx.QueryRow(ctx,
+				`SELECT t.id, t.rate FROM categories c JOIN taxes t ON t.id = c.tax_id AND t.status = 'active' WHERE c.id = $1`,
+				*p.CategoryID).Scan(&tid, &trate)
+			if terr == nil && tid != nil && trate != nil {
+				taxID = tid
+				taxRate = *trate
+				taxAmount = round2(lineTotal * (*trate) / 100.0)
+			} else if terr != nil && !errors.Is(terr, pgx.ErrNoRows) {
+				return nil, fmt.Errorf("vergi okunamadı: %w", terr)
+			}
+		}
+		totalTax += taxAmount
+
 		itemRows = append(itemRows, itemRow{
 			productID: p.ID,
 			quantity:  item.Quantity,
 			price:     unitPrice,
 			pv:        pv,
 			cv:        cv,
+			taxID:     taxID,
+			taxRate:   taxRate,
+			taxAmount: taxAmount,
 		})
 		totalAmountCents += unitPriceCents * qty
 		totalPV += pv
 		totalCV += cv
 	}
-	totalAmount := centsToMoney(totalAmountCents)
+	subtotal := centsToMoney(totalAmountCents)
 
 	// Kargo ücreti: settings'ten sabit kargo ücreti + ücretsiz kargo eşiği.
 	// Ürün toplamı eşiğe ulaşırsa kargo ücretsiz; ulaşmazsa sabit ücret eklenir.
 	shipping := 0.0
 	if !retail {
-		shipping, err = s.calcShipping(ctx, tx, totalAmount)
+		shipping, err = s.calcShipping(ctx, tx, subtotal)
 		if err != nil {
 			return nil, err
 		}
 	}
-	totalAmount = totalAmount + shipping
+	totalTax = round2(totalTax)
+	// Fiyatlar KDV hariçtir: toplam = ara toplam + KDV + kargo.
+	totalAmount := round2(subtotal + totalTax + shipping)
 
 	order := &models.Order{
 		UserID:        userID,
 		TotalAmount:   totalAmount,
 		TotalPV:       totalPV,
 		TotalCV:       totalCV,
+		TotalTax:      totalTax,
 		ShippingFee:   shipping,
 		Status:        "pending",
 		PaymentMethod: paymentMethod,
@@ -199,9 +229,9 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 	}
 
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO orders (user_id, total_amount, total_pv, total_cv, shipping_fee, status, payment_method)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
-		order.UserID, order.TotalAmount, order.TotalPV, order.TotalCV, order.ShippingFee, order.Status, order.PaymentMethod).
+		`INSERT INTO orders (user_id, total_amount, total_pv, total_cv, total_tax, shipping_fee, status, payment_method)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at`,
+		order.UserID, order.TotalAmount, order.TotalPV, order.TotalCV, order.TotalTax, order.ShippingFee, order.Status, order.PaymentMethod).
 		Scan(&order.ID, &order.CreatedAt); err != nil {
 		return nil, fmt.Errorf("sipariş eklenemedi: %w", err)
 	}
@@ -210,8 +240,9 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 	for _, r := range itemRows {
 		var itemID int64
 		if err := tx.QueryRow(ctx,
-			`INSERT INTO order_items (order_id, product_id, quantity, price, pv, cv) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-			order.ID, r.productID, r.quantity, r.price, r.pv, r.cv).Scan(&itemID); err != nil {
+			`INSERT INTO order_items (order_id, product_id, quantity, price, pv, cv, tax_id, tax_rate, tax_amount)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+			order.ID, r.productID, r.quantity, r.price, r.pv, r.cv, r.taxID, r.taxRate, r.taxAmount).Scan(&itemID); err != nil {
 			return nil, fmt.Errorf("sipariş kalemi eklenemedi: %w", err)
 		}
 		order.Items = append(order.Items, models.OrderItem{
@@ -222,6 +253,9 @@ func (s *OrderService) CreateOrder(ctx context.Context, userID int64, paymentMet
 			Price:     r.price,
 			PV:        r.pv,
 			CV:        r.cv,
+			TaxID:     r.taxID,
+			TaxRate:   r.taxRate,
+			TaxAmount: r.taxAmount,
 		})
 
 		if _, err := tx.Exec(ctx, `UPDATE products SET stock = stock - $1 WHERE id = $2`, r.quantity, r.productID); err != nil {
@@ -489,7 +523,7 @@ func (s *OrderService) ListOrdersByUser(ctx context.Context, userID int64) ([]mo
 	orders := make([]models.Order, 0)
 	for rows.Next() {
 		var o models.Order
-		if err := rows.Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt); err != nil {
+		if err := rows.Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.TotalTax, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt); err != nil {
 			return nil, fmt.Errorf("sipariş okunamadı: %w", err)
 		}
 		items, err := s.getOrderItems(ctx, o.ID)
@@ -506,7 +540,7 @@ func (s *OrderService) ListOrdersByUser(ctx context.Context, userID int64) ([]mo
 func (s *OrderService) GetOrderByID(ctx context.Context, orderID int64) (*models.Order, error) {
 	var o models.Order
 	err := s.db.QueryRow(ctx, `SELECT `+orderColumns+` FROM orders WHERE id = $1`, orderID).
-		Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt)
+		Scan(&o.ID, &o.UserID, &o.TotalAmount, &o.TotalPV, &o.TotalCV, &o.TotalTax, &o.ShippingFee, &o.Status, &o.PaymentMethod, &o.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrOrderNotFound
@@ -525,7 +559,7 @@ func (s *OrderService) GetOrderByID(ctx context.Context, orderID int64) (*models
 // getOrderItems siparişin kalemlerini döndürür.
 func (s *OrderService) getOrderItems(ctx context.Context, orderID int64) ([]models.OrderItem, error) {
 	rows, err := s.db.Query(ctx,
-		`SELECT id, order_id, product_id, quantity, price, pv, cv FROM order_items WHERE order_id = $1 ORDER BY id`, orderID)
+		`SELECT id, order_id, product_id, quantity, price, pv, cv, tax_id, tax_rate, tax_amount FROM order_items WHERE order_id = $1 ORDER BY id`, orderID)
 	if err != nil {
 		return nil, fmt.Errorf("sipariş kalemleri okunamadı: %w", err)
 	}
@@ -534,7 +568,7 @@ func (s *OrderService) getOrderItems(ctx context.Context, orderID int64) ([]mode
 	items := make([]models.OrderItem, 0)
 	for rows.Next() {
 		var it models.OrderItem
-		if err := rows.Scan(&it.ID, &it.OrderID, &it.ProductID, &it.Quantity, &it.Price, &it.PV, &it.CV); err != nil {
+		if err := rows.Scan(&it.ID, &it.OrderID, &it.ProductID, &it.Quantity, &it.Price, &it.PV, &it.CV, &it.TaxID, &it.TaxRate, &it.TaxAmount); err != nil {
 			return nil, fmt.Errorf("sipariş kalemi okunamadı: %w", err)
 		}
 		items = append(items, it)

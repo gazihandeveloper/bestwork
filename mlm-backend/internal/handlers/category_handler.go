@@ -29,6 +29,7 @@ type CategoryRequest struct {
 	Description *string `json:"description"`
 	SortOrder   int     `json:"sort_order"`
 	IsActive    *bool   `json:"is_active"`
+	TaxID       *int64  `json:"tax_id"`
 }
 
 // List kategorileri döndürür (herkese açık). Varsayılan olarak yalnızca
@@ -61,7 +62,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		description = *req.Description
 	}
 
-	cat, err := h.categories.Create(c.Request.Context(), req.Name, req.Slug, req.Icon, description, req.SortOrder, isActive)
+	cat, err := h.categories.Create(c.Request.Context(), req.Name, req.Slug, req.Icon, description, req.SortOrder, isActive, req.TaxID)
 	if err != nil {
 		log.WithError(err).Error("Kategori eklenemedi")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Bir sorun oluştu"})
@@ -109,6 +110,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		cat.IsActive = *req.IsActive
 	}
 	cat.SortOrder = req.SortOrder
+	cat.TaxID = req.TaxID
 
 	if err := h.categories.Update(c.Request.Context(), cat); err != nil {
 		if errors.Is(err, services.ErrCategoryDuplicate) {

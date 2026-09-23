@@ -26,6 +26,13 @@ export default function CheckoutPage() {
     0
   ) || 0
 
+  // KDV (fiyatlar KDV hariç; ürünün kategorisine atanmış vergi oranına göre)
+  const taxTotal = cart?.items?.reduce((sum, item) => {
+    const rate = Number((item.product as { tax_rate?: number } | undefined)?.tax_rate || 0)
+    return sum + item.price * item.quantity * (rate / 100)
+  }, 0) || 0
+  const grandTotal = subtotal + taxTotal
+
   if (!cart?.items?.length) {
     return (
       <MainLayout>
@@ -180,9 +187,15 @@ export default function CheckoutPage() {
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Ara Toplam</span>
+                  <span className="text-gray-500">Ara Toplam (KDV Hariç)</span>
                   <span className="font-bold">{formatPrice(subtotal)}</span>
                 </div>
+                {taxTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">KDV</span>
+                    <span className="font-bold">{formatPrice(taxTotal)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">Kargo</span>
                   <span className="font-bold text-green-600">Ücretsiz</span>
@@ -191,7 +204,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-base">
                   <span className="fw-800 text-gray-800">Toplam</span>
                   <span className="text-lg fw-800 text-brand-500">
-                    {formatPrice(cart.total || subtotal)}
+                    {formatPrice(grandTotal)}
                   </span>
                 </div>
               </div>

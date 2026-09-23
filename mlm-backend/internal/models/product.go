@@ -16,5 +16,6 @@ type Product struct {
 	CategoryID   *int64    `json:"category_id"`
 	CategoryName *string   `json:"category_name"`
 	SKU          *string   `json:"sku"`
+	TaxRate      float64   `json:"tax_rate"`
 	CreatedAt    time.Time `json:"created_at"`
 }

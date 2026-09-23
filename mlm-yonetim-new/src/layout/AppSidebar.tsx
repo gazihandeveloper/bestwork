@@ -29,6 +29,7 @@ const navItems: NavItem[] = [
       { name: "Siparişler", path: "/siparisler", pro: false },
       { name: "Kargo Limiti", path: "/kargo", pro: false },
       { name: "Güvenlik Şeridi", path: "/guvenlik-seridi", pro: false },
+      { name: "Vergiler", path: "/vergiler", pro: false },
     ],
   },
   {

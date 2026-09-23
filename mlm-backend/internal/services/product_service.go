@@ -25,7 +25,7 @@ func NewProductService(db *pgxpool.Pool) *ProductService {
 // productColumns sütun sırası scanProduct ile birebir aynı olmalıdır:
 // (id,name,price,pv,cv,stock,description,image_path,category,category_id,category_name,sku,created_at)
 // Kategori adı categories tablosundan LEFT JOIN ile gelir (category_name).
-const productColumns = `p.id, p.name, p.price, p.pv, p.cv, p.stock, p.description, p.image_path, p.category, p.category_id, c.name AS category_name, p.sku, p.created_at`
+const productColumns = `p.id, p.name, p.price, p.pv, p.cv, p.stock, p.description, p.image_path, p.category, p.category_id, c.name AS category_name, p.sku, p.created_at, COALESCE((SELECT t.rate FROM categories cc JOIN taxes t ON t.id = cc.tax_id AND t.status = 'active' WHERE cc.id = p.category_id), 0) AS tax_rate`
 
 // productJoin kategori adını ürün satırına ekler.
 const productJoin = ` FROM products p LEFT JOIN categories c ON c.id = p.category_id`
@@ -33,7 +33,7 @@ const productJoin = ` FROM products p LEFT JOIN categories c ON c.id = p.categor
 // scanProduct tek satırı models.Product'a dönüştürür.
 func scanProduct(row pgx.Row) (*models.Product, error) {
 	var p models.Product
-	if err := row.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt); err != nil {
+	if err := row.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt, &p.TaxRate); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrProductNotFound
 		}
@@ -199,7 +199,7 @@ func (s *ProductService) ListPopular(ctx context.Context, limit, days int) ([]Po
 	products := make([]PopularProduct, 0)
 	for rows.Next() {
 		var p PopularProduct
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt, &p.SoldQuantity); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.PV, &p.CV, &p.Stock, &p.Description, &p.ImagePath, &p.Category, &p.CategoryID, &p.CategoryName, &p.SKU, &p.CreatedAt, &p.TaxRate, &p.SoldQuantity); err != nil {
 			return nil, fmt.Errorf("ürün okunamadı: %w", err)
 		}
 		products = append(products, p)

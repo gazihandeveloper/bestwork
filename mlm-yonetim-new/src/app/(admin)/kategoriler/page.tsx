@@ -20,9 +20,11 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  listTaxes,
   getErrorMessage,
   type Category,
   type CategoryInput,
+  type Tax,
 } from "@/lib/api";
 
 const emptyForm: CategoryInput = {
@@ -32,6 +34,7 @@ const emptyForm: CategoryInput = {
   description: "",
   sort_order: 1,
   is_active: true,
+  tax_id: null,
 };
 
 const cleanPayload = (f: CategoryInput): CategoryInput => ({
@@ -42,6 +45,7 @@ const cleanPayload = (f: CategoryInput): CategoryInput => ({
 
 export default function CategoriesPage() {
   const [items, setItems] = useState<Category[] | null>(null);
+  const [taxes, setTaxes] = useState<Tax[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -59,7 +63,9 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     load();
-     
+    listTaxes(true)
+      .then(setTaxes)
+      .catch(() => {});
   }, []);
 
   const openNew = () => {
@@ -78,6 +84,7 @@ export default function CategoriesPage() {
       description: c.description ?? "",
       sort_order: c.sort_order,
       is_active: c.is_active,
+      tax_id: c.tax_id ?? null,
     });
     setError("");
     setFormOpen(true);
@@ -177,6 +184,23 @@ export default function CategoriesPage() {
                   onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) || 1 })}
                 />
               </div>
+              <div>
+                <label className={labelCls}>Vergi (KDV)</label>
+                <select
+                  className={inputCls}
+                  value={form.tax_id ?? ""}
+                  onChange={(e) =>
+                    setForm({ ...form, tax_id: e.target.value ? Number(e.target.value) : null })
+                  }
+                >
+                  <option value="">Vergi yok</option>
+                  {taxes.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title} (%{Number(t.rate).toLocaleString("tr-TR")})
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex items-end pb-1">
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input
@@ -228,6 +252,7 @@ export default function CategoriesPage() {
                   <th className={thCls}>Slug</th>
                   <th className={thCls}>Açıklama</th>
                   <th className={thCls}>Sıra</th>
+                  <th className={thCls}>Vergi</th>
                   <th className={thCls}>Durum</th>
                   <th className={`${thCls} text-right`}>İşlemler</th>
                 </tr>
@@ -245,6 +270,9 @@ export default function CategoriesPage() {
                       {c.description || "—"}
                     </td>
                     <td className={tdCls}>{c.sort_order}</td>
+                    <td className={`${tdCls} text-gray-500 dark:text-gray-400`}>
+                      {c.tax_title ? `${c.tax_title} (%${Number(c.tax_rate ?? 0).toLocaleString("tr-TR")})` : "—"}
+                    </td>
                     <td className={tdCls}>
                       <AdminBadge color={c.is_active ? "green" : "gray"}>
                         {c.is_active ? "Aktif" : "Pasif"}

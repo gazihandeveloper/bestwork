@@ -11,5 +11,8 @@ type Category struct {
 	Description *string   `json:"description"`
 	SortOrder   int       `json:"sort_order"`
 	IsActive    bool      `json:"is_active"`
+	TaxID       *int64    `json:"tax_id"`
+	TaxTitle    *string   `json:"tax_title,omitempty"`
+	TaxRate     float64   `json:"tax_rate"`
 	CreatedAt   time.Time `json:"created_at"`
 }

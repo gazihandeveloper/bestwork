@@ -106,6 +106,9 @@ export interface Category {
   description: string | null;
   sort_order: number;
   is_active: boolean;
+  tax_id?: number | null;
+  tax_title?: string | null;
+  tax_rate?: number;
   created_at: string;
 }
 
@@ -116,6 +119,24 @@ export interface CategoryInput {
   description?: string;
   sort_order?: number;
   is_active?: boolean;
+  tax_id?: number | null;
+}
+
+export interface Tax {
+  id: number;
+  title: string;
+  rate: number;
+  sort_order: number;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TaxInput {
+  title: string;
+  rate: number;
+  sort_order?: number;
+  status?: string;
 }
 
 export interface Product {
@@ -229,6 +250,29 @@ export async function updateCategory(id: number, input: CategoryInput): Promise<
 
 export async function deleteCategory(id: number): Promise<void> {
   await request("DELETE", `/admin/categories/${id}`);
+}
+
+// ── Vergiler (KDV) ────────────────────────────────────────────────────────
+export async function listTaxes(activeOnly = false): Promise<Tax[]> {
+  const data = await request<{ taxes: Tax[] }>(
+    "GET",
+    `/admin/taxes${activeOnly ? "?active=1" : ""}`
+  );
+  return data.taxes ?? [];
+}
+
+export async function createTax(input: TaxInput): Promise<Tax> {
+  const data = await request<{ tax: Tax }>("POST", "/admin/taxes", input);
+  return data.tax;
+}
+
+export async function updateTax(id: number, input: TaxInput): Promise<Tax> {
+  const data = await request<{ tax: Tax }>("PUT", `/admin/taxes/${id}`, input);
+  return data.tax;
+}
+
+export async function deleteTax(id: number): Promise<void> {
+  await request("DELETE", `/admin/taxes/${id}`);
 }
 
 // ── Ürünler ───────────────────────────────────────────────────────────────
