@@ -115,7 +115,14 @@ func (h *EarningPlanHandler) Create(c *gin.Context) {
 	}
 	p, err := h.plans.Create(c.Request.Context(), req.toModel())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		switch {
+		case errors.Is(err, services.ErrEarningPlanDuplicate):
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrEarningPlanInvalid):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Kazanç kalemi eklenemedi"})
+		}
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"plan": p})
@@ -137,11 +144,16 @@ func (h *EarningPlanHandler) Update(c *gin.Context) {
 	m.ID = id
 	p, err := h.plans.Update(c.Request.Context(), m)
 	if err != nil {
-		if errors.Is(err, services.ErrEarningPlanNotFound) {
+		switch {
+		case errors.Is(err, services.ErrEarningPlanNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": "Kazanç kalemi bulunamadı"})
-			return
+		case errors.Is(err, services.ErrEarningPlanDuplicate):
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, services.ErrEarningPlanInvalid):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Kazanç kalemi güncellenemedi"})
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"plan": p})

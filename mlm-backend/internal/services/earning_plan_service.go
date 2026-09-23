@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"mlm-backend/internal/models"
@@ -14,6 +15,12 @@ import (
 
 // ErrEarningPlanNotFound kazanç planı bulunamadığında döndürülür.
 var ErrEarningPlanNotFound = errors.New("kazanç kalemi bulunamadı")
+
+// ErrEarningPlanDuplicate kod zaten kullanımda olduğunda döndürülür.
+var ErrEarningPlanDuplicate = errors.New("bu kod zaten kullanılıyor")
+
+// ErrEarningPlanInvalid doğrulama hatalarında döndürülür.
+var ErrEarningPlanInvalid = errors.New("geçersiz kazanç kalemi")
 
 // EarningPlanService kazanç planı (Network Ayarları) CRUD işlemlerini yürütür.
 type EarningPlanService struct {
@@ -140,7 +147,10 @@ func (s *EarningPlanService) saveRates(ctx context.Context, q DBTX, planID int64
 // Create yeni kazanç kalemi ekler (oranlarla).
 func (s *EarningPlanService) Create(ctx context.Context, p *models.EarningPlan) (*models.EarningPlan, error) {
 	if err := s.normalize(p); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", ErrEarningPlanInvalid, err.Error())
+	}
+	if p.Code == "" {
+		return nil, fmt.Errorf("%w: kod zorunludur", ErrEarningPlanInvalid)
 	}
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -154,13 +164,17 @@ func (s *EarningPlanService) Create(ctx context.Context, p *models.EarningPlan) 
 		p.Code, p.Title, p.Description, p.PayoutType, p.MaxRate, p.Scope, p.Period, p.ActivityMode, p.CheckMatching, p.Depth, p.SortOrder, p.IsActive).
 		Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, ErrEarningPlanDuplicate
+		}
 		return nil, fmt.Errorf("kazanç kalemi eklenemedi: %w", err)
 	}
 	if err := s.saveRates(ctx, tx, p.ID, p.Rates); err != nil {
 		return nil, err
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transaction tamamlanamadı: %w", err)
 	}
 	return s.GetByID(ctx, p.ID)
 }
@@ -168,7 +182,7 @@ func (s *EarningPlanService) Create(ctx context.Context, p *models.EarningPlan) 
 // Update kazanç kalemini ve oranlarını günceller.
 func (s *EarningPlanService) Update(ctx context.Context, p *models.EarningPlan) (*models.EarningPlan, error) {
 	if err := s.normalize(p); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", ErrEarningPlanInvalid, err.Error())
 	}
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -182,16 +196,23 @@ func (s *EarningPlanService) Update(ctx context.Context, p *models.EarningPlan) 
 		 WHERE id=$12`,
 		p.Title, p.Description, p.PayoutType, p.MaxRate, p.Scope, p.Period, p.ActivityMode, p.CheckMatching, p.Depth, p.SortOrder, p.IsActive, p.ID)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, ErrEarningPlanDuplicate
+		}
 		return nil, fmt.Errorf("kazanç kalemi güncellenemedi: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return nil, ErrEarningPlanNotFound
 	}
-	if err := s.saveRates(ctx, tx, p.ID, p.Rates); err != nil {
-		return nil, err
+	// rates nil ise (gövdede hiç gönderilmediyse) mevcut oranlara DOKUNMA.
+	if p.Rates != nil {
+		if err := s.saveRates(ctx, tx, p.ID, p.Rates); err != nil {
+			return nil, err
+		}
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transaction tamamlanamadı: %w", err)
 	}
 	return s.GetByID(ctx, p.ID)
 }
@@ -211,11 +232,9 @@ func (s *EarningPlanService) Delete(ctx context.Context, id int64) error {
 // normalize alanları doğrular/temizler.
 func (s *EarningPlanService) normalize(p *models.EarningPlan) error {
 	p.Title = strings.TrimSpace(p.Title)
+	p.Code = strings.ToLower(strings.TrimSpace(p.Code))
 	if p.Title == "" {
 		return errors.New("başlık zorunludur")
-	}
-	if strings.TrimSpace(p.Code) == "" {
-		return errors.New("kod zorunludur")
 	}
 	if !validPayoutType(p.PayoutType) {
 		return errors.New("geçersiz tür (gelir/puan/bonus)")
@@ -234,6 +253,27 @@ func (s *EarningPlanService) normalize(p *models.EarningPlan) error {
 	}
 	if p.Depth < 0 {
 		p.Depth = 0
+	}
+	if p.Depth > 20 {
+		return errors.New("derinlik en fazla 20 olabilir")
+	}
+	// Oran matrisi doğrulaması
+	for _, r := range p.Rates {
+		if r.Rate == 0 {
+			continue
+		}
+		if r.RankID <= 0 {
+			return errors.New("geçersiz kariyer")
+		}
+		if r.Depth < 1 || (p.Depth > 0 && r.Depth > p.Depth) {
+			return errors.New("geçersiz derinlik")
+		}
+		if r.Rate < 0 || r.Rate > 100 {
+			return errors.New("oran 0-100 arasında olmalıdır")
+		}
+		if p.MaxRate > 0 && r.Rate > p.MaxRate {
+			return errors.New("oran, maksimum dağıtım oranını aşamaz")
+		}
 	}
 	return nil
 }

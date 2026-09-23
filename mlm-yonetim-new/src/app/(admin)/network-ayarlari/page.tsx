@@ -73,7 +73,7 @@ export default function NetworkSettingsPage() {
     load();
     listRanks()
       .then(setRanks)
-      .catch(() => {});
+      .catch(() => setError("Kariyer listesi yüklenemedi. Oran matrisi kaydedilemez; sayfayı yenileyin."));
   }, []);
 
   const select = (p: EarningPlan) => {
@@ -125,17 +125,26 @@ export default function NetworkSettingsPage() {
 
   const save = async () => {
     if (!form.title.trim()) return setError("Başlık zorunludur.");
-    if (!creating && !form.code.trim()) return setError("Kod zorunludur.");
-    if (creating && !form.code.trim()) return setError("Kod zorunludur (ör. custom_bonus).");
+    if (!form.code.trim()) return setError("Kod zorunludur (ör. custom_bonus).");
+    if (Number(form.max_rate) < 0 || Number(form.max_rate) > 100)
+      return setError("Maksimum oran 0-100 arasında olmalıdır.");
+    if (Number(form.depth) > 20) return setError("Derinlik en fazla 20 olabilir.");
+    if (depth > 0 && ranks.length === 0)
+      return setError("Kariyer listesi boş; oran matrisi kaydedilemez.");
     setSaving(true);
     setError("");
     try {
       const payload: EarningPlanInput = { ...form, rates: collectedRates };
-      if (creating) await createEarningPlan(payload);
-      else if (selectedId) await updateEarningPlan(selectedId, payload);
-      setNotice(creating ? "Kazanç kalemi eklendi." : "Kazanç kalemi güncellendi.");
-      setCreating(false);
-      load();
+      if (creating) {
+        const created = await createEarningPlan(payload);
+        load();
+        select(created);
+        setNotice("Kazanç kalemi eklendi.");
+      } else if (selectedId) {
+        await updateEarningPlan(selectedId, payload);
+        setNotice("Kazanç kalemi güncellendi.");
+        load();
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
