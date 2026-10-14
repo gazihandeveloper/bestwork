@@ -20,6 +20,9 @@ type User struct {
 	IsInPendingPool          bool       `json:"is_in_pending_pool"`
 	PendingSince             *time.Time `json:"pending_since"`
 	CurrentRankID            *int       `json:"current_rank_id"`
+	// Panel üye listesi zenginleştirmesi (DB kolonu değil): sponsor isim/kodu.
+	SponsorName              *string    `json:"sponsor_name"`
+	SponsorCode              *string    `json:"sponsor_code"`
 	TotalPVLeft              float64      `json:"total_pv_left"`
 	TotalPVRight             float64      `json:"total_pv_right"`
 	TotalCVLeft              float64      `json:"total_cv_left"`

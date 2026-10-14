@@ -88,6 +88,9 @@ func main() {
 	pendingPoolHandler := handlers.NewPendingPoolHandler(pendingPoolService)
 	walletHandler := handlers.NewWalletHandler(walletService)
 	adminHandler := handlers.NewAdminHandler(walletService, chipService, monthlyCloseService, pendingPoolService, paymentNotificationService, userService, orderService, auditService, adminStatsService, treeAdminService, jobService)
+	staffService := services.NewStaffService(database.GetDB(), userService)
+	staffHandler := handlers.NewStaffHandler(staffService)
+	careerHandler := handlers.NewCareerHandler()
 	packageHandler := handlers.NewPackageHandler(packageService)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 	commissionHandler := handlers.NewCommissionHandler(commissionService)
@@ -108,6 +111,11 @@ func main() {
 	// Ortak admin yetki zinciri
 	adminOnly := func() []gin.HandlerFunc {
 		return []gin.HandlerFunc{middleware.AuthRequired(userService), middleware.AdminRequired(userService)}
+	}
+
+	// Dashboard ve finansal özet uçları: çalışanlar (staff) erişemez.
+	adminStrict := func() []gin.HandlerFunc {
+		return []gin.HandlerFunc{middleware.AuthRequired(userService), middleware.AdminStrict(userService)}
 	}
 	// Kilitli işlemler (ağaç taşıma, manuel rütbe, manuel bakiye, PV düzeltme)
 	// yalnızca super_admin rolüne açıktır (RBAC).
@@ -164,6 +172,7 @@ func main() {
 		api.GET("/eshop/products", eshopHandler.ListProducts)
 		api.GET("/eshop/products/slug/:slug", eshopHandler.GetProductBySlug)
 		api.GET("/eshop/categories", eshopHandler.ListCategories)
+		api.GET("/eshop/product-reviews/:id", eshopHandler.ListReviews)
 
 		// Eshop storefront uyumlu auth endpoint'leri (JWT tabanlı sözleşme).
 		eshopAuthHandler := handlers.NewEshopAuthHandler(userService)
@@ -173,6 +182,7 @@ func main() {
 		eshopMe := api.Group("/eshop")
 		eshopMe.Use(middleware.AuthRequired(userService))
 		eshopMe.GET("/users/me", eshopAuthHandler.Me)
+		eshopMe.POST("/product-reviews/:id", eshopHandler.CreateReview)
 
 		// Eshop storefront uyumlu hesabım endpoint'leri (sipariş + cüzdan + MLM dashboard).
 		eshopAccountHandler := handlers.NewEshopAccountHandler(orderService, walletService, productService, dashboardService, userService, packageService, pendingPoolService, ticketService)
@@ -294,6 +304,7 @@ func main() {
 		adminTickets.Use(adminOnly()...)
 		adminTickets.GET("", ticketHandler.ListAll)
 		adminTickets.POST("/:id/resolve", ticketHandler.Resolve)
+		adminTickets.POST("/:id/unresolve", ticketHandler.Unresolve)
 		adminTickets.POST("/:id/claim", ticketHandler.Claim)
 		adminTickets.GET("/:id", ticketHandler.Get)
 		adminTickets.POST("/:id/reply", ticketHandler.Reply)
@@ -344,7 +355,7 @@ func main() {
 		dashboard.GET("/team", dashboardHandler.Team)
 		dashboard.GET("/commissions", dashboardHandler.Commissions)
 
-		adminDashboardHandlers := append(adminOnly(), dashboardHandler.Admin)
+		adminDashboardHandlers := append(adminStrict(), dashboardHandler.Admin)
 		api.GET("/admin/dashboard", adminDashboardHandlers...)
 
 		api.GET("/commissions", middleware.AuthRequired(userService), commissionHandler.List)
@@ -382,16 +393,36 @@ func main() {
 		// Yönetim paneli genişletme endpoint'leri (üye, sipariş, cüzdan, ağaç,
 		// denetim logları, raporlar, KYC, fraud — adminOnly/superAdminOnly korumalı)
 		api.GET("/admin/users", append(adminOnly(), adminHandler.ListUsers)...)
+		api.GET("/admin/member-counts", append(adminOnly(), adminHandler.MemberCounts)...)
 		api.PUT("/admin/users/:id/rank", append(superAdminOnly(), adminHandler.UpdateUserRank)...)
 		api.PUT("/admin/users/:id/status", append(adminOnly(), adminHandler.UpdateUserStatus)...)
 		api.PUT("/admin/users/:id/role", append(superAdminOnly(), adminHandler.UpdateUserRole)...)
 		api.PUT("/admin/users/:id/sponsor", append(adminOnly(), adminHandler.ChangeSponsor)...)
 		api.POST("/admin/users/:id/adjust-pv-cv", append(superAdminOnly(), adminHandler.AdjustPVAndCV)...)
+
+		// Çalışan rolleri ve menü izinleri (RBAC)
+		api.GET("/admin/staff", append(adminOnly(), staffHandler.List)...)
+		api.POST("/admin/staff", append(adminOnly(), staffHandler.Create)...)
+		api.PUT("/admin/staff/:id", append(adminOnly(), staffHandler.Update)...)
+		api.DELETE("/admin/staff/:id", append(adminOnly(), staffHandler.Delete)...)
+		api.GET("/admin/me/permissions", middleware.AuthRequired(userService), staffHandler.MyPermissions)
+		api.GET("/admin/me/preferences", append(adminOnly(), adminHandler.GetMyPreferences)...)
+		api.PUT("/admin/me/preferences/:key", append(adminOnly(), adminHandler.SetMyPreference)...)
 		api.GET("/admin/orders", append(adminOnly(), adminHandler.ListOrders)...)
 		api.PUT("/admin/orders/:id/status", append(adminOnly(), adminHandler.UpdateOrderStatus)...)
 		api.PATCH("/admin/orders/:id/status", append(adminOnly(), adminHandler.UpdateOrderStatus)...)
 
 		// Seviye (rütbe) yönetimi — admin CRUD
+		api.GET("/admin/careers", append(adminOnly(), careerHandler.Distribution)...)
+		api.GET("/admin/careers/monthly", append(adminOnly(), careerHandler.Monthly)...)
+		api.GET("/admin/careers/earnings", append(adminOnly(), careerHandler.Earnings)...)
+		api.GET("/admin/careers/pv-top", append(adminOnly(), careerHandler.PVTop)...)
+		api.GET("/admin/careers/cv-top", append(adminOnly(), careerHandler.CVTop)...)
+		api.GET("/admin/product-reviews", append(adminOnly(), eshopHandler.ListAdminReviews)...)
+		api.PATCH("/admin/product-reviews/:id/approve", append(adminOnly(), eshopHandler.ApproveReview)...)
+		api.PATCH("/admin/product-reviews/:id/unapprove", append(adminOnly(), eshopHandler.UnapproveReview)...)
+		api.DELETE("/admin/product-reviews/:id", append(adminOnly(), eshopHandler.DeleteReview)...)
+
 		adminRanks := api.Group("/admin/ranks")
 		adminRanks.Use(adminOnly()...)
 		adminRanks.GET("", rankHandler.ListAll)
@@ -409,14 +440,24 @@ func main() {
 		api.GET("/admin/correction-logs", append(adminOnly(), adminHandler.ListCorrectionLogs)...)
 		api.GET("/admin/binary-balance", append(adminOnly(), adminHandler.BinaryBalance)...)
 		api.GET("/admin/financial-summary", append(adminOnly(), adminHandler.FinancialSummary)...)
-		api.GET("/admin/top-earners", append(adminOnly(), adminHandler.TopEarners)...)
-		api.GET("/admin/revenue", append(adminOnly(), adminHandler.Revenue)...)
-		api.GET("/admin/commissions-series", append(adminOnly(), adminHandler.CommissionSeries)...)
-		api.GET("/admin/rank-distribution", append(adminOnly(), adminHandler.RankDistribution)...)
+		api.GET("/admin/top-earners", append(adminStrict(), adminHandler.TopEarners)...)
+		api.GET("/admin/revenue", append(adminStrict(), adminHandler.Revenue)...)
+		api.GET("/admin/commissions-series", append(adminStrict(), adminHandler.CommissionSeries)...)
+		api.GET("/admin/activity-series", append(adminStrict(), adminHandler.ActivitySeries)...)
+		api.GET("/admin/stats-series", append(adminStrict(), adminHandler.StatsSeries)...)
+		api.GET("/admin/stats-summary", append(adminStrict(), adminHandler.StatsSummary)...)
+		api.GET("/admin/stats-leaders", append(adminStrict(), adminHandler.StatsLeaders)...)
+		api.GET("/admin/promotions", append(adminStrict(), adminHandler.ListPromotions)...)
+		api.POST("/admin/promotions", append(adminStrict(), adminHandler.CreatePromotion)...)
+		api.PUT("/admin/promotions/:id", append(adminStrict(), adminHandler.UpdatePromotion)...)
+		api.DELETE("/admin/promotions/:id", append(adminStrict(), adminHandler.DeletePromotion)...)
+		api.POST("/admin/promotions/:id/active", append(adminStrict(), adminHandler.SetPromotionActive)...)
+		api.GET("/admin/promotions/:id/members", append(adminStrict(), adminHandler.PromotionMembers)...)
+		api.GET("/admin/rank-distribution", append(adminStrict(), adminHandler.RankDistribution)...)
 		api.POST("/admin/careers/recompute", append(adminOnly(), adminHandler.RecomputeCareers)...)
 		api.POST("/admin/respawn", append(adminOnly(), adminHandler.RespawnUser)...)
-		api.GET("/admin/top-products", append(adminOnly(), adminHandler.TopProducts)...)
-		api.GET("/admin/fraud/duplicates", append(adminOnly(), adminHandler.FraudDuplicates)...)
+		api.GET("/admin/top-products", append(adminStrict(), adminHandler.TopProducts)...)
+		api.GET("/admin/fraud/duplicates", append(adminStrict(), adminHandler.FraudDuplicates)...)
 		api.POST("/admin/bonus/simulate", append(adminOnly(), adminHandler.SimulateBonus)...)
 		api.POST("/admin/bonus/run", append(adminOnly(), adminHandler.RunBonusJob)...)
 		api.GET("/admin/jobs", append(adminOnly(), adminHandler.ListJobs)...)

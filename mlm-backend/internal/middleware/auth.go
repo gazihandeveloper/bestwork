@@ -62,7 +62,7 @@ func AdminRequired(_ *services.UserService) gin.HandlerFunc {
 		}
 
 		role, ok := c.Get("user_role")
-		if !ok || (role != "admin" && role != "super_admin") {
+		if !ok || (role != "admin" && role != "super_admin" && role != "staff") {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Bu işlem için admin yetkisi gerekli"})
 			return
 		}
@@ -85,6 +85,27 @@ func SuperAdminRequired(_ *services.UserService) gin.HandlerFunc {
 		role, ok := c.Get("user_role")
 		if !ok || role != "super_admin" {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Bu işlem için süper yönetici yetkisi gerekli"})
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// AdminStrict AuthRequired'dan sonra çalışır; çalışan (staff) rolünü HARİÇ
+// tutar: yalnızca admin/super_admin erişebilir. Dashboard ve finansal özet
+// uçları bu middleware ile korunur.
+func AdminStrict(_ *services.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt64("user_id")
+		if userID == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Geçersiz kullanıcı kimliği"})
+			return
+		}
+
+		role, ok := c.Get("user_role")
+		if !ok || (role != "admin" && role != "super_admin") {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Bu alan yalnızca yöneticilere açıktır"})
 			return
 		}
 

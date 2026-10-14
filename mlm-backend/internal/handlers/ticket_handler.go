@@ -89,6 +89,21 @@ func (h *TicketHandler) Resolve(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Talep çözüldü"})
 }
 
+// Unresolve talebi çözümlenemedi olarak işaretler (admin).
+func (h *TicketHandler) Unresolve(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz talep ID"})
+		return
+	}
+	if err := h.tickets.UpdateStatus(c.Request.Context(), id, "unresolved"); err != nil {
+		log.WithError(err).Error("Talep çözümlenemedi olarak işaretlenemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Talep güncellenemedi"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Talep çözümlenemedi olarak işaretlendi"})
+}
+
 // Claim talebi mevcut yönetici/müşteri hizmetleri üzerine alır (üstlenir).
 func (h *TicketHandler) Claim(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -142,6 +157,13 @@ func (h *TicketHandler) Reply(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Yanıt eklenemedi"})
 		return
+	}
+	// Personel yanıtı sonrası talep "beklemede" (in_progress) durumuna geçer;
+	// personel çözüldü/çözümlenemedi seçene kadar burada kalır.
+	if t != nil && (t.Status == "open" || t.Status == "new") {
+		if uerr := h.tickets.UpdateStatus(c.Request.Context(), id, "in_progress"); uerr == nil {
+			t.Status = "in_progress"
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"ticket": t})
 }

@@ -1,5 +1,7 @@
-import ComingSoon from "@/components/common/ComingSoon";
+import { redirect } from "next/navigation";
 
+// "Genel Raporlar" sayfası, detaylı istatistik sayfalarıyla değiştirildi.
+// Eski bağlantılar Üye İstatistikleri sayfasına yönlendirilir.
 export default function RaporlarPage() {
-  return <ComingSoon title="Raporlar" />;
+  redirect("/raporlar/uye-istatistikleri");
 }

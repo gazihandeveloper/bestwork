@@ -30,6 +30,8 @@ interface RegisterData {
   password: string
   fullName: string
   phone?: string
+  /** Doğum tarihi (YYYY-AA-GG) — doğum günü kutlaması için */
+  birthDate?: string
   /** Referans kodu (TR90...) — opsiyonel sponsor */
   sponsor?: string
 }
@@ -108,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         first_name: data.fullName?.split(' ')[0] || '',
         last_name: data.fullName?.split(' ').slice(1).join(' ') || '',
         phone: data.phone || '',
+        birth_date: data.birthDate || undefined,
         sponsor: data.sponsor?.trim() || undefined,
       }
       const res = await post<{ access_token: string; refresh_token: string; user: User }>('/eshop/auth/register', payload)

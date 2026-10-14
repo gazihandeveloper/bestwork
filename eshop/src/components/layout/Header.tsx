@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation'
 import {
   Search,
   ShoppingCart,
+  Heart,
   User,
   ChevronDown,
   Menu,
@@ -21,6 +22,7 @@ import {
 } from '@/components/icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 import { useI18n } from '@/lib/i18n'
 import { get } from '@/lib/api'
 
@@ -52,6 +54,7 @@ export function Header() {
   const pathname = usePathname()
   const { isAuthenticated, user, logout } = useAuth()
   const { itemCount } = useCart()
+  const { count: favCount } = useFavorites()
   const { lang, setLang } = useI18n()
 
   useEffect(() => {
@@ -63,9 +66,9 @@ export function Header() {
   const isActive = (path: string) => pathname === path
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-900">
       {/* Üst Bilgi Barı */}
-      <div className="hidden lg:block bg-gray-50 border-b border-gray-100">
+      <div className="hidden lg:block bg-gray-50 border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-10 text-xs text-gray-500">
             <div className="flex items-center gap-4">
@@ -160,8 +163,8 @@ export function Header() {
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50 hover:text-brand-500 lg:w-auto lg:justify-start lg:px-2.5"
               >
                 <User size={22} className="lg:hidden" />
-                <span className="hidden text-[13px] leading-none font-bold tracking-wide lg:block">
-                  Merhaba, {user?.fullName || user?.email?.split('@')[0] || 'Hesap'}
+                <span className="hidden text-sm leading-none font-extrabold tracking-wide lg:block">
+                  Merhaba; {user?.fullName || user?.email?.split('@')[0] || 'Hesap'}
                 </span>
               </Link>
             ) : (
@@ -174,6 +177,22 @@ export function Header() {
                 <span className="hidden text-[13px] leading-none font-semibold lg:block">Giriş Yap</span>
               </Link>
             )}
+
+            {/* Favoriler */}
+            <Link
+              href="/favorites"
+              title="Favorilerim"
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-50 hover:text-rose-500"
+            >
+              <span className="relative flex items-center justify-center">
+                <Heart size={22} />
+                {favCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                    {favCount > 99 ? '99+' : favCount}
+                  </span>
+                )}
+              </span>
+            </Link>
 
             {/* Sepet */}
             <Link
@@ -366,6 +385,13 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Sepet
+              </Link>
+              <Link
+                href="/favorites"
+                className="block px-4 py-3 text-sm font-bold text-gray-700 hover:bg-brand-50 hover:text-brand-500 rounded-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Favorilerim
               </Link>
               <Link
                 href="/account"

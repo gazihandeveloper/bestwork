@@ -755,3 +755,16 @@ span.flatpickr-weekday,
 
 /* BestWork koyu tema: yumusak gri-mavi + katman farki */
 html.dark body { background-color: #131F33; }
+
+/* ============================================
+   Binary Ağaç (React Flow) — panel sürümü
+   fw-* ağırlık yardımcıları + düğüm etkileşimi + pan imleci.
+   ============================================ */
+.bw-tree-ui .fw-500 { font-weight: 500 !important; }
+.bw-tree-ui .fw-600 { font-weight: 600 !important; }
+.bw-tree-ui .fw-700 { font-weight: 700 !important; }
+.bw-tree-ui .fw-800 { font-weight: 800 !important; }
+.bw-tree-ui .react-flow__node { pointer-events: all; }
+.react-flow__node { pointer-events: all !important; }
+.react-flow__pane { cursor: grab; }
+.react-flow__pane:active { cursor: grabbing; }

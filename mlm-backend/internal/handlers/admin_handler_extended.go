@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -720,4 +722,151 @@ func (h *AdminHandler) UpdateUserRole(c *gin.Context) {
 		log.WithError(err).Warn("Denetim kaydı yazılamadı (rol değişimi)")
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Rol güncellendi"})
+}
+
+// MemberCounts ağaçtaki kişi sayılarını (aktif/pasif/toplam) döndürür (admin).
+// Üyeler ve yönetici hesapları sayılır; personel (staff) ağaçta yer almadığı
+// için hariç tutulur.
+func (h *AdminHandler) MemberCounts(c *gin.Context) {
+	var total, active int
+	err := database.GetDB().QueryRow(c.Request.Context(), `
+		SELECT COUNT(*), COUNT(*) FILTER (WHERE is_active)
+		FROM users
+		WHERE role IN ('user', 'admin')`).Scan(&total, &active)
+	if err != nil {
+		log.WithError(err).Error("Üye sayıları okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Üye sayıları alınamadı"})
+		return
+	}
+	// Şirket ağacının kök üyesi: binary ağaca yerleştirilmemiş (position NULL)
+	// ilk üye/yönetici. Panel ağacı bu kişiden yüklenir; böylece hangi yönetici
+	// açarsa açsın TÜM ŞİRKET ağacı görüntülenir.
+	var rootID int64
+	_ = database.GetDB().QueryRow(c.Request.Context(), `
+		SELECT id FROM users
+		WHERE position IS NULL AND role IN ('user', 'admin')
+		ORDER BY id ASC LIMIT 1`).Scan(&rootID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"total":   total,
+		"active":  active,
+		"passive": total - active,
+		"root_id": rootID,
+	})
+}
+
+// GetMyPreferences oturum sahibinin panel tercihlerini döndürür.
+// Değerler JSON olarak çözülür (örn. dashboard_widgets: ["kpi","ciro"]).
+func (h *AdminHandler) GetMyPreferences(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	rows, err := database.GetDB().Query(c.Request.Context(),
+		`SELECT pref_key, pref_value FROM user_preferences WHERE user_id = $1`, userID)
+	if err != nil {
+		log.WithError(err).Error("Panel tercihleri okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Tercihler alınamadı"})
+		return
+	}
+	defer rows.Close()
+
+	prefs := map[string]any{}
+	for rows.Next() {
+		var key, val string
+		if err := rows.Scan(&key, &val); err != nil {
+			continue
+		}
+		var parsed any
+		if err := json.Unmarshal([]byte(val), &parsed); err != nil {
+			parsed = val
+		}
+		prefs[key] = parsed
+	}
+	c.JSON(http.StatusOK, gin.H{"preferences": prefs})
+}
+
+// SetMyPreference oturum sahibinin bir tercihini kaydeder (upsert).
+func (h *AdminHandler) SetMyPreference(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	key := strings.TrimSpace(c.Param("key"))
+	if key == "" || len(key) > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz tercih anahtarı"})
+		return
+	}
+	var body struct {
+		Value json.RawMessage `json:"value"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || len(body.Value) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz istek gövdesi"})
+		return
+	}
+	if _, err := database.GetDB().Exec(c.Request.Context(), `
+		INSERT INTO user_preferences (user_id, pref_key, pref_value, updated_at)
+		VALUES ($1, $2, $3, now())
+		ON CONFLICT (user_id, pref_key)
+		DO UPDATE SET pref_value = EXCLUDED.pref_value, updated_at = now()`,
+		userID, key, string(body.Value)); err != nil {
+		log.WithError(err).Error("Panel tercihi kaydedilemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Tercih kaydedilemedi"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// ActivitySeries GET /admin/activity-series — iki mod:
+//  1. period=...&points=...          → son N pencere (dashboard grafiği)
+//  2. bucket=...&from=...&to=...     → özel tarih aralığı (karşılaştırma sayfası)
+func (h *AdminHandler) ActivitySeries(c *gin.Context) {
+	if from, to, bucket := c.Query("from"), c.Query("to"), c.Query("bucket"); from != "" && to != "" && bucket != "" {
+		points, err := h.stats.ActivitySeriesRange(c.Request.Context(), bucket, from, to)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"points": points})
+		return
+	}
+	n, _ := strconv.Atoi(c.DefaultQuery("points", "0"))
+	points, err := h.stats.ActivitySeries(c.Request.Context(), c.Query("period"), n)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"points": points})
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// İSTATİSTİK SAYFALARI — Üye / Ciro / Karlılık / Prim / Puan
+// ─────────────────────────────────────────────────────────────────────
+
+// StatsSeries GET /admin/stats-series?bucket=hour|day|week|month|year&from=&to=
+// İstatistik sayfalarının ana serisi (yeni kayıt, aktif üye, sipariş, ciro,
+// prim, ödeme sayısı, alan üye, PV, CV).
+func (h *AdminHandler) StatsSeries(c *gin.Context) {
+	points, err := h.stats.StatsSeries(c.Request.Context(), c.Query("bucket"), c.Query("from"), c.Query("to"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"points": points})
+}
+
+// StatsSummary GET /admin/stats-summary — tüm zamanların özet kartları.
+func (h *AdminHandler) StatsSummary(c *gin.Context) {
+	sum, err := h.stats.StatsSummary(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, sum)
+}
+
+// StatsLeaders GET /admin/stats-leaders?kind=sponsors|earners&from=&to=&limit=
+// En çok üye getirenler ya da en çok prim alan üyeler.
+func (h *AdminHandler) StatsLeaders(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	leaders, err := h.stats.StatsLeaders(c.Request.Context(), c.Query("kind"), c.Query("from"), c.Query("to"), limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"leaders": leaders})
 }

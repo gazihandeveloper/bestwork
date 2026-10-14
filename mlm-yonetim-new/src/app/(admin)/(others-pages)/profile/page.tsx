@@ -5,12 +5,14 @@ import { getMe, type AdminMe } from "@/lib/api";
 const roleLabel: Record<string, string> = {
   super_admin: "Süper Yönetici",
   admin: "Yönetici",
+  staff: "Çalışan",
   user: "Üye",
 };
 
 export default function ProfilePage() {
   const [me, setMe] = useState<AdminMe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"profil">("profil");
 
   useEffect(() => {
     let alive = true;
@@ -19,13 +21,23 @@ export default function ProfilePage() {
         if (alive && u) setMe(u as AdminMe);
       })
       .catch(() => {})
-      .finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const fullName = me?.name?.trim() || "";
   const initials = fullName
-    ? fullName.split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+    ? fullName
+        .split(" ")
+        .filter(Boolean)
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
     : "A";
   const role = roleLabel[me?.role || ""] || me?.role || "—";
 
@@ -37,54 +49,83 @@ export default function ProfilePage() {
     { label: "Telefon", value: me?.phone || "—" },
   ];
 
+  const tabs: { key: "profil"; label: string }[] = [
+    { key: "profil", label: "Profil Bilgileri" },
+  ];
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
       <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
         Profil
       </h3>
 
-      {/* Üst kart: avatar + isim */}
-      <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-6 sm:flex-row dark:border-gray-800 dark:bg-white/[0.03]">
-        <span
-          className="inline-flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white"
-          style={{ backgroundColor: "rgb(41, 165, 108)" }}
-        >
-          {initials}
-        </span>
-        <div className="text-center sm:text-left">
-          <p className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            {loading ? "Yükleniyor..." : fullName || "Yönetici"}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{me?.email || ""}</p>
-          <span className="mt-2 inline-block rounded-full bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-500 dark:text-brand-400">
-            {loading ? "…" : role}
-          </span>
+      {/* Sekmeler */}
+      {tabs.length > 1 && (
+        <div className="mb-5 flex gap-1 border-b border-gray-200 dark:border-gray-800">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+                tab === t.key
+                  ? "border-brand-500 text-brand-500"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-      </div>
+      )}
 
-      {/* Bilgi kartı */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h4 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
-          Hesap Bilgileri
-        </h4>
-        {loading ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Bilgiler yükleniyor…</p>
-        ) : (
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {rows.map((r) => (
-              <div
-                key={r.label}
-                className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]"
-              >
-                <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">{r.label}</dt>
-                <dd className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
-                  {r.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </div>
+      {tab === "profil" ? (
+        <>
+          {/* Üst kart: avatar + isim */}
+          <div className="mb-6 flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-white p-6 sm:flex-row dark:border-gray-800 dark:bg-white/[0.03]">
+            <span
+              className="inline-flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white"
+              style={{ backgroundColor: "rgb(41, 165, 108)" }}
+            >
+              {initials}
+            </span>
+            <div className="text-center sm:text-left">
+              <p className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                {loading ? "Yükleniyor..." : fullName || "Yönetici"}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{me?.email || ""}</p>
+              <span className="mt-2 inline-block rounded-full bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-500 dark:text-brand-400">
+                {loading ? "…" : role}
+              </span>
+            </div>
+          </div>
+
+          {/* Bilgi kartı */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h4 className="mb-4 text-base font-semibold text-gray-800 dark:text-white/90">
+              Hesap Bilgileri
+            </h4>
+            {loading ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Bilgiler yükleniyor…</p>
+            ) : (
+              <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {rows.map((r) => (
+                  <div
+                    key={r.label}
+                    className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]"
+                  >
+                    <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {r.label}
+                    </dt>
+                    <dd className="mt-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+                      {r.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

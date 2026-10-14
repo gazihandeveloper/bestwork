@@ -5,10 +5,11 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingCart, Eye } from '@/components/icons'
+import { ShoppingCart, Eye, Heart } from '@/components/icons'
 import { StarRating } from './StarRating'
 import { formatPrice, discountPercentage, formatPV } from '@/lib/api'
 import { useCart } from '@/contexts/CartContext'
+import { useFavorites } from '@/contexts/FavoritesContext'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Product } from '@/types'
 
@@ -19,7 +20,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
   const { isAuthenticated } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const discount = discountPercentage(product.price, product.comparePrice || 0)
+  const fav = isFavorite(Number(product.id))
 
   return (
     <div className="group product-card bg-white rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -65,6 +68,13 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Hover Aksiyonları */}
         <div className="absolute right-3 bottom-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button
+            onClick={() => toggleFavorite(product)}
+            className="bg-white p-2 rounded-full shadow-md transition-colors hover:bg-rose-50"
+            aria-label={fav ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
+          >
+            <Heart size={16} className={fav ? 'fill-rose-500 text-rose-500' : 'text-gray-700'} />
+          </button>
+          <button
             onClick={() => addToCart(product)}
             className="bg-white text-gray-700 p-2 rounded-full shadow-md hover:bg-brand-500 hover:text-white transition-colors"
             aria-label="Sepete Ekle"
@@ -108,7 +118,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Fiyat & Sepet */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-lg font-bold text-brand-500">
+            <span className="text-base font-extrabold tracking-tight text-brand-500">
               {formatPrice(product.price)}
             </span>
             {product.comparePrice && product.comparePrice > product.price && (

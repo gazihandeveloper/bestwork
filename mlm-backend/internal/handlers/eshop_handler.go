@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"mlm-backend/internal/database"
 	"mlm-backend/internal/models"
 	"mlm-backend/internal/money"
 	"mlm-backend/internal/services"
@@ -45,8 +48,8 @@ type EshopProduct struct {
 	Description  string         `json:"description"`
 	Price        int64          `json:"price"`
 	ComparePrice int64          `json:"comparePrice,omitempty"`
-	PV           float64          `json:"pv"`
-	CV           float64          `json:"cv"`
+	PV           float64        `json:"pv"`
+	CV           float64        `json:"cv"`
 	Images       []string       `json:"images"`
 	Thumbnail    string         `json:"thumbnail"`
 	CategoryID   *int64         `json:"categoryId,omitempty"`
@@ -59,6 +62,45 @@ type EshopProduct struct {
 	IsActive     bool           `json:"isActive"`
 	IsFeatured   bool           `json:"isFeatured"`
 	CreatedAt    string         `json:"createdAt"`
+}
+
+// EshopReview eshop'un beklediği ürün yorumu şeklidir.
+type EshopReview struct {
+	ID        int64  `json:"id"`
+	Author    string `json:"author"`
+	Rating    int    `json:"rating"`
+	Comment   string `json:"comment"`
+	CreatedAt string `json:"created_at"`
+}
+
+// reviewStat ürün başına onaylı yorum özetidir.
+type reviewStat struct {
+	Count int
+	Avg   float64
+}
+
+// reviewStats onaylı yorumlardan ürün bazlı sayı/ortalama haritası üretir.
+func (h *EshopHandler) reviewStats(ctx context.Context) map[int64]reviewStat {
+	out := map[int64]reviewStat{}
+	rows, err := database.GetDB().Query(ctx, `
+		SELECT product_id, COUNT(*), COALESCE(AVG(rating), 0)
+		FROM product_reviews
+		WHERE is_approved = TRUE
+		GROUP BY product_id`)
+	if err != nil {
+		log.WithError(err).Warn("Ürün yorum istatistikleri okunamadı")
+		return out
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var pid int64
+		var st reviewStat
+		if err := rows.Scan(&pid, &st.Count, &st.Avg); err != nil {
+			continue
+		}
+		out[pid] = st
+	}
+	return out
 }
 
 // slugify Türkçe karakterleri sadeleştirip kebab-case üretir (kararlıdır).
@@ -122,7 +164,7 @@ func (h *EshopHandler) toCategory(c models.Category) EshopCategory {
 	return EshopCategory{ID: c.ID, Name: c.Name, Slug: slug, Icon: c.Icon, Description: desc, IsActive: c.IsActive}
 }
 
-func (h *EshopHandler) toProduct(p models.Product, catMap map[int64]models.Category) EshopProduct {
+func (h *EshopHandler) toProduct(p models.Product, catMap map[int64]models.Category, stats map[int64]reviewStat) EshopProduct {
 	thumb := eshopImagePath(p.ImagePath)
 	images := []string{}
 	if thumb != "" {
@@ -150,6 +192,13 @@ func (h *EshopHandler) toProduct(p models.Product, catMap map[int64]models.Categ
 		}
 	}
 
+	rating := 0.0
+	reviewCount := 0
+	if st, ok := stats[p.ID]; ok {
+		rating = st.Avg
+		reviewCount = st.Count
+	}
+
 	return EshopProduct{
 		ID:          p.ID,
 		Name:        p.Name,
@@ -165,8 +214,8 @@ func (h *EshopHandler) toProduct(p models.Product, catMap map[int64]models.Categ
 		Stock:       p.Stock,
 		SKU:         sku,
 		Tags:        []string{},
-		Rating:      0,
-		ReviewCount: 0,
+		Rating:      rating,
+		ReviewCount: reviewCount,
 		IsActive:    true,
 		IsFeatured:  false,
 		CreatedAt:   p.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
@@ -198,9 +247,11 @@ func (h *EshopHandler) ListProducts(c *gin.Context) {
 		catMap[cc.ID] = cc
 	}
 
+	stats := h.reviewStats(c.Request.Context())
+
 	items := make([]EshopProduct, 0, len(products))
 	for _, p := range products {
-		items = append(items, h.toProduct(p, catMap))
+		items = append(items, h.toProduct(p, catMap, stats))
 	}
 
 	page := 1
@@ -263,9 +314,11 @@ func (h *EshopHandler) GetProductBySlug(c *gin.Context) {
 		catMap[cc.ID] = cc
 	}
 
+	stats := h.reviewStats(c.Request.Context())
+
 	for _, p := range products {
 		if slugify(p.Name) == slug {
-			ok(c, h.toProduct(p, catMap))
+			ok(c, h.toProduct(p, catMap, stats))
 			return
 		}
 	}
@@ -285,6 +338,216 @@ func (h *EshopHandler) ListCategories(c *gin.Context) {
 		out = append(out, h.toCategory(cc))
 	}
 	ok(c, out)
+}
+
+// ListReviews GET /eshop/product-reviews/:id — ürünün onaylı yorumları.
+func (h *EshopHandler) ListReviews(c *gin.Context) {
+	productID := int64(atoiSafe(c.Param("id")))
+	if productID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz ürün"})
+		return
+	}
+
+	rows, err := database.GetDB().Query(c.Request.Context(), `
+		SELECT id, author, rating, comment, created_at
+		FROM product_reviews
+		WHERE product_id = $1 AND is_approved = TRUE
+		ORDER BY created_at DESC
+		LIMIT 100`, productID)
+	if err != nil {
+		log.WithError(err).Error("Ürün yorumları okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Yorumlar alınamadı"})
+		return
+	}
+	defer rows.Close()
+
+	items := make([]EshopReview, 0)
+	sum := 0
+	for rows.Next() {
+		var r EshopReview
+		var created time.Time
+		if err := rows.Scan(&r.ID, &r.Author, &r.Rating, &r.Comment, &created); err != nil {
+			continue
+		}
+		r.CreatedAt = created.Format("2006-01-02T15:04:05Z07:00")
+		sum += r.Rating
+		items = append(items, r)
+	}
+
+	toplam := len(items)
+	ortalama := 0.0
+	if toplam > 0 {
+		ortalama = float64(sum) / float64(toplam)
+	}
+
+	ok(c, gin.H{"items": items, "total": toplam, "average": ortalama})
+}
+
+// CreateReview POST /eshop/product-reviews/:id — giriş yapan üye yorum yapar.
+func (h *EshopHandler) CreateReview(c *gin.Context) {
+	userID := c.GetInt64("user_id")
+	productID := int64(atoiSafe(c.Param("id")))
+	if productID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz ürün"})
+		return
+	}
+
+	var body struct {
+		Rating  int    `json:"rating"`
+		Comment string `json:"comment"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
+		return
+	}
+	body.Comment = strings.TrimSpace(body.Comment)
+	if body.Rating < 1 || body.Rating > 5 {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Puan 1-5 arasında olmalı"})
+		return
+	}
+	if len([]rune(body.Comment)) < 3 {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Yorum en az 3 karakter olmalı"})
+		return
+	}
+	runes := []rune(body.Comment)
+	if len(runes) > 2000 {
+		body.Comment = string(runes[:2000])
+	}
+
+	var exists bool
+	if err := database.GetDB().QueryRow(c.Request.Context(),
+		`SELECT EXISTS(SELECT 1 FROM products WHERE id = $1)`, productID).Scan(&exists); err != nil || !exists {
+		c.JSON(http.StatusNotFound, gin.H{"success": false, "error": "Ürün bulunamadı"})
+		return
+	}
+
+	author := "Üye"
+	var name string
+	if err := database.GetDB().QueryRow(c.Request.Context(),
+		`SELECT COALESCE(name, '') FROM users WHERE id = $1`, userID).Scan(&name); err == nil && strings.TrimSpace(name) != "" {
+		author = name
+	}
+
+	var id int64
+	var created time.Time
+	err := database.GetDB().QueryRow(c.Request.Context(), `
+		INSERT INTO product_reviews (product_id, user_id, author, rating, comment, is_approved)
+		VALUES ($1, $2, $3, $4, $5, FALSE)
+		RETURNING id, created_at`, productID, userID, author, body.Rating, body.Comment).Scan(&id, &created)
+	if err != nil {
+		log.WithError(err).Error("Yorum kaydedilemedi")
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Yorum kaydedilemedi"})
+		return
+	}
+
+	ok(c, EshopReview{
+		ID:        id,
+		Author:    author,
+		Rating:    body.Rating,
+		Comment:   body.Comment,
+		CreatedAt: created.Format("2006-01-02T15:04:05Z07:00"),
+	})
+}
+
+// AdminReview admin panelin gördüğü yorum şeklidir.
+type AdminReview struct {
+	ID          int64  `json:"id"`
+	ProductID   int64  `json:"product_id"`
+	ProductName string `json:"product_name"`
+	Author      string `json:"author"`
+	Rating      int    `json:"rating"`
+	Comment     string `json:"comment"`
+	IsApproved  bool   `json:"is_approved"`
+	CreatedAt   string `json:"created_at"`
+}
+
+// ListAdminReviews GET /admin/product-reviews?status=pending|approved|all
+func (h *EshopHandler) ListAdminReviews(c *gin.Context) {
+	status := c.DefaultQuery("status", "pending")
+	where := ""
+	switch status {
+	case "pending":
+		where = "WHERE pr.is_approved = FALSE"
+	case "approved":
+		where = "WHERE pr.is_approved = TRUE"
+	}
+
+	rows, err := database.GetDB().Query(c.Request.Context(), `
+		SELECT pr.id, pr.product_id, COALESCE(p.name, ''), pr.author, pr.rating, pr.comment, pr.is_approved, pr.created_at
+		FROM product_reviews pr
+		LEFT JOIN products p ON p.id = pr.product_id
+		`+where+`
+		ORDER BY pr.is_approved ASC, pr.created_at DESC
+		LIMIT 200`)
+	if err != nil {
+		log.WithError(err).Error("Admin yorum listesi okunamadı")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Yorumlar alınamadı"})
+		return
+	}
+	defer rows.Close()
+
+	items := make([]AdminReview, 0)
+	for rows.Next() {
+		var r AdminReview
+		var created time.Time
+		if err := rows.Scan(&r.ID, &r.ProductID, &r.ProductName, &r.Author, &r.Rating, &r.Comment, &r.IsApproved, &created); err != nil {
+			continue
+		}
+		r.CreatedAt = created.Format("2006-01-02T15:04:05Z07:00")
+		items = append(items, r)
+	}
+
+	var pending, approved int
+	_ = database.GetDB().QueryRow(c.Request.Context(), `
+		SELECT COUNT(*) FILTER (WHERE is_approved = FALSE), COUNT(*) FILTER (WHERE is_approved = TRUE)
+		FROM product_reviews`).Scan(&pending, &approved)
+
+	c.JSON(http.StatusOK, gin.H{
+		"items": items,
+		"counts": gin.H{"pending": pending, "approved": approved, "total": pending + approved},
+	})
+}
+
+// ApproveReview PATCH /admin/product-reviews/:id/approve — yorumu yayınlar.
+func (h *EshopHandler) ApproveReview(c *gin.Context) {
+	h.setReviewApproval(c, true)
+}
+
+// UnapproveReview PATCH /admin/product-reviews/:id/unapprove — yayından kaldırır.
+func (h *EshopHandler) UnapproveReview(c *gin.Context) {
+	h.setReviewApproval(c, false)
+}
+
+// setReviewApproval yorumun onay durumunu günceller.
+func (h *EshopHandler) setReviewApproval(c *gin.Context, approved bool) {
+	id := int64(atoiSafe(c.Param("id")))
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz yorum"})
+		return
+	}
+	tag, err := database.GetDB().Exec(c.Request.Context(),
+		`UPDATE product_reviews SET is_approved = $2 WHERE id = $1`, id, approved)
+	if err != nil || tag.RowsAffected() == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Yorum bulunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true, "is_approved": approved})
+}
+
+// DeleteReview DELETE /admin/product-reviews/:id — yorumu siler.
+func (h *EshopHandler) DeleteReview(c *gin.Context) {
+	id := int64(atoiSafe(c.Param("id")))
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz yorum"})
+		return
+	}
+	tag, err := database.GetDB().Exec(c.Request.Context(),
+		`DELETE FROM product_reviews WHERE id = $1`, id)
+	if err != nil || tag.RowsAffected() == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Yorum bulunamadı"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func atoiSafe(s string) int {

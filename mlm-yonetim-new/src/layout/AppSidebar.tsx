@@ -1,10 +1,13 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
-import { BoxIcon, CalendarDaysIcon, ChevronDownIcon, CircleUserIcon, CubeIcon, DollarSignIcon, GearIcon, HouseIcon } from "@/components/icons";
+import { BoxIcon, CalendarDaysIcon, ChevronDownIcon, CircleUserIcon, ClockIcon, CubeIcon, DollarSignIcon, GearIcon, HouseIcon } from "@/components/icons";
 import NetworkIcon from "lucide-react/dist/esm/icons/network.mjs";
+import GiftIcon from "lucide-react/dist/esm/icons/gift.mjs";
+import { getMyMenuPermissions } from "@/lib/api";
+import { NAV_ITEMS, NAV_PATHS } from "@/lib/nav";
 
 type NavItem = {
   name: string;
@@ -13,73 +16,75 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
-  {
-    icon: <HouseIcon />,
-    name: "Anasayfa",
-    path: "/",
-  },
-  {
-    icon: <CubeIcon />,
-    name: "E-ticaret İşlemleri",
-    subItems: [
-      { name: "Kategoriler", path: "/kategoriler", pro: false },
-      { name: "Slider Yönetimi", path: "/slider", pro: false },
-      { name: "Ürünler", path: "/urunler", pro: false },
-      { name: "Siparişler", path: "/siparisler", pro: false },
-      { name: "Kargo Limiti", path: "/kargo", pro: false },
-      { name: "Güvenlik Şeridi", path: "/guvenlik-seridi", pro: false },
-      { name: "Vergiler", path: "/vergiler", pro: false },
-    ],
-  },
-  {
-    icon: <CircleUserIcon />,
-    name: "Müşteri Hizmetleri",
-    subItems: [
-      { name: "Destek Talepleri", path: "/destek", pro: false },
-      { name: "Üyeler", path: "/uyeler", pro: false },
-      { name: "Kariyerler", path: "/kariyerler", pro: false },
-      { name: "Binary Ağaç", path: "/agac", pro: false },
-    ],
-  },
-  {
-    icon: <DollarSignIcon />,
-    name: "Muhasebe",
-    subItems: [
-      { name: "Çekim Talepleri", path: "/cekimler", pro: false },
-      { name: "Prim", path: "/prim", pro: false },
-      { name: "Kariyer Bonusu", path: "/kariyer-bonusu", pro: false },
-      { name: "Flash-Out", path: "/flashout", pro: false },
-    ],
-  },
-  {
-    icon: <CalendarDaysIcon />,
-    name: "Raporlar",
-    path: "/raporlar",
-  },
-  {
-    icon: <NetworkIcon />,
-    name: "Ağaç Yönetimi",
-    path: "/agac",
-  },
-  {
-    icon: <GearIcon />,
-    name: "Güvenlik",
-    path: "/guvenlik",
-  },
-  {
-    icon: <BoxIcon />,
-    name: "Depo",
-    subItems: [
-      { name: "Stok", path: "/stok", pro: false },
-      { name: "Görseller", path: "/gorseller", pro: false },
-    ],
-  },
-];
+// Üst seviye menü ikonları (menü verisi src/lib/nav.ts içinde).
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  Anasayfa: <HouseIcon />,
+  "E-Ticaret İşlemleri": <CubeIcon />,
+  "Üye Hizmetleri": <CircleUserIcon />,
+  "Müşteri Hizmetleri": <CircleUserIcon />,
+  Muhasebe: <DollarSignIcon />,
+  Raporlar: <CalendarDaysIcon />,
+  "Ağaç Yönetimi": <NetworkIcon />,
+  "Ay Sonu İşlemleri": <ClockIcon />,
+  Ayarlar: <GearIcon />,
+  Depo: <BoxIcon />,
+  "Kampanya ve Promosyonlar": <GiftIcon />,
+};
+
+const navItems: NavItem[] = NAV_ITEMS.map((n) => ({
+  name: n.name,
+  icon: NAV_ICONS[n.name] ?? null,
+  path: n.path,
+  subItems: n.subItems,
+}));
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Menü izinleri (RBAC): admin/süper admin "*" alır; çalışanlar yalnızca
+  // kendilerine atanmış menüleri görür.
+  const [allowedMenus, setAllowedMenus] = useState<string[] | null>(null);
+  const [role, setRole] = useState("");
+  useEffect(() => {
+    getMyMenuPermissions()
+      .then((d) => {
+        setAllowedMenus(d.menus || []);
+        setRole(d.role || "");
+      })
+      .catch(() => setAllowedMenus([]));
+  }, []);
+
+  const visibleNavItems = React.useMemo(() => {
+    // İzinler yüklenene kadar HİÇ menü gösterme (yenilemede hepsi görünmesin).
+    if (!allowedMenus) return [];
+    if (allowedMenus.includes("*")) return navItems;
+    const base = role === "staff" ? navItems.filter((n) => n.path !== "/") : navItems;
+    return base
+      .map((nav) => {
+        if (nav.subItems) {
+          const subs = nav.subItems.filter((s) => allowedMenus.includes(s.path));
+          return subs.length ? { ...nav, subItems: subs } : null;
+        }
+        return nav.path && allowedMenus.includes(nav.path) ? nav : null;
+      })
+      .filter(Boolean) as NavItem[];
+  }, [allowedMenus, role]);
+
+  // İzni olmayan bir menü sayfasına elle gidilirse anasayfaya yönlendir.
+  useEffect(() => {
+    if (!allowedMenus || allowedMenus.includes("*") || !pathname) return;
+    const known: string[] = [];
+    NAV_ITEMS.forEach((n) => {
+      if (n.subItems) n.subItems.forEach((s) => known.push(s.path));
+      else if (n.path) known.push(n.path);
+    });
+    if (known.includes(pathname) && !allowedMenus.includes(pathname)) {
+      const firstAllowed = NAV_PATHS.find((p) => p !== "/" && allowedMenus.includes(p));
+      if (firstAllowed) router.replace(firstAllowed);
+    }
+  }, [allowedMenus, pathname, router]);
 
   const renderMenuItems = (items: NavItem[], menuType: string) => (
     <ul className="flex flex-col gap-4">
@@ -311,7 +316,7 @@ const AppSidebar: React.FC = () => {
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">{renderMenuItems(navItems, "main")}</nav>
+        <nav className="mb-6">{renderMenuItems(visibleNavItems, "main")}</nav>
       </div>
     </aside>
   );

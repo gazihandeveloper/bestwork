@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ func NewEshopAuthHandler(users *services.UserService) *EshopAuthHandler {
 }
 
 // eshopUser BestWork kullanıcısını eshop'un beklediği kullanıcı şekline çevirir.
-func eshopUser(u *models.User) gin.H {
+func eshopUser(u *models.User, birthDate string) gin.H {
 	first, last := "", ""
 	if u.Name != "" {
 		parts := strings.Fields(u.Name)
@@ -52,6 +53,7 @@ func eshopUser(u *models.User) gin.H {
 		"last_name":  last,
 		"fullName":   u.Name,
 		"phone":      phone,
+		"birth_date": birthDate,
 		"role":       role,
 		"isActive":   u.IsActive,
 		"created_at": u.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
@@ -95,6 +97,7 @@ type eshopRegisterRequest struct {
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`
 	Phone           string `json:"phone"`
+	BirthDate       string `json:"birth_date"`
 	Sponsor         string `json:"sponsor"`
 }
 
@@ -133,7 +136,19 @@ func (h *EshopAuthHandler) Register(c *gin.Context) {
 		sponsorID = &sponsor.ID
 	}
 
-	user, err := h.users.CreateUser(c.Request.Context(), name, req.Email, req.Password, req.Phone, sponsorID, "user", nil)
+	// Dogum tarihi (YYYY-AA-GG) -> profile JSONB'ye yazilir; dogum gunu
+	// kutlamasi bu alana gore tetiklenir.
+	var profile map[string]any
+	birthDate := strings.TrimSpace(req.BirthDate)
+	if birthDate != "" {
+		if _, perr := time.Parse("2006-01-02", birthDate); perr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Gecersiz dogum tarihi (YYYY-AA-GG)"})
+			return
+		}
+		profile = map[string]any{"birth_date": birthDate}
+	}
+
+	user, err := h.users.CreateUser(c.Request.Context(), name, req.Email, req.Password, req.Phone, sponsorID, "user", profile)
 	if err != nil {
 		switch {
 		case errors.Is(err, services.ErrEmailExists), errors.Is(err, services.ErrPhoneExists):
@@ -157,7 +172,7 @@ func (h *EshopAuthHandler) Register(c *gin.Context) {
 		"data": gin.H{
 			"access_token":  token,
 			"refresh_token": token,
-			"user":          eshopUser(user),
+			"user":          eshopUser(user, birthDate),
 		},
 	})
 }
@@ -194,12 +209,18 @@ func (h *EshopAuthHandler) Login(c *gin.Context) {
 
 	// Eshop refresh akışı ayrı bir refresh token bekler; BestWork tek JWT
 	// ürettiğinden aynı token'ı refresh token olarak da döneriz (24h geçerli).
+	birthDate := ""
+	if prof, perr := h.users.GetProfile(c.Request.Context(), user.ID); perr == nil {
+		if v, ok := prof["birth_date"].(string); ok {
+			birthDate = v
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
 			"access_token":  token,
 			"refresh_token": token,
-			"user":          eshopUser(user),
+			"user":          eshopUser(user, birthDate),
 		},
 	})
 }
@@ -253,5 +274,11 @@ func (h *EshopAuthHandler) Me(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "Kullanıcı bulunamadı"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "data": eshopUser(user)})
+	birthDate := ""
+	if prof, perr := h.users.GetProfile(c.Request.Context(), userID); perr == nil {
+		if v, ok := prof["birth_date"].(string); ok {
+			birthDate = v
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": eshopUser(user, birthDate)})
 }

@@ -17,7 +17,7 @@ import toast from 'react-hot-toast'
 export default function RegisterPage() {
   const router = useRouter()
   const { register } = useAuth()
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', passwordConfirm: '' })
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', passwordConfirm: '', birthDate: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [sponsor, setSponsor] = useState('')
@@ -38,12 +38,25 @@ export default function RegisterPage() {
       toast.error('Şifre en az 6 karakter olmalı')
       return
     }
+    if (!form.birthDate) {
+      toast.error('Doğum tarihi zorunludur')
+      return
+    }
+    {
+      const bd = new Date(form.birthDate)
+      const now = new Date()
+      if (isNaN(bd.getTime()) || bd > now || bd.getFullYear() < 1900) {
+        toast.error('Geçerli bir doğum tarihi girin')
+        return
+      }
+    }
     setLoading(true)
     const result = await register({
       email: form.email,
       password: form.password,
       fullName: form.fullName,
       phone: form.phone,
+      birthDate: form.birthDate,
       sponsor: sponsor || undefined,
     })
     setLoading(false)
@@ -95,6 +108,13 @@ export default function RegisterPage() {
                 placeholder="05XX XXX XX XX"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+              <Input
+                label="Doğum Tarihi"
+                type="date"
+                value={form.birthDate}
+                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                required
               />
               <div className="relative">
                 <Input

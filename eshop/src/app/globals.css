@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Koyu tema desteği KALDIRILDI: dark: yardımcı sınıfları artık hiçbir öğeyle
+   eşleşmez (her zaman açık tema). Böylece tüm dark: stilleri etkisiz olur. */
+@custom-variant dark (&:where(.dark-disabled, .dark-disabled *));
+
 /* ============================================
    HappyBoon - Nest Tema Renkleri
    ============================================ */
@@ -43,6 +47,7 @@
 :root {
   --background: #ffffff;
   --foreground: #253D4E;
+  color-scheme: light;
 }
 
 body {

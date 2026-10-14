@@ -180,6 +180,7 @@ export interface User {
   last_name?: string
   fullName?: string
   phone?: string
+  birth_date?: string
   avatar_url?: string
   role: 'customer' | 'admin'
   isActive?: boolean

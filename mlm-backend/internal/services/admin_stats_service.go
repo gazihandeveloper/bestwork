@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -597,4 +598,610 @@ func (s *AdminStatsService) FinancialSummary(ctx context.Context) (map[string]an
 		"total_users":         totalUsers,
 		"active_users":        activeUsers,
 	}, nil
+}
+
+// ActivityPoint PV/CV/Komisyon/Ciro/Şirket Kârlılığı karşılaştırma grafiği için tek dönem noktası.
+type ActivityPoint struct {
+	Date       string  `json:"date"`
+	PV         float64 `json:"pv"`
+	CV         float64 `json:"cv"`
+	Commission float64 `json:"commission"`
+	Revenue    float64 `json:"revenue"`
+	Profit     float64 `json:"profit"`
+}
+
+// withProfit — her dönem için Şirket Kârlılığı = Ciro - Komisyon olarak hesaplar.
+func withProfit(points []ActivityPoint) []ActivityPoint {
+	for i := range points {
+		points[i].Profit = round2(points[i].Revenue - points[i].Commission)
+	}
+	return points
+}
+
+// ActivitySeries dönem bazlı PV, CV, komisyon ve ciro serisini üretir.
+// period: daily | weekly | monthly | yearly | 2y | 5y | 10y
+// window>0: pencereyi genişletir (örn. daily+60 → son 60 gün; monthly+24 → son 24 ay).
+// PV/CV → binary_transactions (add: +, deduct: -) · Komisyon → commissions (paid)
+// · Ciro → orders (iptal hariç).
+func (s *AdminStatsService) ActivitySeries(ctx context.Context, period string, window int) ([]ActivityPoint, error) {
+	if period == "" {
+		period = "monthly"
+	}
+	if window < 0 || window > 120 {
+		window = 0
+	}
+	trunc := "month"
+	since := "now() - interval '12 months'"
+	switch period {
+	case "daily":
+		n := 14
+		if window > 0 {
+			n = window
+		}
+		trunc, since = "day", fmt.Sprintf("now() - interval '%d days'", n)
+	case "weekly":
+		n := 12
+		if window > 0 {
+			n = window
+		}
+		trunc, since = "week", fmt.Sprintf("now() - interval '%d weeks'", n)
+	case "monthly":
+		n := 12
+		if window > 0 {
+			n = window
+		}
+		trunc, since = "month", fmt.Sprintf("now() - interval '%d months'", n)
+	case "yearly":
+		trunc, since = "month", "date_trunc('year', now())"
+	case "2y":
+		trunc, since = "month", "now() - interval '24 months'"
+	case "5y":
+		trunc, since = "year", "now() - interval '5 years'"
+	case "10y":
+		trunc, since = "year", "now() - interval '10 years'"
+	default:
+		return nil, fmt.Errorf("geçersiz dönem: daily, weekly, monthly, yearly, 2y, 5y veya 10y olmalıdır")
+	}
+
+	points := make([]ActivityPoint, 0)
+	index := map[string]int{}
+
+	// 1) PV / CV — binary_transactions
+	bq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN pv
+		                         WHEN transaction_type = 'deduct' THEN -pv
+		                         ELSE 0 END), 0) AS pv,
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN cv
+		                         WHEN transaction_type = 'deduct' THEN -cv
+		                         ELSE 0 END), 0) AS cv
+		FROM binary_transactions
+		WHERE created_at >= %s
+		GROUP BY date_trunc('%s', created_at)
+		ORDER BY d ASC`, trunc, since, trunc)
+	brows, err := s.db.Query(ctx, bq)
+	if err != nil {
+		return nil, fmt.Errorf("PV/CV serisi okunamadı: %w", err)
+	}
+	defer brows.Close()
+	for brows.Next() {
+		var d string
+		var pv, cv float64
+		if err := brows.Scan(&d, &pv, &cv); err != nil {
+			return nil, fmt.Errorf("PV/CV satırı okunamadı: %w", err)
+		}
+		index[d] = len(points)
+		points = append(points, ActivityPoint{Date: d, PV: pv, CV: cv})
+	}
+	if err := brows.Err(); err != nil {
+		return nil, err
+	}
+
+	// 2) Komisyon — commissions (yalnızca ödenmiş)
+	cq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', paid_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(amount), 0)
+		FROM commissions
+		WHERE status = 'paid' AND paid_at >= %s
+		GROUP BY date_trunc('%s', paid_at)
+		ORDER BY d ASC`, trunc, since, trunc)
+	crows, err := s.db.Query(ctx, cq)
+	if err != nil {
+		return nil, fmt.Errorf("komisyon serisi okunamadı: %w", err)
+	}
+	defer crows.Close()
+	for crows.Next() {
+		var d string
+		var amount float64
+		if err := crows.Scan(&d, &amount); err != nil {
+			return nil, fmt.Errorf("komisyon satırı okunamadı: %w", err)
+		}
+		if i, ok := index[d]; ok {
+			points[i].Commission = amount
+		} else {
+			index[d] = len(points)
+			points = append(points, ActivityPoint{Date: d, Commission: amount})
+		}
+	}
+	if err := crows.Err(); err != nil {
+		return nil, err
+	}
+
+	// 3) Genel Ciro — siparişler (iptal hariç)
+	oq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(total_amount), 0)
+		FROM orders
+		WHERE status != 'cancelled' AND created_at >= %s
+		GROUP BY date_trunc('%s', created_at)
+		ORDER BY d ASC`, trunc, since, trunc)
+	orows, err := s.db.Query(ctx, oq)
+	if err != nil {
+		return nil, fmt.Errorf("ciro serisi okunamadı: %w", err)
+	}
+	defer orows.Close()
+	for orows.Next() {
+		var d string
+		var amount float64
+		if err := orows.Scan(&d, &amount); err != nil {
+			return nil, fmt.Errorf("ciro satırı okunamadı: %w", err)
+		}
+		if i, ok := index[d]; ok {
+			points[i].Revenue = amount
+		} else {
+			index[d] = len(points)
+			points = append(points, ActivityPoint{Date: d, Revenue: amount})
+		}
+	}
+	if err := orows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Üç kaynak birleşti → tarihe göre sırala
+	sort.Slice(points, func(i, j int) bool { return points[i].Date < points[j].Date })
+	return withProfit(points), nil
+}
+
+// ActivitySeriesRange belirli bir tarih aralığını (bucket: day|week|month|year)
+// PV/CV/komisyon/ciro olarak gruplar. from & to: YYYY-MM-DD (to dahil).
+// Karşılaştırma sayfası için — geçmiş aylar/yıllar dahil her aralık çalışır.
+func (s *AdminStatsService) ActivitySeriesRange(ctx context.Context, bucket, from, to string) ([]ActivityPoint, error) {
+	switch bucket {
+	case "day", "week", "month", "year":
+	default:
+		return nil, fmt.Errorf("geçersiz bucket: day, week, month veya year olmalıdır")
+	}
+	start, err := time.Parse("2006-01-02", from)
+	if err != nil {
+		return nil, fmt.Errorf("geçersiz başlangıç tarihi (YYYY-AA-GG)")
+	}
+	end, err := time.Parse("2006-01-02", to)
+	if err != nil {
+		return nil, fmt.Errorf("geçersiz bitiş tarihi (YYYY-AA-GG)")
+	}
+	if end.Before(start) {
+		return nil, fmt.Errorf("bitiş tarihi başlangıçtan önce olamaz")
+	}
+	endEx := end.AddDate(0, 0, 1) // bitiş günü dahil
+
+	points := make([]ActivityPoint, 0)
+	index := map[string]int{}
+
+	// 1) PV / CV — binary_transactions
+	bq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN pv
+		                         WHEN transaction_type = 'deduct' THEN -pv
+		                         ELSE 0 END), 0) AS pv,
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN cv
+		                         WHEN transaction_type = 'deduct' THEN -cv
+		                         ELSE 0 END), 0) AS cv
+		FROM binary_transactions
+		WHERE created_at >= $1 AND created_at < $2
+		GROUP BY date_trunc('%s', created_at)
+		ORDER BY d ASC`, bucket, bucket)
+	brows, err := s.db.Query(ctx, bq, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("PV/CV serisi okunamadı: %w", err)
+	}
+	defer brows.Close()
+	for brows.Next() {
+		var d string
+		var pv, cv float64
+		if err := brows.Scan(&d, &pv, &cv); err != nil {
+			return nil, fmt.Errorf("PV/CV satırı okunamadı: %w", err)
+		}
+		index[d] = len(points)
+		points = append(points, ActivityPoint{Date: d, PV: pv, CV: cv})
+	}
+	if err := brows.Err(); err != nil {
+		return nil, err
+	}
+
+	// 2) Komisyon — commissions (yalnızca ödenmiş)
+	cq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', paid_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(amount), 0)
+		FROM commissions
+		WHERE status = 'paid' AND paid_at >= $1 AND paid_at < $2
+		GROUP BY date_trunc('%s', paid_at)
+		ORDER BY d ASC`, bucket, bucket)
+	crows, err := s.db.Query(ctx, cq, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("komisyon serisi okunamadı: %w", err)
+	}
+	defer crows.Close()
+	for crows.Next() {
+		var d string
+		var amount float64
+		if err := crows.Scan(&d, &amount); err != nil {
+			return nil, fmt.Errorf("komisyon satırı okunamadı: %w", err)
+		}
+		if i, ok := index[d]; ok {
+			points[i].Commission = amount
+		} else {
+			index[d] = len(points)
+			points = append(points, ActivityPoint{Date: d, Commission: amount})
+		}
+	}
+	if err := crows.Err(); err != nil {
+		return nil, err
+	}
+
+	// 3) Genel Ciro — siparişler (iptal hariç)
+	oq := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), 'YYYY-MM-DD') AS d,
+		       COALESCE(SUM(total_amount), 0)
+		FROM orders
+		WHERE status != 'cancelled' AND created_at >= $1 AND created_at < $2
+		GROUP BY date_trunc('%s', created_at)
+		ORDER BY d ASC`, bucket, bucket)
+	orows, err := s.db.Query(ctx, oq, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("ciro serisi okunamadı: %w", err)
+	}
+	defer orows.Close()
+	for orows.Next() {
+		var d string
+		var amount float64
+		if err := orows.Scan(&d, &amount); err != nil {
+			return nil, fmt.Errorf("ciro satırı okunamadı: %w", err)
+		}
+		if i, ok := index[d]; ok {
+			points[i].Revenue = amount
+		} else {
+			index[d] = len(points)
+			points = append(points, ActivityPoint{Date: d, Revenue: amount})
+		}
+	}
+	if err := orows.Err(); err != nil {
+		return nil, err
+	}
+
+	sort.Slice(points, func(i, j int) bool { return points[i].Date < points[j].Date })
+	return withProfit(points), nil
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// İSTATİSTİK SAYFALARI — Üye / Ciro / Karlılık / Prim / Puan
+// Tek esnek seri + özet + lider sorguları (bucket: hour|day|week|month|year)
+// ─────────────────────────────────────────────────────────────────────
+
+// StatsPoint — istatistik sayfaları için bir kovadaki tüm metrikler.
+type StatsPoint struct {
+	Date              string  `json:"date"`
+	NewMembers        int     `json:"new_members"`
+	ActiveMembers     int     `json:"active_members"`
+	Orders            int     `json:"orders"`
+	Revenue           float64 `json:"revenue"`
+	Commission        float64 `json:"commission"`
+	CommissionCount   int     `json:"commission_count"`
+	CommissionMembers int     `json:"commission_members"`
+	PV                float64 `json:"pv"`
+	CV                float64 `json:"cv"`
+}
+
+// StatsSummary — tüm zamanların özet kartları.
+type StatsSummary struct {
+	TotalMembers    int     `json:"total_members"`
+	ActiveMembers   int     `json:"active_members"`
+	PassiveMembers  int     `json:"passive_members"`
+	NewToday        int     `json:"new_today"`
+	NewThisWeek     int     `json:"new_this_week"`
+	NewThisMonth    int     `json:"new_this_month"`
+	NewThisYear     int     `json:"new_this_year"`
+	TotalRevenue    float64 `json:"total_revenue"`
+	TotalCommission float64 `json:"total_commission"`
+	TotalPV         float64 `json:"total_pv"`
+	TotalCV         float64 `json:"total_cv"`
+}
+
+// StatsLeader — en çok üye getiren / en çok prim alan üyeler.
+type StatsLeader struct {
+	ID    int64   `json:"id"`
+	Name  string  `json:"name"`
+	Count int     `json:"count"`
+	Total float64 `json:"total"`
+}
+
+func statsBucketFormat(bucket string) string {
+	if bucket == "hour" {
+		return "YYYY-MM-DD HH24:00"
+	}
+	return "YYYY-MM-DD"
+}
+
+func parseStatsRange(from, to string) (time.Time, time.Time, error) {
+	start, err := time.Parse("2006-01-02", from)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("geçersiz başlangıç tarihi (YYYY-AA-GG)")
+	}
+	end, err := time.Parse("2006-01-02", to)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("geçersiz bitiş tarihi (YYYY-AA-GG)")
+	}
+	if end.Before(start) {
+		return time.Time{}, time.Time{}, fmt.Errorf("bitiş tarihi başlangıçtan önce olamaz")
+	}
+	return start, end, nil
+}
+
+// StatsSeries — istatistik sayfalarının ana serisi.
+// bucket: hour|day|week|month|year · from/to: YYYY-MM-DD (to dahil).
+func (s *AdminStatsService) StatsSeries(ctx context.Context, bucket, from, to string) ([]StatsPoint, error) {
+	switch bucket {
+	case "hour", "day", "week", "month", "year":
+	default:
+		return nil, fmt.Errorf("geçersiz bucket: hour, day, week, month veya year olmalıdır")
+	}
+	start, end, err := parseStatsRange(from, to)
+	if err != nil {
+		return nil, err
+	}
+	endEx := end.AddDate(0, 0, 1)
+	fmtStr := statsBucketFormat(bucket)
+
+	points := make([]StatsPoint, 0)
+	index := map[string]int{}
+	ensure := func(d string) int {
+		if i, ok := index[d]; ok {
+			return i
+		}
+		index[d] = len(points)
+		points = append(points, StatsPoint{Date: d})
+		return index[d]
+	}
+
+	// 1) Yeni kayıtlar
+	q1 := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), '%s'), COUNT(*)
+		FROM users
+		WHERE role IN ('user', 'admin') AND created_at >= $1 AND created_at < $2
+		GROUP BY 1 ORDER BY 1`, bucket, fmtStr)
+	r1, err := s.db.Query(ctx, q1, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("yeni kayıt serisi okunamadı: %w", err)
+	}
+	defer r1.Close()
+	for r1.Next() {
+		var d string
+		var n int
+		if err := r1.Scan(&d, &n); err != nil {
+			return nil, err
+		}
+		points[ensure(d)].NewMembers = n
+	}
+	if err := r1.Err(); err != nil {
+		return nil, err
+	}
+
+	// 2) Dönem içinde işlem yapan (aktif) üye sayısı
+	q2 := fmt.Sprintf(`
+		SELECT d, COUNT(*) FROM (
+			SELECT to_char(date_trunc('%s', created_at), '%s') AS d, user_id
+			FROM orders
+			WHERE status != 'cancelled' AND created_at >= $1 AND created_at < $2
+			UNION
+			SELECT to_char(date_trunc('%s', paid_at), '%s'), user_id
+			FROM commissions
+			WHERE status = 'paid' AND paid_at >= $1 AND paid_at < $2
+			UNION
+			SELECT to_char(date_trunc('%s', created_at), '%s'), user_id
+			FROM binary_transactions
+			WHERE created_at >= $1 AND created_at < $2
+		) t
+		GROUP BY d ORDER BY d`, bucket, fmtStr, bucket, fmtStr, bucket, fmtStr)
+	r2, err := s.db.Query(ctx, q2, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("aktif üye serisi okunamadı: %w", err)
+	}
+	defer r2.Close()
+	for r2.Next() {
+		var d string
+		var n int
+		if err := r2.Scan(&d, &n); err != nil {
+			return nil, err
+		}
+		points[ensure(d)].ActiveMembers = n
+	}
+	if err := r2.Err(); err != nil {
+		return nil, err
+	}
+
+	// 3) Sipariş sayısı + ciro
+	q3 := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), '%s'), COUNT(*), COALESCE(SUM(total_amount), 0)
+		FROM orders
+		WHERE status != 'cancelled' AND created_at >= $1 AND created_at < $2
+		GROUP BY 1 ORDER BY 1`, bucket, fmtStr)
+	r3, err := s.db.Query(ctx, q3, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("sipariş serisi okunamadı: %w", err)
+	}
+	defer r3.Close()
+	for r3.Next() {
+		var d string
+		var n int
+		var v float64
+		if err := r3.Scan(&d, &n, &v); err != nil {
+			return nil, err
+		}
+		i := ensure(d)
+		points[i].Orders = n
+		points[i].Revenue = v
+	}
+	if err := r3.Err(); err != nil {
+		return nil, err
+	}
+
+	// 4) Prim: toplam, ödeme sayısı, ödeme alan üye sayısı
+	q4 := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', paid_at), '%s'), COALESCE(SUM(amount), 0), COUNT(*), COUNT(DISTINCT user_id)
+		FROM commissions
+		WHERE status = 'paid' AND paid_at >= $1 AND paid_at < $2
+		GROUP BY 1 ORDER BY 1`, bucket, fmtStr)
+	r4, err := s.db.Query(ctx, q4, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("prim serisi okunamadı: %w", err)
+	}
+	defer r4.Close()
+	for r4.Next() {
+		var d string
+		var v float64
+		var n, m int
+		if err := r4.Scan(&d, &v, &n, &m); err != nil {
+			return nil, err
+		}
+		i := ensure(d)
+		points[i].Commission = v
+		points[i].CommissionCount = n
+		points[i].CommissionMembers = m
+	}
+	if err := r4.Err(); err != nil {
+		return nil, err
+	}
+
+	// 5) PV / CV (net: ekleme − düşüm)
+	q5 := fmt.Sprintf(`
+		SELECT to_char(date_trunc('%s', created_at), '%s'),
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN pv
+		                         WHEN transaction_type = 'deduct' THEN -pv
+		                         ELSE 0 END), 0),
+		       COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN cv
+		                         WHEN transaction_type = 'deduct' THEN -cv
+		                         ELSE 0 END), 0)
+		FROM binary_transactions
+		WHERE created_at >= $1 AND created_at < $2
+		GROUP BY 1 ORDER BY 1`, bucket, fmtStr)
+	r5, err := s.db.Query(ctx, q5, start, endEx)
+	if err != nil {
+		return nil, fmt.Errorf("puan serisi okunamadı: %w", err)
+	}
+	defer r5.Close()
+	for r5.Next() {
+		var d string
+		var pv, cv float64
+		if err := r5.Scan(&d, &pv, &cv); err != nil {
+			return nil, err
+		}
+		i := ensure(d)
+		points[i].PV = pv
+		points[i].CV = cv
+	}
+	if err := r5.Err(); err != nil {
+		return nil, err
+	}
+
+	sort.Slice(points, func(i, j int) bool { return points[i].Date < points[j].Date })
+	return points, nil
+}
+
+// StatsSummary — KPI kartları için tüm zamanların özeti.
+func (s *AdminStatsService) StatsSummary(ctx context.Context) (*StatsSummary, error) {
+	sum := &StatsSummary{}
+	err := s.db.QueryRow(ctx, `
+		SELECT COUNT(*),
+		       COUNT(*) FILTER (WHERE is_active),
+		       COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE),
+		       COUNT(*) FILTER (WHERE created_at >= date_trunc('week', CURRENT_DATE)),
+		       COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE)),
+		       COUNT(*) FILTER (WHERE created_at >= date_trunc('year', CURRENT_DATE))
+		FROM users
+		WHERE role IN ('user', 'admin')`).
+		Scan(&sum.TotalMembers, &sum.ActiveMembers, &sum.NewToday, &sum.NewThisWeek,
+			&sum.NewThisMonth, &sum.NewThisYear)
+	if err != nil {
+		return nil, fmt.Errorf("üye özeti okunamadı: %w", err)
+	}
+	sum.PassiveMembers = sum.TotalMembers - sum.ActiveMembers
+
+	err = s.db.QueryRow(ctx, `
+		SELECT
+			(SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'cancelled'),
+			(SELECT COALESCE(SUM(amount), 0) FROM commissions WHERE status = 'paid'),
+			(SELECT COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN pv
+			                          WHEN transaction_type = 'deduct' THEN -pv
+			                          ELSE 0 END), 0) FROM binary_transactions),
+			(SELECT COALESCE(SUM(CASE WHEN transaction_type = 'add' THEN cv
+			                          WHEN transaction_type = 'deduct' THEN -cv
+			                          ELSE 0 END), 0) FROM binary_transactions)`).
+		Scan(&sum.TotalRevenue, &sum.TotalCommission, &sum.TotalPV, &sum.TotalCV)
+	if err != nil {
+		return nil, fmt.Errorf("finansal özet okunamadı: %w", err)
+	}
+	return sum, nil
+}
+
+// StatsLeaders — kind: "sponsors" (en çok üye getiren) | "earners" (en çok prim alan).
+func (s *AdminStatsService) StatsLeaders(ctx context.Context, kind, from, to string, limit int) ([]StatsLeader, error) {
+	switch kind {
+	case "sponsors", "earners":
+	default:
+		return nil, fmt.Errorf("geçersiz tür: sponsors veya earners olmalıdır")
+	}
+	start, end, err := parseStatsRange(from, to)
+	if err != nil {
+		return nil, err
+	}
+	endEx := end.AddDate(0, 0, 1)
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+
+	var q string
+	if kind == "sponsors" {
+		q = `
+			SELECT u.id, COALESCE(u.name, ''), COUNT(*), 0
+			FROM users v
+			JOIN users u ON u.id = v.sponsor_id
+			WHERE v.role IN ('user', 'admin') AND v.created_at >= $1 AND v.created_at < $2
+			GROUP BY u.id, u.name
+			ORDER BY COUNT(*) DESC, u.id ASC
+			LIMIT $3`
+	} else {
+		q = `
+			SELECT u.id, COALESCE(u.name, ''), COUNT(*), COALESCE(SUM(c.amount), 0)
+			FROM commissions c
+			JOIN users u ON u.id = c.user_id
+			WHERE c.status = 'paid' AND c.paid_at >= $1 AND c.paid_at < $2
+			GROUP BY u.id, u.name
+			ORDER BY COALESCE(SUM(c.amount), 0) DESC, u.id ASC
+			LIMIT $3`
+	}
+
+	rows, err := s.db.Query(ctx, q, start, endEx, limit)
+	if err != nil {
+		return nil, fmt.Errorf("lider listesi okunamadı: %w", err)
+	}
+	defer rows.Close()
+
+	leaders := make([]StatsLeader, 0)
+	for rows.Next() {
+		var l StatsLeader
+		if err := rows.Scan(&l.ID, &l.Name, &l.Count, &l.Total); err != nil {
+			return nil, err
+		}
+		leaders = append(leaders, l)
+	}
+	return leaders, rows.Err()
 }

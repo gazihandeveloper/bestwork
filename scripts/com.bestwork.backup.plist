@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.bestwork.backup</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>$HOME/bestwork-docker/scripts/backup.sh</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>BACKUP_DIR</key>
+    <string>/Users/bestworksunucu/bestwork-backups</string>
+    <key>KEEP_DAYS</key>
+    <string>14</string>
+    <!-- Dış konum örneği (doldurun): user@host:/path veya harici disk yolu
+    <key>BACKUP_REMOTE</key>
+    <string></string>
+    -->
+  </dict>
+
+  <!-- Her gün 03:30 -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>3</integer>
+    <key>Minute</key><integer>30</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/bestworksunucu/bestwork-backups/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/bestworksunucu/bestwork-backups/launchd.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

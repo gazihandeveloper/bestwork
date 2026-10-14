@@ -195,7 +195,7 @@ export function AdminModal({
   return (
     /* m-auto + overflow-y-auto: içerik ekrandan uzun olduğunda üst kısım
        kırpılmaz, modal kaydırılabilir. */
-    <div className="fixed inset-0 z-[1150] flex overflow-y-auto p-4">
+    <div className="fixed inset-0 z-[1000000] flex overflow-y-auto p-4">
       <div
         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}

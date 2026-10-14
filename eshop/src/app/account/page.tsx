@@ -149,7 +149,7 @@ function StatBlock({ label, value, icon, big, info, steps, kalanBoxes, valueClas
   return (
     <div
       onClick={onClick}
-      className={`relative h-full rounded-xl border border-gray-300 bg-white shadow-lg ring-1 ring-gray-200 transition-shadow hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative h-full rounded-xl border border-gray-300 bg-white shadow-lg ring-1 ring-gray-200 transition-all duration-200 hover:z-10 hover:scale-[1.05] hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
       style={{ perspective: 1000 }}
     >
       <div
@@ -549,7 +549,7 @@ export default function AccountDashboardPage() {
 
             {/* İçerik */}
             <div className="flex flex-col items-center gap-1.5 p-4 pt-3 text-center">
-              <h2 className="text-xl leading-snug font-extrabold text-gray-900">Merhaba, {fullName}</h2>
+              <h2 className="text-xl leading-snug font-black text-gray-900">Merhaba, {fullName}</h2>
 
               <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-2.5 py-0.5 text-xs font-bold">
@@ -625,13 +625,13 @@ export default function AccountDashboardPage() {
             <button
               type="button"
               onClick={() => setUpgradeOpen(true)}
-              className="mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#29a56c] py-3.5 text-lg font-extrabold text-white shadow-lg ring-2 ring-[#29a56c]/40 transition-transform duration-200 hover:-translate-y-0.5 hover:brightness-110"
+              className="mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#29a56c] py-3.5 text-lg font-extrabold text-white shadow-lg ring-2 ring-[#29a56c]/40 transition-transform duration-200 hover:scale-[1.02] hover:-translate-y-0.5 hover:brightness-110"
             >
               Üyelik seviyenizi yükseltmek için burayı tıklayınız!
             </button>
           )}
 
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <StatBlock
               label="Ünvan"
               value={currentRankName}

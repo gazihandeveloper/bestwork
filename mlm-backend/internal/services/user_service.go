@@ -556,7 +556,56 @@ func (s *UserService) ListUsers(ctx context.Context, q, role string, limit, offs
 		}
 		users = append(users, *u)
 	}
-	return users, total, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	// Panel listesi için sponsor isim/kodlarını zenginleştir (kritik değil;
+	// hata olursa alanlar boş kalır, liste yine döner).
+	s.fillSponsorInfo(ctx, users)
+
+	return users, total, nil
+}
+
+// fillSponsorInfo listedeki üyelerin sponsor isim ve üye kodlarını tek
+// sorguda doldurur.
+func (s *UserService) fillSponsorInfo(ctx context.Context, users []models.User) {
+	ids := make([]int64, 0, len(users))
+	seen := make(map[int64]bool, len(users))
+	for _, u := range users {
+		if u.SponsorID != nil && !seen[*u.SponsorID] {
+			seen[*u.SponsorID] = true
+			ids = append(ids, *u.SponsorID)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	rows, err := s.db.Query(ctx, `SELECT id, name, member_code FROM users WHERE id = ANY($1)`, ids)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	type sponsorInfo struct{ name, code string }
+	byID := make(map[int64]sponsorInfo, len(ids))
+	for rows.Next() {
+		var id int64
+		var name, code string
+		if err := rows.Scan(&id, &name, &code); err != nil {
+			return
+		}
+		byID[id] = sponsorInfo{name: name, code: code}
+	}
+	for i := range users {
+		if users[i].SponsorID == nil {
+			continue
+		}
+		if in, ok := byID[*users[i].SponsorID]; ok {
+			name, code := in.name, in.code
+			users[i].SponsorName = &name
+			users[i].SponsorCode = &code
+		}
+	}
 }
 
 // UpdateUserRank üyenin rütbesini manuel günceller (gerekçesiyle denetim
