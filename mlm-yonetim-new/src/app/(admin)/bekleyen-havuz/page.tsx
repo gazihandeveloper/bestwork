@@ -232,7 +232,7 @@ export default function BekleyenHavuzPage() {
               </div>
             </div>
 
-            {modalError && <AdminAlert kind="error" className="py-2 text-xs">{modalError}</AdminAlert>}
+            {modalError && <AdminAlert kind="error">{modalError}</AdminAlert>}
 
             <div className="flex justify-end gap-2 pt-4">
               <AdminBtn variant="outline" onClick={() => setSelUser(null)} disabled={placing}>

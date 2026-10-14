@@ -208,7 +208,7 @@ export default function UyeIliskileriPage() {
         </div>
       </div>
 
-      <AdminAlert kind="info">
+      <AdminAlert kind="warning">
         <b>CRM Notları:</b> Üyelerin aktivite oranlarını artırmak için pasif üyelerle iletişime geçilmesi önerilir. 
         Performanslı sponsorlara özel motivasyon primleri tanımlanabilir.
       </AdminAlert>

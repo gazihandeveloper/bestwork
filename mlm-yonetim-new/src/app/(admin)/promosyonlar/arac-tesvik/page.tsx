@@ -84,7 +84,7 @@ export default function AracTesvikPage() {
         }
       />
 
-      <AdminAlert kind="info">
+      <AdminAlert kind="warning">
         Bu görünüm teşvik kategorisine göre filtreler; tüm kayıtlar Promosyonlar
         sayfasında yönetilir.
       </AdminAlert>
